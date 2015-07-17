@@ -52,7 +52,7 @@ class TypeWrapper : public ObjectWrap
 
         Handle<Value> argv[1] = { NanNew<External>((void *)type) };
 
-        return NanEscapeScope(constructor->NewInstance(1, argv));
+        return NanEscapeScope(NanNew(constructor)->NewInstance(1, argv));
     }
 
 public:
@@ -173,7 +173,7 @@ class CodeUnitWrapper : public ObjectWrap
         {
             const int argc = 1;
             Local<Value> argv[argc] = { args[0] };
-            Local<Function> cons = NanNew<Function>(constructor);
+            Local<Function> cons = NanNew(constructor);
             NanReturnValue(cons->NewInstance(argc, argv));
         }
         else
@@ -244,7 +244,7 @@ class CodeUnitWrapper : public ObjectWrap
 
         Handle<Value> argv[1] = { NanNew<External>((void *)builder) };
 
-        return NanEscapeScope(FunctionBuilderWrapper::constructor->NewInstance(1, argv));
+        return NanEscapeScope(NanNew(FunctionBuilderWrapper::constructor)->NewInstance(1, argv));
     }
 
 public:

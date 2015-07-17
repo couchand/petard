@@ -4,7 +4,9 @@
   "description": "a js llvm library",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "clean": "node-gyp clean",
+    "build": "node-gyp configure && node-gyp build",
+    "test": "node_modules/mocha/bin/mocha --reporter spec"
   },
   "repository": {
     "type": "git",
@@ -22,5 +24,9 @@
   "dependencies": {
     "bindings": "^1.2.1",
     "nan": "^1.8.4"
+  },
+  "devDependencies": {
+    "chai": "^3.1.0",
+    "mocha": "^2.2.5"
   }
 }

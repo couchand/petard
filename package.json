@@ -27,6 +27,7 @@
   },
   "devDependencies": {
     "chai": "^3.1.0",
+    "coffee-script": "^1.9.3",
     "mocha": "^2.2.5"
   }
 }

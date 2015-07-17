@@ -13,6 +13,8 @@ a js llvm library
   * documentation
   * more information
 
+[![Build Status](https://travis-ci.org/couchand/petard.svg?branch=master)](https://travis-ci.org/couchand/petard)
+
 introduction
 ------------
 

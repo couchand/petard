@@ -52,6 +52,6 @@ more information
 
   * [LLVM Programmer's Manual][0]
 
-[0][http://llvm.org/docs/ProgrammersManual.html]
+[0]: http://llvm.org/docs/ProgrammersManual.html
 
 ##### ╭╮☲☲☲╭╮ #####

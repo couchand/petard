@@ -34,6 +34,17 @@ describe 'getters', ->
     it 'expects a pointee type', ->
       (-> llvm.getPointerTy()).should.throw /pointee/i
 
+  describe 'getArrayTy', ->
+    it 'returns a type', ->
+      me = llvm.getArrayTy 3, llvm.getIntTy 1
+      me.constructor.name.should.equal 'Type'
+
+    it 'expects an element count', ->
+      (-> llvm.getArrayTy()).should.throw /size/i
+
+    it 'expects an element type', ->
+      (-> llvm.getArrayTy 3).should.throw /element/i
+
 describe 'VoidType', ->
   describe 'toString', ->
     it 'returns void', ->
@@ -86,3 +97,9 @@ describe 'PointerType', ->
       pointee = llvm.getIntTy 32
       me = llvm.getPointerTy pointee
       me.toString().should.equal 'i32*'
+
+describe 'ArrayType', ->
+  describe 'toString', ->
+    it 'returns the count and element', ->
+      me = llvm.getArrayTy 42, llvm.getIntTy 64
+      me.toString().should.equal '[42 x i64]'

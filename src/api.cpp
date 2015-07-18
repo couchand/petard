@@ -137,6 +137,41 @@ public:
         NanReturnValue(wrapType(new PointerTypeHandle(pointee)));
     }
 
+    static NAN_METHOD(GetArrayTy)
+    {
+        NanScope();
+
+        unsigned size;
+        TypeHandle *element;
+
+        if (args.Length() == 0 || !args[0]->IsNumber())
+        {
+            return NanThrowError("Must provide array size");
+        }
+
+        Local<Number> sizeNumber = args[0].As<Number>();
+        double sizeDouble = sizeNumber->Value();
+        size = (unsigned)sizeDouble;
+
+        if (args.Length() == 1)
+        {
+            return NanThrowError("Must provide array element type");
+        }
+
+        Local<Object> handle = args[1]->ToObject();
+
+        if (!NanHasInstance(prototype, handle))
+        {
+            return NanThrowError("Argument must be a type specifier");
+        }
+
+        TypeWrapper *wrapper = ObjectWrap::Unwrap<TypeWrapper>(handle);
+        element = wrapper->Type;
+
+        NanReturnValue(wrapType(new ArrayTypeHandle(size, element)));
+    }
+
+
     static NAN_METHOD(GetFunctionTy)
     {
         NanScope();
@@ -456,6 +491,9 @@ void Init(Handle<Object> exports, Handle<Object> module)
 
     Local<Function> getPointerTy = NanNew<Function>(TypeWrapper::GetPointerTy);
     exports->Set(NanNew<String>("getPointerTy"), getPointerTy);
+
+    Local<Function> getArrayTy = NanNew<Function>(TypeWrapper::GetArrayTy);
+    exports->Set(NanNew<String>("getArrayTy"), getArrayTy);
 
     Local<Function> codeUnit = NanNew(CodeUnitWrapper::constructor);
     exports->Set(NanNew<String>("CodeUnit"), codeUnit);

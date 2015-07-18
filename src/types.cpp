@@ -76,3 +76,24 @@ std::string PointerTypeHandle::toString()
     std::string pointeeStr(pointee->toString());
     return pointeeStr + "*";
 }
+
+llvm::Type *ArrayTypeHandle::getLLVMType(llvm::LLVMContext &context)
+{
+    return llvm::ArrayType::get(element->getLLVMType(context), size);
+}
+
+std::string ArrayTypeHandle::toString()
+{
+    char sizeBuf[10];
+    sprintf(sizeBuf, "%i", size);
+    std::string count(sizeBuf);
+    std::string elTy(element->toString());
+
+    std::string arrayStr("[");
+    arrayStr += count;
+    arrayStr += " x ";
+    arrayStr += elTy;
+    arrayStr += "]";
+
+    return arrayStr;
+}

@@ -62,4 +62,17 @@ public:
     std::string toString();
 };
 
+class ArrayTypeHandle : public TypeHandle
+{
+public:
+    unsigned size;
+    TypeHandle *element;
+
+    ArrayTypeHandle(unsigned s, TypeHandle *e)
+    : size(s), element(e) {}
+
+    llvm::Type *getLLVMType(llvm::LLVMContext &context);
+    std::string toString();
+};
+
 #endif

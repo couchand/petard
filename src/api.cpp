@@ -75,11 +75,14 @@ public:
 
     static NAN_METHOD(GetVoidTy)
     {
-        return wrapType(new VoidTypeHandle());
+        NanScope();
+        NanReturnValue(wrapType(new VoidTypeHandle()));
     }
 
     static NAN_METHOD(GetFunctionTy)
     {
+        NanScope();
+
         TypeHandle *returns;
         std::vector<TypeHandle *> takes;
 
@@ -113,7 +116,7 @@ public:
             takes.push_back(wrapper->Type);
         }
 
-        return wrapType(new FunctionTypeHandle(returns, takes));
+        NanReturnValue(wrapType(new FunctionTypeHandle(returns, takes)));
     }
 };
 
@@ -201,6 +204,8 @@ class CodeUnitWrapper : public ObjectWrap
 
     static NAN_METHOD(Dump)
     {
+        NanScope();
+
         CodeUnitWrapper *self = ObjectWrap::Unwrap<CodeUnitWrapper>(args.This());
 
         self->dumpModule();
@@ -244,7 +249,7 @@ class CodeUnitWrapper : public ObjectWrap
 
         Handle<Value> argv[1] = { NanNew<External>((void *)builder) };
 
-        return NanEscapeScope(NanNew(FunctionBuilderWrapper::constructor)->NewInstance(1, argv));
+        NanReturnValue(NanEscapeScope(NanNew(FunctionBuilderWrapper::constructor)->NewInstance(1, argv)));
     }
 
 public:

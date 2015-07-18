@@ -42,31 +42,31 @@ describe 'VoidType', ->
 
 describe 'FunctionType', ->
   describe 'toString', ->
-    it 'returns empty arrow for thunk', ->
+    it 'returns void and parens for thunk', ->
       me = llvm.getFunctionTy()
-      me.toString().should.equal '->'
+      me.toString().should.equal 'void ()'
 
-    it 'shows return value to the right of the arrow', ->
+    it 'shows return value before the parens', ->
       me = llvm.getFunctionTy llvm.getIntTy 32
-      me.toString().should.equal '-> int32'
+      me.toString().should.equal 'i32 ()'
 
-    it 'shows parameter values to the left of the arrow', ->
+    it 'shows parameter values within the parens', ->
       me = llvm.getFunctionTy llvm.getVoidTy(),
         llvm.getIntTy 32
         llvm.getIntTy 1
-      me.toString().should.equal 'int32 int1 ->'
+      me.toString().should.equal 'void (i32, i1)'
 
-    it 'shows nested function types in parens', ->
+    it 'shows nested function types', ->
       source = llvm.getFunctionTy llvm.getIntTy 64
       sink = llvm.getFunctionTy llvm.getVoidTy(), llvm.getIntTy 64
       me = llvm.getFunctionTy llvm.getFunctionTy(), source, sink
-      me.toString().should.equal '(-> int64) (int64 ->) -> (->)'
+      me.toString().should.equal 'void () (i64 (), void (i64))'
 
 describe 'IntType', ->
   describe 'toString', ->
     it 'returns int and bit width', ->
       me = llvm.getIntTy 32
-      me.toString().should.equal 'int32'
+      me.toString().should.equal 'i32'
 
     it 'errors on zero bit width', ->
       (-> llvm.getIntTy 0).should.throw /bit width/i
@@ -85,4 +85,4 @@ describe 'PointerType', ->
     it 'returns the pointee type and an asterisk', ->
       pointee = llvm.getIntTy 32
       me = llvm.getPointerTy pointee
-      me.toString().should.equal 'int32*'
+      me.toString().should.equal 'i32*'

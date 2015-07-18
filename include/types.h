@@ -16,7 +16,6 @@ class TypeHandle
 public:
     virtual llvm::Type *getLLVMType(llvm::LLVMContext &context) = 0;
     virtual std::string toString() = 0;
-    virtual std::string toString(int nestLevel) = 0;
 };
 
 class VoidTypeHandle : public TypeHandle
@@ -24,7 +23,6 @@ class VoidTypeHandle : public TypeHandle
 public:
     llvm::Type *getLLVMType(llvm::LLVMContext &context);
     std::string toString();
-    std::string toString(int nestLevel);
 };
 
 class FunctionTypeHandle : public TypeHandle
@@ -38,7 +36,6 @@ public:
 
     llvm::Type *getLLVMType(llvm::LLVMContext &context);
     std::string toString();
-    std::string toString(int nestLevel);
 };
 
 class IntTypeHandle : public TypeHandle
@@ -51,7 +48,6 @@ public:
 
     llvm::Type *getLLVMType(llvm::LLVMContext &context);
     std::string toString();
-    std::string toString(int nestLevel);
 };
 
 class PointerTypeHandle : public TypeHandle
@@ -64,7 +60,6 @@ public:
 
     llvm::Type *getLLVMType(llvm::LLVMContext &context);
     std::string toString();
-    std::string toString(int nestLevel);
 };
 
 #endif

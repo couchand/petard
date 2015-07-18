@@ -10,6 +10,8 @@ using namespace v8;
 #include <map>
 #include <vector>
 
+#include "types.h"
+#include "function_builder.h"
 #include "codegen.h"
 
 class TypeWrapper : public ObjectWrap

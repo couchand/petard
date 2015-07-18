@@ -9,6 +9,7 @@
 #include "llvm/IR/TypeBuilder.h"
 
 #include "types.h"
+#include "value.h"
 #include "function_builder.h"
 
 class CodeUnit
@@ -26,6 +27,7 @@ public:
     }
 
     FunctionBuilder *MakeFunction(const char *name, TypeHandle *type);
+    ConstantValueHandle *ConstantString(const std::string &value);
 
     llvm::LLVMContext &Context;
     llvm::Module *TheModule;

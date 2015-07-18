@@ -25,6 +25,14 @@ describe 'CodeUnit', ->
 
       fn.constructor.name.should.equal 'FunctionBuilder'
 
+  describe 'constant', ->
+    it 'creates string constants', ->
+      unit = new llvm.CodeUnit 'constant.test'
+
+      foobar = unit.constant 'foobar'
+
+      foobar.toString().should.equal '[object Value]'
+
 describe 'FunctionBuilder', ->
   unit = beforeEach -> unit = new llvm.CodeUnit 'foobar.baz'
 

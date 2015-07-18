@@ -178,6 +178,56 @@ public:
     }
 };
 
+class ValueWrapper : public ObjectWrap
+{
+    ValueWrapper(ValueHandle *v)
+    : Val(v) {}
+
+    static NAN_METHOD(New)
+    {
+        NanScope();
+
+        if (!args.IsConstructCall() || args.Length() == 0 || !args[0]->IsExternal())
+        {
+            return NanThrowError("Cannot instantiate value directly, use factory");
+        }
+
+        Handle<External> handle = Handle<External>::Cast(args[0]);
+        ValueHandle *v = static_cast<ValueHandle *>(handle->Value());
+        ValueWrapper *instance = new ValueWrapper(v);
+
+        instance->Wrap(args.This());
+
+        NanReturnValue(args.This());
+    }
+
+public:
+    static Handle<Value> wrapValue(ValueHandle *value)
+    {
+        NanEscapableScope();
+
+        Handle<Value> argv[1] = { NanNew<External>((void *)value) };
+
+        return NanEscapeScope(NanNew(constructor)->NewInstance(1, argv));
+    }
+
+    ValueHandle *Val;
+
+    static Persistent<FunctionTemplate> prototype;
+    static Persistent<Function> constructor;
+
+    static void Init()
+    {
+        Local<FunctionTemplate> tmpl = NanNew<FunctionTemplate>(ValueWrapper::New);
+
+        tmpl->SetClassName(NanNew<String>("Value"));
+        tmpl->InstanceTemplate()->SetInternalFieldCount(1);
+
+        NanAssignPersistent(prototype, tmpl);
+        NanAssignPersistent(constructor, tmpl->GetFunction());
+    }
+};
+
 class FunctionBuilderWrapper : public ObjectWrap
 {
     explicit FunctionBuilderWrapper(FunctionBuilder *builder)
@@ -330,6 +380,31 @@ class CodeUnitWrapper : public ObjectWrap
         NanReturnValue(NanNew(FunctionBuilderWrapper::constructor)->NewInstance(1, argv));
     }
 
+    static NAN_METHOD(Constant)
+    {
+        NanScope();
+
+        CodeUnitWrapper *self = ObjectWrap::Unwrap<CodeUnitWrapper>(args.This());
+
+        if (args.Length() == 0)
+        {
+            return NanThrowError("Must provide constant value");
+        }
+
+        if (args[0]->IsString())
+        {
+            Local<String> str = args[0].As<String>();
+            String::Utf8Value encoded(str);
+
+            ConstantValueHandle *handle = self->Unit->ConstantString(*encoded);
+            NanReturnValue(ValueWrapper::wrapValue(handle));
+        }
+        else
+        {
+            return NanThrowError("Constant type yet supported");
+        }
+    }
+
 public:
     CodeUnit *Unit;
 
@@ -345,8 +420,9 @@ public:
         tmpl->SetClassName(NanNew<String>("CodeUnit"));
         tmpl->InstanceTemplate()->SetInternalFieldCount(1);
 
-        NODE_SET_PROTOTYPE_METHOD(tmpl, "dump", CodeUnitWrapper::Dump);
-        NODE_SET_PROTOTYPE_METHOD(tmpl, "makeFunction", CodeUnitWrapper::MakeFunction);
+        NODE_SET_PROTOTYPE_METHOD(tmpl, "dump", Dump);
+        NODE_SET_PROTOTYPE_METHOD(tmpl, "makeFunction", MakeFunction);
+        NODE_SET_PROTOTYPE_METHOD(tmpl, "constant", Constant);
 
         NanAssignPersistent(prototype, tmpl);
         NanAssignPersistent(constructor, tmpl->GetFunction());
@@ -357,12 +433,15 @@ Persistent<FunctionTemplate> FunctionBuilderWrapper::prototype;
 Persistent<Function> FunctionBuilderWrapper::constructor;
 Persistent<FunctionTemplate> TypeWrapper::prototype;
 Persistent<Function> TypeWrapper::constructor;
+Persistent<FunctionTemplate> ValueWrapper::prototype;
+Persistent<Function> ValueWrapper::constructor;
 Persistent<FunctionTemplate> CodeUnitWrapper::prototype;
 Persistent<Function> CodeUnitWrapper::constructor;
 
 void Init(Handle<Object> exports, Handle<Object> module)
 {
     TypeWrapper::Init();
+    ValueWrapper::Init();
     CodeUnitWrapper::Init();
     FunctionBuilderWrapper::Init();
 

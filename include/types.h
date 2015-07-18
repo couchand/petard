@@ -54,4 +54,17 @@ public:
     std::string toString(int nestLevel);
 };
 
+class PointerTypeHandle : public TypeHandle
+{
+public:
+    TypeHandle *pointee;
+
+    PointerTypeHandle(TypeHandle *p)
+    : pointee(p) {}
+
+    llvm::Type *getLLVMType(llvm::LLVMContext &context);
+    std::string toString();
+    std::string toString(int nestLevel);
+};
+
 #endif

@@ -95,3 +95,19 @@ std::string IntTypeHandle::toString(int nestLevel)
 {
     return toString();
 }
+
+llvm::Type *PointerTypeHandle::getLLVMType(llvm::LLVMContext &context)
+{
+    return llvm::PointerType::getUnqual(pointee->getLLVMType(context));
+}
+
+std::string PointerTypeHandle::toString()
+{
+    std::string pointeeStr(pointee->toString());
+    return pointeeStr + "*";
+}
+
+std::string PointerTypeHandle::toString(int nestLevel)
+{
+    return toString();
+}

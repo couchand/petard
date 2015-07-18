@@ -26,6 +26,14 @@ describe 'getters', ->
     it 'expects a valid bit width', ->
       (-> llvm.getIntTy 'foobar').should.throw /bit width/i
 
+  describe 'getPointerTy', ->
+    it 'returns a type', ->
+      me = llvm.getPointerTy llvm.getIntTy 32
+      me.constructor.name.should.equal 'Type'
+
+    it 'expects a pointee type', ->
+      (-> llvm.getPointerTy()).should.throw /pointee/i
+
 describe 'VoidType', ->
   describe 'toString', ->
     it 'returns void', ->
@@ -71,3 +79,10 @@ describe 'IntType', ->
 
     it 'errors on gargantuan bit width', ->
       (-> llvm.getIntTy 99999999).should.throw /bit width/i
+
+describe 'PointerType', ->
+  describe 'toString', ->
+    it 'returns the pointee type and an asterisk', ->
+      pointee = llvm.getIntTy 32
+      me = llvm.getPointerTy pointee
+      me.toString().should.equal 'int32*'

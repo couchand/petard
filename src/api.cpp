@@ -113,6 +113,30 @@ public:
         NanReturnValue(wrapType(new IntTypeHandle(bits)));
     }
 
+    static NAN_METHOD(GetPointerTy)
+    {
+        NanScope();
+
+        TypeHandle *pointee;
+
+        if (args.Length() == 0)
+        {
+            return NanThrowError("Must provide pointee type");
+        }
+
+        Local<Object> handle = args[0]->ToObject();
+
+        if (!NanHasInstance(prototype, handle))
+        {
+            return NanThrowError("Argument must be a type specifier");
+        }
+
+        TypeWrapper *wrapper = ObjectWrap::Unwrap<TypeWrapper>(handle);
+        pointee = wrapper->Type;
+
+        NanReturnValue(wrapType(new PointerTypeHandle(pointee)));
+    }
+
     static NAN_METHOD(GetFunctionTy)
     {
         NanScope();
@@ -330,6 +354,9 @@ void Init(Handle<Object> exports, Handle<Object> module)
 
     Local<Function> getIntTy = NanNew<Function>(TypeWrapper::GetIntTy);
     exports->Set(NanNew<String>("getIntTy"), getIntTy);
+
+    Local<Function> getPointerTy = NanNew<Function>(TypeWrapper::GetPointerTy);
+    exports->Set(NanNew<String>("getPointerTy"), getPointerTy);
 
     Local<Function> codeUnit = NanNew(CodeUnitWrapper::constructor);
     exports->Set(NanNew<String>("CodeUnit"), codeUnit);

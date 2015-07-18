@@ -16,5 +16,5 @@ FunctionBuilder *CodeUnit::MakeFunction(const char *name, TypeHandle *type)
         return 0;  // TODO not this
     }
 
-    return new FunctionBuilder(name, f);
+    return new FunctionBuilder(name, type, f);
 }

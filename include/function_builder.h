@@ -7,13 +7,16 @@
 
 #include "llvm/IR/IRBuilder.h"
 
+#include "types.h"
+
 class FunctionBuilder
 {
 public:
-    FunctionBuilder(const char *name, llvm::Function *f)
-    : Name(name), F(f) {}
+    FunctionBuilder(const char *name, TypeHandle *t, llvm::Function *f)
+    : Name(name), Type(t), F(f) {}
 
     std::string Name;
+    TypeHandle *Type;
     llvm::Function *F;
 };
 

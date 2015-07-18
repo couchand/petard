@@ -52,6 +52,7 @@ class TypeWrapper : public ObjectWrap
         NanReturnValue(NanNew(name));
     }
 
+public:
     static Handle<Value> wrapType(TypeHandle *type)
     {
         NanEscapableScope();
@@ -61,7 +62,6 @@ class TypeWrapper : public ObjectWrap
         return NanEscapeScope(NanNew(constructor)->NewInstance(1, argv));
     }
 
-public:
     TypeHandle *Type;
 
     static Persistent<FunctionTemplate> prototype;
@@ -201,6 +201,24 @@ class FunctionBuilderWrapper : public ObjectWrap
         NanReturnValue(args.This());
     }
 
+    static NAN_GETTER(GetName)
+    {
+        NanScope();
+
+        FunctionBuilderWrapper *wrapper = ObjectWrap::Unwrap<FunctionBuilderWrapper>(args.This());
+
+        NanReturnValue(wrapper->Builder->Name);
+    }
+
+    static NAN_GETTER(GetType)
+    {
+        NanScope();
+
+        FunctionBuilderWrapper *wrapper = ObjectWrap::Unwrap<FunctionBuilderWrapper>(args.This());
+
+        NanReturnValue(TypeWrapper::wrapType(wrapper->Builder->Type));
+    }
+
 public:
     FunctionBuilder *Builder;
 
@@ -215,6 +233,8 @@ public:
 
         tmpl->SetClassName(NanNew("FunctionBuilder"));
         tmpl->InstanceTemplate()->SetInternalFieldCount(1);
+        tmpl->PrototypeTemplate()->SetAccessor(NanNew("name"), GetName);
+        tmpl->PrototypeTemplate()->SetAccessor(NanNew("type"), GetType);
 
         NanAssignPersistent(prototype, tmpl);
         NanAssignPersistent(constructor, tmpl->GetFunction());

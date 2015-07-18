@@ -249,7 +249,7 @@ class CodeUnitWrapper : public ObjectWrap
 
         Handle<Value> argv[1] = { NanNew<External>((void *)builder) };
 
-        NanReturnValue(NanEscapeScope(NanNew(FunctionBuilderWrapper::constructor)->NewInstance(1, argv)));
+        NanReturnValue(NanNew(FunctionBuilderWrapper::constructor)->NewInstance(1, argv));
     }
 
 public:

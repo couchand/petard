@@ -1,5 +1,7 @@
 // types
 
+#include <stdio.h>
+
 #include "types.h"
 
 llvm::Type *VoidTypeHandle::getLLVMType(llvm::LLVMContext &context)
@@ -70,4 +72,26 @@ std::string FunctionTypeHandle::toString(int nestLevel)
     }
 
     return name;
+}
+
+llvm::Type *IntTypeHandle::getLLVMType(llvm::LLVMContext &context)
+{
+    return llvm::Type::getIntNTy(context, numBits);
+}
+
+std::string IntTypeHandle::toString()
+{
+    // The number 11 is based on the assumption that the current (2015)
+    // value for MAX_INT_BITS won't be increased any time soon.  It
+    // is 8388607, which is seven digits, plus 'int' for ten, plus the
+    // null terminator. TODO: not this
+    char raw[11];
+    sprintf(raw, "int%i", numBits);
+    std::string name(raw);
+    return name;
+}
+
+std::string IntTypeHandle::toString(int nestLevel)
+{
+    return toString();
 }

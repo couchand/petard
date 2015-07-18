@@ -14,6 +14,10 @@ using namespace v8;
 #include "function_builder.h"
 #include "codegen.h"
 
+// definitions from http://www.llvm.org/docs/doxygen/html/DerivedTypes_8h_source.html#l00046
+#define MIN_INT_BITS 1
+#define MAX_INT_BITS (1<<23)-1
+
 class TypeWrapper : public ObjectWrap
 {
     TypeWrapper(TypeHandle *t)
@@ -79,6 +83,34 @@ public:
     {
         NanScope();
         NanReturnValue(wrapType(new VoidTypeHandle()));
+    }
+
+    static NAN_METHOD(GetIntTy)
+    {
+        NanScope();
+
+        if (args.Length() == 0 || !args[0]->IsNumber()) {
+            return NanThrowError("Must provide integer bit width");
+        }
+
+        Local<Number> bitWidth = args[0].As<Number>();
+        double requestedBits = bitWidth->Value();
+
+        if (requestedBits < MIN_INT_BITS) {
+            return NanThrowError("Integer bit width below the minimum");
+        }
+
+        if (requestedBits > MAX_INT_BITS) {
+            return NanThrowError("Integer bit width above the maximum");
+        }
+
+        unsigned bits = (unsigned)requestedBits;
+
+        if (bits != requestedBits) {
+            return NanThrowError("Integer bit width not valid");
+        }
+
+        NanReturnValue(wrapType(new IntTypeHandle(bits)));
     }
 
     static NAN_METHOD(GetFunctionTy)
@@ -295,6 +327,9 @@ void Init(Handle<Object> exports, Handle<Object> module)
 
     Local<Function> getFunctionTy = NanNew<Function>(TypeWrapper::GetFunctionTy);
     exports->Set(NanNew<String>("getFunctionTy"), getFunctionTy);
+
+    Local<Function> getIntTy = NanNew<Function>(TypeWrapper::GetIntTy);
+    exports->Set(NanNew<String>("getIntTy"), getIntTy);
 
     Local<Function> codeUnit = NanNew(CodeUnitWrapper::constructor);
     exports->Set(NanNew<String>("CodeUnit"), codeUnit);

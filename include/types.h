@@ -41,4 +41,17 @@ public:
     std::string toString(int nestLevel);
 };
 
+class IntTypeHandle : public TypeHandle
+{
+public:
+    unsigned const numBits;
+
+    IntTypeHandle(unsigned bitWidth)
+    : numBits(bitWidth) {}
+
+    llvm::Type *getLLVMType(llvm::LLVMContext &context);
+    std::string toString();
+    std::string toString(int nestLevel);
+};
+
 #endif

@@ -14,6 +14,8 @@
 
 class CodeUnit
 {
+    llvm::Function *buildFunctionHeader(const char *name, TypeHandle *type);
+
 public:
     CodeUnit(const char *filename)
     : Context(llvm::getGlobalContext())
@@ -27,6 +29,8 @@ public:
     }
 
     FunctionBuilder *MakeFunction(const char *name, TypeHandle *type);
+    FunctionValueHandle *DeclareFunction(const char *name, TypeHandle *type);
+
     ConstantValueHandle *ConstantString(const std::string &value);
 
     llvm::LLVMContext &Context;

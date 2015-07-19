@@ -2,7 +2,7 @@
 
 #include "codegen.h"
 
-FunctionBuilder *CodeUnit::MakeFunction(const char *name, TypeHandle *type)
+llvm::Function *CodeUnit::buildFunctionHeader(const char *name, TypeHandle *type)
 {
     std::string myName(name);
 
@@ -16,7 +16,21 @@ FunctionBuilder *CodeUnit::MakeFunction(const char *name, TypeHandle *type)
         return 0;  // TODO not this
     }
 
-    return new FunctionBuilder(name, type, f);
+    return f;
+}
+
+FunctionBuilder *CodeUnit::MakeFunction(const char *name, TypeHandle *type)
+{
+    llvm::Function *f = buildFunctionHeader(name, type);
+
+    return new FunctionBuilder(name, type, Context, f);
+}
+
+FunctionValueHandle *CodeUnit::DeclareFunction(const char *name, TypeHandle *type)
+{
+    llvm::Function *f = buildFunctionHeader(name, type);
+
+    return new FunctionValueHandle(type, f);
 }
 
 ConstantValueHandle *CodeUnit::ConstantString(const std::string &value)

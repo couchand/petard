@@ -304,6 +304,95 @@ class FunctionBuilderWrapper : public ObjectWrap
         NanReturnValue(TypeWrapper::wrapType(wrapper->Builder->Type));
     }
 
+    static NAN_METHOD(Return)
+    {
+        NanScope();
+
+        FunctionBuilderWrapper *wrapper = ObjectWrap::Unwrap<FunctionBuilderWrapper>(args.This());
+
+        if (args.Length() == 0)
+        {
+            wrapper->Builder->Return();
+        }
+        else if (args[0]->IsNumber())
+        {
+            Local<Number> num = args[0].As<Number>();
+            double numVal = num->Value();
+
+            wrapper->Builder->Return((int)numVal);
+        }
+        else
+        {
+            return NanThrowError("Return value not supported");
+        }
+
+        NanReturnValue(args.This());
+    }
+
+    static NAN_METHOD(LoadConstant)
+    {
+        NanScope();
+
+        FunctionBuilderWrapper *self = ObjectWrap::Unwrap<FunctionBuilderWrapper>(args.This());
+
+        if (args.Length() == 0)
+        {
+            return NanThrowError("Must provide constant value");
+        }
+
+        Local<Object> handle = args[0]->ToObject();
+        if (!NanHasInstance(ValueWrapper::prototype, handle))
+        {
+            return NanThrowError("Must provide constant value");
+        }
+
+        ValueWrapper *wrapper = ObjectWrap::Unwrap<ValueWrapper>(handle);
+
+        ValueHandle *result = self->Builder->LoadConstant(wrapper->Val);
+
+        NanReturnValue(ValueWrapper::wrapValue(result));
+    }
+
+    static NAN_METHOD(CallFunction)
+    {
+        NanScope();
+
+        FunctionBuilderWrapper *self = ObjectWrap::Unwrap<FunctionBuilderWrapper>(args.This());
+
+        if (args.Length() == 0)
+        {
+            return NanThrowError("Must provide function value");
+        }
+
+        Local<Object> handle = args[0]->ToObject();
+        if (!NanHasInstance(ValueWrapper::prototype, handle))
+        {
+            return NanThrowError("Must provide function value");
+        }
+
+        ValueWrapper *wrapper = ObjectWrap::Unwrap<ValueWrapper>(handle);
+        ValueHandle *callee = wrapper->Val;
+
+        std::vector<ValueHandle *> argVals;
+
+        for (unsigned i = 1, e = args.Length(); i < e; i += 1)
+        {
+            Local<Object> handle = args[i]->ToObject();
+
+            if (!NanHasInstance(ValueWrapper::prototype, handle))
+            {
+                return NanThrowError("Argument must be a value");
+            }
+
+            ValueWrapper *arg = ObjectWrap::Unwrap<ValueWrapper>(handle);
+            argVals.push_back(arg->Val);
+        }
+
+        ValueHandle *result = self->Builder->CallFunction(callee, argVals);
+
+        NanReturnValue(ValueWrapper::wrapValue(result));
+    }
+
 public:
     FunctionBuilder *Builder;
 
@@ -320,6 +409,10 @@ public:
         tmpl->InstanceTemplate()->SetInternalFieldCount(1);
         tmpl->PrototypeTemplate()->SetAccessor(NanNew("name"), GetName);
         tmpl->PrototypeTemplate()->SetAccessor(NanNew("type"), GetType);
+
+        NODE_SET_PROTOTYPE_METHOD(tmpl, "return", Return);
+        NODE_SET_PROTOTYPE_METHOD(tmpl, "loadConstant", LoadConstant);
+        NODE_SET_PROTOTYPE_METHOD(tmpl, "callFunction", CallFunction);
 
         NanAssignPersistent(prototype, tmpl);
         NanAssignPersistent(constructor, tmpl->GetFunction());
@@ -415,6 +508,43 @@ class CodeUnitWrapper : public ObjectWrap
         NanReturnValue(NanNew(FunctionBuilderWrapper::constructor)->NewInstance(1, argv));
     }
 
+    static NAN_METHOD(DeclareFunction)
+    {
+        NanEscapableScope();
+
+        CodeUnitWrapper *self = ObjectWrap::Unwrap<CodeUnitWrapper>(args.This());
+
+        if (args.Length() == 0 || !args[0]->IsString())
+        {
+            return NanThrowError("Must provide function name");
+        }
+
+        Local<String> fnname = args[0].As<String>();
+        String::Utf8Value encoded(fnname);
+
+        if (args.Length() == 1)
+        {
+            return NanThrowError("Must provide function type");
+        }
+
+        Local<Object> handle = args[1]->ToObject();
+        if (!NanHasInstance(TypeWrapper::prototype, handle))
+        {
+            return NanThrowError("Must provide function type");
+        }
+
+        TypeWrapper *wrapper = ObjectWrap::Unwrap<TypeWrapper>(handle);
+
+        FunctionValueHandle *fn = self->Unit->DeclareFunction(*encoded, wrapper->Type);
+
+        if (!fn)
+        {
+            return NanThrowError("Unable to create function (is name unique?)");
+        }
+
+        NanReturnValue(ValueWrapper::wrapValue(fn));
+    }
+
     static NAN_METHOD(Constant)
     {
         NanScope();
@@ -457,6 +587,7 @@ public:
 
         NODE_SET_PROTOTYPE_METHOD(tmpl, "dump", Dump);
         NODE_SET_PROTOTYPE_METHOD(tmpl, "makeFunction", MakeFunction);
+        NODE_SET_PROTOTYPE_METHOD(tmpl, "declareFunction", DeclareFunction);
         NODE_SET_PROTOTYPE_METHOD(tmpl, "constant", Constant);
 
         NanAssignPersistent(prototype, tmpl);

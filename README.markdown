@@ -30,12 +30,14 @@ right with LLVM.  Once you've done that successfully, try this:
 llvm = require 'petard'
 
 hello = llvm.createModule "hello"
-main = hello.createFunction "main", [], llvm.type.int
+
+main = hello.createFunction "main", llvm.type.i32
+puts = hello.declareFunction "puts", llvm.type.i32, llvm.type.pointerTo llvm.type.i8
 
 text = hello.constant "Hello, world!\n"
 
-main.loadConstant text
-main.callFunction "puts"
+message = main.loadConstant text
+main.callFunction puts, message
 
 main.return 0
 

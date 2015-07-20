@@ -18,6 +18,9 @@ addons:
     sources:
       - llvm-$LLVM_VERSION
 
+before-script:
+  - llc -version
+
 script:
   - npm run-script clean
   - npm run-script build

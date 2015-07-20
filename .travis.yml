@@ -13,13 +13,11 @@ env:
   - LLVM_VERSION=3.6
   - LLVM_VERSION=3.7
 
-addons:
-  apt:
-    sources:
-      - llvm-$LLVM_VERSION
+before_install:
+  - travis_retry sudo apt-get install llvm-$LLVM_VERSION
 
 before_script:
-  - llc -version
+  - llc -version || true
 
 script:
   - npm run-script clean

@@ -1,5 +1,7 @@
 # tests from the README
 
+fs = require 'fs'
+
 {chai, should} = require '../helper'
 
 llvm = require '../../'
@@ -25,5 +27,10 @@ describe 'README', ->
 
       main.return 0
 
-      #hello.writeBitcodeToFile "hello.bc"
-      hello.dump()
+      hello.writeBitcodeToFile "hello.bc"
+
+      fs.statSync "hello.bc"
+        .should.not.be.null
+
+      fs.readFileSync "hello.bc"
+        .should.have.length.greaterThan 0

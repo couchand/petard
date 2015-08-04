@@ -469,6 +469,27 @@ class CodeUnitWrapper : public ObjectWrap
         NanReturnUndefined();
     }
 
+    static NAN_METHOD(WriteToFile)
+    {
+        NanScope();
+
+        if (args.Length() == 0 || !args[0]->IsString())
+        {
+            return NanThrowError("Must provide file name");
+        }
+
+        Local<String> raw = args[0].As<String>();
+        String::Utf8Value filename(raw);
+
+        CodeUnitWrapper *self = ObjectWrap::Unwrap<CodeUnitWrapper>(args.This());
+        if (!self->Unit->WriteToFile(*filename))
+        {
+            return NanThrowError("Unable to write file");
+        }
+
+        NanReturnUndefined();
+    }
+
     static NAN_METHOD(MakeFunction)
     {
         NanEscapableScope();
@@ -586,6 +607,7 @@ public:
         tmpl->InstanceTemplate()->SetInternalFieldCount(1);
 
         NODE_SET_PROTOTYPE_METHOD(tmpl, "dump", Dump);
+        NODE_SET_PROTOTYPE_METHOD(tmpl, "writeBitcodeToFile", WriteToFile);
         NODE_SET_PROTOTYPE_METHOD(tmpl, "makeFunction", MakeFunction);
         NODE_SET_PROTOTYPE_METHOD(tmpl, "declareFunction", DeclareFunction);
         NODE_SET_PROTOTYPE_METHOD(tmpl, "constant", Constant);

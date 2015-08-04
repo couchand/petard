@@ -28,6 +28,8 @@ public:
         TheModule->dump();
     }
 
+    bool WriteToFile(const char *filename);
+
     FunctionBuilder *MakeFunction(const char *name, TypeHandle *type);
     FunctionValueHandle *DeclareFunction(const char *name, TypeHandle *type);
 

@@ -2,6 +2,10 @@
 
 #include "codegen.h"
 
+#include "llvm/Support/raw_ostream.h"
+#include "llvm/Bitcode/BitstreamWriter.h"
+#include "llvm/Bitcode/ReaderWriter.h"
+
 llvm::Function *CodeUnit::buildFunctionHeader(const char *name, TypeHandle *type)
 {
     std::string myName(name);
@@ -17,6 +21,23 @@ llvm::Function *CodeUnit::buildFunctionHeader(const char *name, TypeHandle *type
     }
 
     return f;
+}
+
+bool CodeUnit::WriteToFile(const char *name)
+{
+    std::string error;
+    llvm::raw_fd_ostream output(name, error);
+    if (error != "")
+    {
+        return false;
+    }
+    output.SetUseAtomicWrites(true);
+
+    llvm::WriteBitcodeToFile(TheModule, output);
+
+    output.close();
+
+    return true;
 }
 
 FunctionBuilder *CodeUnit::MakeFunction(const char *name, TypeHandle *type)

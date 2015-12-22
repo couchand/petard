@@ -1,7 +1,7 @@
 // codegen
 
 #include <nan.h>
-using node::ObjectWrap;
+using Nan::ObjectWrap;
 
 using namespace v8;
 
@@ -18,438 +18,438 @@ using namespace v8;
 #define MIN_INT_BITS 1
 #define MAX_INT_BITS (1<<23)-1
 
-class TypeWrapper : public ObjectWrap
+class TypeWrapper : public Nan::ObjectWrap
 {
     TypeWrapper(TypeHandle *t)
     : Type(t) {}
 
     static NAN_METHOD(New)
     {
-        NanScope();
 
-        if (!args.IsConstructCall() || args.Length() == 0 || !args[0]->IsExternal())
+        if (!info.IsConstructCall() || info.Length() == 0 || !info[0]->IsExternal())
         {
-            return NanThrowError("Cannot instantiate type directly, use factory");
+            return Nan::ThrowError("Cannot instantiate type directly, use factory");
         }
 
-        Handle<External> handle = Handle<External>::Cast(args[0]);
+        Handle<External> handle = Handle<External>::Cast(info[0]);
         TypeHandle *t = static_cast<TypeHandle *>(handle->Value());
         TypeWrapper *instance = new TypeWrapper(t);
 
-        instance->Wrap(args.This());
+        instance->Wrap(info.This());
 
-        NanReturnValue(args.This());
+        info.GetReturnValue().Set(info.This());
     }
 
     static NAN_METHOD(ToString)
     {
-        NanScope();
 
-        TypeWrapper *wrapper = ObjectWrap::Unwrap<TypeWrapper>(args.This());
+        TypeWrapper *wrapper = Nan::ObjectWrap::Unwrap<TypeWrapper>(info.This());
 
         std::string name = wrapper->Type->toString();
 
-        NanReturnValue(NanNew(name));
+        info.GetReturnValue().Set(Nan::New(name).ToLocalChecked());
     }
 
 public:
     static Handle<Value> wrapType(TypeHandle *type)
     {
-        NanEscapableScope();
+        Nan::EscapableHandleScope scope;
 
-        Handle<Value> argv[1] = { NanNew<External>((void *)type) };
+        Handle<Value> argv[1] = { Nan::New<External>((void *)type) };
 
-        return NanEscapeScope(NanNew(constructor)->NewInstance(1, argv));
+        return Nan::NewInstance(scope.Escape(Nan::New(constructor)));
     }
 
     TypeHandle *Type;
 
-    static Persistent<FunctionTemplate> prototype;
-    static Persistent<Function> constructor;
+    static Nan::Persistent<FunctionTemplate> prototype;
+    static Nan::Persistent<Function> constructor;
 
     static void Init()
     {
-        Local<FunctionTemplate> tmpl = NanNew<FunctionTemplate>(TypeWrapper::New);
+        Local<FunctionTemplate> tmpl = Nan::New<FunctionTemplate>(TypeWrapper::New);
 
-        tmpl->SetClassName(NanNew<String>("Type"));
+        tmpl->SetClassName(Nan::New<String>("Type").ToLocalChecked());
         tmpl->InstanceTemplate()->SetInternalFieldCount(1);
-        NODE_SET_PROTOTYPE_METHOD(tmpl, "toString", TypeWrapper::ToString);
+        Nan::SetPrototypeMethod(tmpl, "toString", TypeWrapper::ToString);
 
-        NanAssignPersistent(prototype, tmpl);
-        NanAssignPersistent(constructor, tmpl->GetFunction());
+        prototype.Reset(tmpl);
+        constructor.Reset(tmpl);
     }
 
     static NAN_METHOD(GetVoidTy)
     {
-        NanScope();
-        NanReturnValue(wrapType(new VoidTypeHandle()));
+        info.GetReturnValue().Set(wrapType(new VoidTypeHandle()));
     }
 
     static NAN_METHOD(GetIntTy)
     {
-        NanScope();
 
-        if (args.Length() == 0 || !args[0]->IsNumber()) {
-            return NanThrowError("Must provide integer bit width");
+        if (info.Length() == 0 || !info[0]->IsNumber()) {
+            return Nan::ThrowError("Must provide integer bit width");
         }
 
-        Local<Number> bitWidth = args[0].As<Number>();
+        Local<Number> bitWidth = info[0].As<Number>();
         double requestedBits = bitWidth->Value();
 
         if (requestedBits < MIN_INT_BITS) {
-            return NanThrowError("Integer bit width below the minimum");
+            return Nan::ThrowError("Integer bit width below the minimum");
         }
 
         if (requestedBits > MAX_INT_BITS) {
-            return NanThrowError("Integer bit width above the maximum");
+            return Nan::ThrowError("Integer bit width above the maximum");
         }
 
         unsigned bits = (unsigned)requestedBits;
 
         if (bits != requestedBits) {
-            return NanThrowError("Integer bit width not valid");
+            return Nan::ThrowError("Integer bit width not valid");
         }
 
-        NanReturnValue(wrapType(new IntTypeHandle(bits)));
+        info.GetReturnValue().Set(wrapType(new IntTypeHandle(bits)));
     }
 
     static NAN_METHOD(GetPointerTy)
     {
-        NanScope();
 
         TypeHandle *pointee;
 
-        if (args.Length() == 0)
+        if (info.Length() == 0)
         {
-            return NanThrowError("Must provide pointee type");
+            return Nan::ThrowError("Must provide pointee type");
         }
 
-        Local<Object> handle = args[0]->ToObject();
+        Local<Object> handle = info[0]->ToObject();
 
-        if (!NanHasInstance(prototype, handle))
+        /* TODO
+        if (!Nan::HasInstance(prototype, handle))
         {
-            return NanThrowError("Argument must be a type specifier");
+            return Nan::ThrowError("Argument must be a type specifier");
         }
+        */
 
-        TypeWrapper *wrapper = ObjectWrap::Unwrap<TypeWrapper>(handle);
+        TypeWrapper *wrapper = Nan::ObjectWrap::Unwrap<TypeWrapper>(handle);
         pointee = wrapper->Type;
 
-        NanReturnValue(wrapType(new PointerTypeHandle(pointee)));
+        info.GetReturnValue().Set(wrapType(new PointerTypeHandle(pointee)));
     }
 
     static NAN_METHOD(GetArrayTy)
     {
-        NanScope();
 
         unsigned size;
         TypeHandle *element;
 
-        if (args.Length() == 0 || !args[0]->IsNumber())
+        if (info.Length() == 0 || !info[0]->IsNumber())
         {
-            return NanThrowError("Must provide array size");
+            return Nan::ThrowError("Must provide array size");
         }
 
-        Local<Number> sizeNumber = args[0].As<Number>();
+        Local<Number> sizeNumber = info[0].As<Number>();
         double sizeDouble = sizeNumber->Value();
         size = (unsigned)sizeDouble;
 
-        if (args.Length() == 1)
+        if (info.Length() == 1)
         {
-            return NanThrowError("Must provide array element type");
+            return Nan::ThrowError("Must provide array element type");
         }
 
-        Local<Object> handle = args[1]->ToObject();
+        Local<Object> handle = info[1]->ToObject();
 
-        if (!NanHasInstance(prototype, handle))
+        /* TODO
+        if (!Nan::HasInstance(prototype, handle))
         {
-            return NanThrowError("Argument must be a type specifier");
+            return Nan::ThrowError("Argument must be a type specifier");
         }
+        */
 
-        TypeWrapper *wrapper = ObjectWrap::Unwrap<TypeWrapper>(handle);
+        TypeWrapper *wrapper = Nan::ObjectWrap::Unwrap<TypeWrapper>(handle);
         element = wrapper->Type;
 
-        NanReturnValue(wrapType(new ArrayTypeHandle(size, element)));
+        info.GetReturnValue().Set(wrapType(new ArrayTypeHandle(size, element)));
     }
 
 
     static NAN_METHOD(GetFunctionTy)
     {
-        NanScope();
 
         TypeHandle *returns;
         std::vector<TypeHandle *> takes;
 
-        if (args.Length() == 0)
+        if (info.Length() == 0)
         {
             returns = new VoidTypeHandle();
         }
         else
         {
-            Local<Object> handle = args[0]->ToObject();
+            Local<Object> handle = info[0]->ToObject();
 
-            if (!NanHasInstance(prototype, handle))
+            /*
+             * TODO
+            if (!Nan::HasInstance(prototype, handle))
             {
-                return NanThrowError("Argument must be a type specifier");
+                return Nan::ThrowError("Argument must be a type specifier");
             }
+            */
 
-            TypeWrapper *wrapper = ObjectWrap::Unwrap<TypeWrapper>(handle);
+            TypeWrapper *wrapper = Nan::ObjectWrap::Unwrap<TypeWrapper>(handle);
             returns = wrapper->Type;
         }
 
-        for (unsigned i = 1, e = args.Length(); i < e; i += 1)
+        for (unsigned i = 1, e = info.Length(); i < e; i += 1)
         {
-            Local<Object> handle = args[i]->ToObject();
+            Local<Object> handle = info[i]->ToObject();
 
-            if (!NanHasInstance(prototype, handle))
+            /* TODO
+            if (!Nan::HasInstance(prototype, handle))
             {
-                return NanThrowError("Argument must be a type specifier");
+                return Nan::ThrowError("Argument must be a type specifier");
             }
+            */
 
-            TypeWrapper *wrapper = ObjectWrap::Unwrap<TypeWrapper>(handle);
+            TypeWrapper *wrapper = Nan::ObjectWrap::Unwrap<TypeWrapper>(handle);
             takes.push_back(wrapper->Type);
         }
 
-        NanReturnValue(wrapType(new FunctionTypeHandle(returns, takes)));
+        info.GetReturnValue().Set(wrapType(new FunctionTypeHandle(returns, takes)));
     }
 };
 
-class ValueWrapper : public ObjectWrap
+class ValueWrapper : public Nan::ObjectWrap
 {
     ValueWrapper(ValueHandle *v)
     : Val(v) {}
 
     static NAN_METHOD(New)
     {
-        NanScope();
 
-        if (!args.IsConstructCall() || args.Length() == 0 || !args[0]->IsExternal())
+        if (!info.IsConstructCall() || info.Length() == 0 || !info[0]->IsExternal())
         {
-            return NanThrowError("Cannot instantiate value directly, use factory");
+            return Nan::ThrowError("Cannot instantiate value directly, use factory");
         }
 
-        Handle<External> handle = Handle<External>::Cast(args[0]);
+        Handle<External> handle = Handle<External>::Cast(info[0]);
         ValueHandle *v = static_cast<ValueHandle *>(handle->Value());
         ValueWrapper *instance = new ValueWrapper(v);
 
-        instance->Wrap(args.This());
+        instance->Wrap(info.This());
 
-        NanReturnValue(args.This());
+        info.GetReturnValue().Set(info.This());
     }
 
 public:
     static Handle<Value> wrapValue(ValueHandle *value)
     {
-        NanEscapableScope();
+        Nan::EscapableHandleScope scope;
 
-        Handle<Value> argv[1] = { NanNew<External>((void *)value) };
+        Handle<Value> argv[1] = { Nan::New<External>((void *)value) };
 
-        return NanEscapeScope(NanNew(constructor)->NewInstance(1, argv));
+        return Nan::NewInstance(scope.Escape(Nan::New(constructor)));
     }
 
     ValueHandle *Val;
 
-    static Persistent<FunctionTemplate> prototype;
-    static Persistent<Function> constructor;
+    static Nan::Persistent<FunctionTemplate> prototype;
+    static Nan::Persistent<Function> constructor;
 
     static void Init()
     {
-        Local<FunctionTemplate> tmpl = NanNew<FunctionTemplate>(ValueWrapper::New);
+        Local<FunctionTemplate> tmpl = Nan::New<FunctionTemplate>(ValueWrapper::New);
 
-        tmpl->SetClassName(NanNew<String>("Value"));
+        tmpl->SetClassName(Nan::New<String>("Value").ToLocalChecked());
         tmpl->InstanceTemplate()->SetInternalFieldCount(1);
 
-        NanAssignPersistent(prototype, tmpl);
-        NanAssignPersistent(constructor, tmpl->GetFunction());
+        prototype.Reset(tmpl);
+        Nan::GetFunction(constructor.Reset(tmpl));
     }
 };
 
-class FunctionBuilderWrapper : public ObjectWrap
+class FunctionBuilderWrapper : public Nan::ObjectWrap
 {
     explicit FunctionBuilderWrapper(FunctionBuilder *builder)
     : Builder(builder) {}
 
     static NAN_METHOD(New)
     {
-        NanScope();
 
-        if (!args.IsConstructCall() || args.Length() == 0 || !args[0]->IsExternal())
+        if (!info.IsConstructCall() || info.Length() == 0 || !info[0]->IsExternal())
         {
-            return NanThrowError("Cannot instantiate type directly, use factory");
+            return Nan::ThrowError("Cannot instantiate type directly, use factory");
         }
 
-        Handle<External> handle = Handle<External>::Cast(args[0]);
+        Handle<External> handle = Handle<External>::Cast(info[0]);
         FunctionBuilder *fb = static_cast<FunctionBuilder *>(handle->Value());
         FunctionBuilderWrapper *instance = new FunctionBuilderWrapper(fb);
 
-        instance->Wrap(args.This());
+        instance->Wrap(info.This());
 
-        NanReturnValue(args.This());
+        info.GetReturnValue().Set(info.This());
     }
 
     static NAN_GETTER(GetName)
     {
-        NanScope();
 
-        FunctionBuilderWrapper *wrapper = ObjectWrap::Unwrap<FunctionBuilderWrapper>(args.This());
+        FunctionBuilderWrapper *wrapper = Nan::ObjectWrap::Unwrap<FunctionBuilderWrapper>(info.This());
 
-        NanReturnValue(wrapper->Builder->Name);
+        info.GetReturnValue().Set(wrapper->Builder->Name);
     }
 
     static NAN_GETTER(GetType)
     {
-        NanScope();
 
-        FunctionBuilderWrapper *wrapper = ObjectWrap::Unwrap<FunctionBuilderWrapper>(args.This());
+        FunctionBuilderWrapper *wrapper = Nan::ObjectWrap::Unwrap<FunctionBuilderWrapper>(info.This());
 
-        NanReturnValue(TypeWrapper::wrapType(wrapper->Builder->Type));
+        info.GetReturnValue().Set(TypeWrapper::wrapType(wrapper->Builder->Type));
     }
 
     static NAN_METHOD(Return)
     {
-        NanScope();
 
-        FunctionBuilderWrapper *wrapper = ObjectWrap::Unwrap<FunctionBuilderWrapper>(args.This());
+        FunctionBuilderWrapper *wrapper = Nan::ObjectWrap::Unwrap<FunctionBuilderWrapper>(info.This());
 
-        if (args.Length() == 0)
+        if (info.Length() == 0)
         {
             wrapper->Builder->Return();
         }
-        else if (args[0]->IsNumber())
+        else if (info[0]->IsNumber())
         {
-            Local<Number> num = args[0].As<Number>();
+            Local<Number> num = info[0].As<Number>();
             double numVal = num->Value();
 
             wrapper->Builder->Return((int)numVal);
         }
         else
         {
-            return NanThrowError("Return value not supported");
+            return Nan::ThrowError("Return value not supported");
         }
 
-        NanReturnValue(args.This());
+        info.GetReturnValue().Set(info.This());
     }
 
     static NAN_METHOD(LoadConstant)
     {
-        NanScope();
 
-        FunctionBuilderWrapper *self = ObjectWrap::Unwrap<FunctionBuilderWrapper>(args.This());
+        FunctionBuilderWrapper *self = Nan::ObjectWrap::Unwrap<FunctionBuilderWrapper>(info.This());
 
-        if (args.Length() == 0)
+        if (info.Length() == 0)
         {
-            return NanThrowError("Must provide constant value");
+            return Nan::ThrowError("Must provide constant value");
         }
 
-        Local<Object> handle = args[0]->ToObject();
-        if (!NanHasInstance(ValueWrapper::prototype, handle))
+        Local<Object> handle = info[0]->ToObject();
+        /* TODO
+        if (!Nan::HasInstance(ValueWrapper::prototype, handle))
         {
-            return NanThrowError("Must provide constant value");
+            return Nan::ThrowError("Must provide constant value");
         }
+        */
 
-        ValueWrapper *wrapper = ObjectWrap::Unwrap<ValueWrapper>(handle);
+        ValueWrapper *wrapper = Nan::ObjectWrap::Unwrap<ValueWrapper>(handle);
 
         ValueHandle *result = self->Builder->LoadConstant(wrapper->Val);
 
-        NanReturnValue(ValueWrapper::wrapValue(result));
+        info.GetReturnValue().Set(ValueWrapper::wrapValue(result));
     }
 
     static NAN_METHOD(CallFunction)
     {
-        NanScope();
 
-        FunctionBuilderWrapper *self = ObjectWrap::Unwrap<FunctionBuilderWrapper>(args.This());
+        FunctionBuilderWrapper *self = Nan::ObjectWrap::Unwrap<FunctionBuilderWrapper>(info.This());
 
-        if (args.Length() == 0)
+        if (info.Length() == 0)
         {
-            return NanThrowError("Must provide function value");
+            return Nan::ThrowError("Must provide function value");
         }
 
-        Local<Object> handle = args[0]->ToObject();
-        if (!NanHasInstance(ValueWrapper::prototype, handle))
+        Local<Object> handle = info[0]->ToObject();
+        /* TODO
+        if (!Nan::HasInstance(ValueWrapper::prototype, handle))
         {
-            return NanThrowError("Must provide function value");
+            return Nan::ThrowError("Must provide function value");
         }
+        */
 
-        ValueWrapper *wrapper = ObjectWrap::Unwrap<ValueWrapper>(handle);
+        ValueWrapper *wrapper = Nan::ObjectWrap::Unwrap<ValueWrapper>(handle);
         ValueHandle *callee = wrapper->Val;
 
         std::vector<ValueHandle *> argVals;
 
-        for (unsigned i = 1, e = args.Length(); i < e; i += 1)
+        for (unsigned i = 1, e = info.Length(); i < e; i += 1)
         {
-            Local<Object> handle = args[i]->ToObject();
+            Local<Object> handle = info[i]->ToObject();
 
-            if (!NanHasInstance(ValueWrapper::prototype, handle))
+            /* TODO
+            if (!Nan::HasInstance(ValueWrapper::prototype, handle))
             {
-                return NanThrowError("Argument must be a value");
+                return Nan::ThrowError("Argument must be a value");
             }
+            */
 
-            ValueWrapper *arg = ObjectWrap::Unwrap<ValueWrapper>(handle);
+            ValueWrapper *arg = Nan::ObjectWrap::Unwrap<ValueWrapper>(handle);
             argVals.push_back(arg->Val);
         }
 
-        ValueHandle *result = self->Builder->CallFunction(callee, argVals);
+        ValueHandle *result = self->Builder->CallFunction(calleeals);
 
-        NanReturnValue(ValueWrapper::wrapValue(result));
+        info.GetReturnValue().Set(ValueWrapper::wrapValue(result));
     }
 
 public:
     FunctionBuilder *Builder;
 
-    static Persistent<FunctionTemplate> prototype;
-    static Persistent<Function> constructor;
+    static Nan::Persistent<FunctionTemplate> prototype;
+    static Nan::Persistent<Function> constructor;
 
     static void Init()
     {
-        NanScope();
+        Nan::Scope scope;
 
-        Local<FunctionTemplate> tmpl = NanNew<FunctionTemplate>(FunctionBuilderWrapper::New);
+        Local<FunctionTemplate> tmpl = Nan::New<FunctionTemplate>(FunctionBuilderWrapper::New);
 
-        tmpl->SetClassName(NanNew("FunctionBuilder"));
+        tmpl->SetClassName(Nan::New("FunctionBuilder").ToLocalChecked());
         tmpl->InstanceTemplate()->SetInternalFieldCount(1);
-        tmpl->PrototypeTemplate()->SetAccessor(NanNew("name"), GetName);
-        tmpl->PrototypeTemplate()->SetAccessor(NanNew("type"), GetType);
+        Nan::SetAccessor(tmpl->PrototypeTemplate(), Nan::New("name").ToLocalChecked(), GetName);
+        Nan::SetAccessor(tmpl->PrototypeTemplate(), Nan::New("type").ToLocalChecked(), GetType);
 
-        NODE_SET_PROTOTYPE_METHOD(tmpl, "return", Return);
-        NODE_SET_PROTOTYPE_METHOD(tmpl, "loadConstant", LoadConstant);
-        NODE_SET_PROTOTYPE_METHOD(tmpl, "callFunction", CallFunction);
+        Nan::SetPrototypeMethod(tmpl, "return", Return);
+        Nan::SetPrototypeMethod(tmpl, "loadConstant", LoadConstant);
+        Nan::SetPrototypeMethod(tmpl, "callFunction", CallFunction);
 
-        NanAssignPersistent(prototype, tmpl);
-        NanAssignPersistent(constructor, tmpl->GetFunction());
+        prototype.Reset(tmpl);
+        Nan::GetFunction(constructor.Reset(tmpl));
     }
 };
 
-class CodeUnitWrapper : public ObjectWrap
+class CodeUnitWrapper : public Nan::ObjectWrap
 {
     explicit CodeUnitWrapper(CodeUnit *unit)
     : Unit(unit) {}
 
     static NAN_METHOD(New)
     {
-        NanScope();
 
-        if (!args.IsConstructCall())
+        if (!info.IsConstructCall())
         {
             const int argc = 1;
-            Local<Value> argv[argc] = { args[0] };
-            Local<Function> cons = NanNew(constructor);
-            NanReturnValue(cons->NewInstance(argc, argv));
+            Local<Value> argv[argc] = { info[0] };
+            Local<Function> cons = Nan::New(constructor);
+            Nan::NewInstance(info.GetReturnValue().Set(consargc));
         }
         else
         {
-            if (!args[0]->IsString())
+            if (!info[0]->IsString())
             {
-                return NanThrowError("Must provide file name.");
+                return Nan::ThrowError("Must provide file name.");
             }
 
-            Local<String> filename = args[0].As<String>();
+            Local<String> filename = info[0].As<String>();
             String::Utf8Value encoded(filename);
 
             CodeUnit *unit = new CodeUnit(*encoded);
             CodeUnitWrapper *wrapper = new CodeUnitWrapper(unit);
-            wrapper->Wrap(args.This());
+            wrapper->Wrap(info.This());
 
-            NanReturnValue(args.This());
+            info.GetReturnValue().Set(info.This());
         }
     }
 
@@ -460,171 +460,172 @@ class CodeUnitWrapper : public ObjectWrap
 
     static NAN_METHOD(Dump)
     {
-        NanScope();
 
-        CodeUnitWrapper *self = ObjectWrap::Unwrap<CodeUnitWrapper>(args.This());
+        CodeUnitWrapper *self = Nan::ObjectWrap::Unwrap<CodeUnitWrapper>(info.This());
 
         self->dumpModule();
 
-        NanReturnUndefined();
+        return;
     }
 
     static NAN_METHOD(WriteToFile)
     {
-        NanScope();
 
-        if (args.Length() == 0 || !args[0]->IsString())
+        if (info.Length() == 0 || !info[0]->IsString())
         {
-            return NanThrowError("Must provide file name");
+            return Nan::ThrowError("Must provide file name");
         }
 
-        Local<String> raw = args[0].As<String>();
+        Local<String> raw = info[0].As<String>();
         String::Utf8Value filename(raw);
 
-        CodeUnitWrapper *self = ObjectWrap::Unwrap<CodeUnitWrapper>(args.This());
+        CodeUnitWrapper *self = Nan::ObjectWrap::Unwrap<CodeUnitWrapper>(info.This());
         if (!self->Unit->WriteToFile(*filename))
         {
-            return NanThrowError("Unable to write file");
+            return Nan::ThrowError("Unable to write file");
         }
 
-        NanReturnUndefined();
+        return;
     }
 
     static NAN_METHOD(MakeFunction)
     {
-        NanEscapableScope();
+        Nan::EscapableHandleScope scope;
 
-        CodeUnitWrapper *self = ObjectWrap::Unwrap<CodeUnitWrapper>(args.This());
+        CodeUnitWrapper *self = Nan::ObjectWrap::Unwrap<CodeUnitWrapper>(info.This());
 
-        if (args.Length() == 0 || !args[0]->IsString())
+        if (info.Length() == 0 || !info[0]->IsString())
         {
-            return NanThrowError("Must provide function name");
+            return Nan::ThrowError("Must provide function name");
         }
 
-        Local<String> fnname = args[0].As<String>();
+        Local<String> fnname = info[0].As<String>();
         String::Utf8Value encoded(fnname);
 
-        if (args.Length() == 1)
+        if (info.Length() == 1)
         {
-            return NanThrowError("Must provide function type");
+            return Nan::ThrowError("Must provide function type");
         }
 
-        Local<Object> handle = args[1]->ToObject();
-        if (!NanHasInstance(TypeWrapper::prototype, handle))
+        Local<Object> handle = info[1]->ToObject();
+        /* TODO
+        if (!Nan::HasInstance(TypeWrapper::prototype, handle))
         {
-            return NanThrowError("Must provide function type");
+            return Nan::ThrowError("Must provide function type");
         }
+        */
 
-        TypeWrapper *wrapper = ObjectWrap::Unwrap<TypeWrapper>(handle);
+        TypeWrapper *wrapper = Nan::ObjectWrap::Unwrap<TypeWrapper>(handle);
 
         FunctionBuilder *builder = self->Unit->MakeFunction(*encoded, wrapper->Type);
 
         if (!builder)
         {
-            return NanThrowError("Unable to create function (is name unique?)");
+            return Nan::ThrowError("Unable to create function (is name unique?)");
         }
 
-        Handle<Value> argv[1] = { NanNew<External>((void *)builder) };
+        Handle<Value> argv[1] = { Nan::New<External>((void *)builder) };
 
-        NanReturnValue(NanNew(FunctionBuilderWrapper::constructor)->NewInstance(1, argv));
+        Nan::NewInstance(info.GetReturnValue().Set(Nan::New(FunctionBuilderWrapper::constructor)));
     }
 
     static NAN_METHOD(DeclareFunction)
     {
-        NanEscapableScope();
+        Nan::EscapableHandleScope scope;
 
-        CodeUnitWrapper *self = ObjectWrap::Unwrap<CodeUnitWrapper>(args.This());
+        CodeUnitWrapper *self = Nan::ObjectWrap::Unwrap<CodeUnitWrapper>(info.This());
 
-        if (args.Length() == 0 || !args[0]->IsString())
+        if (info.Length() == 0 || !info[0]->IsString())
         {
-            return NanThrowError("Must provide function name");
+            return Nan::ThrowError("Must provide function name");
         }
 
-        Local<String> fnname = args[0].As<String>();
+        Local<String> fnname = info[0].As<String>();
         String::Utf8Value encoded(fnname);
 
-        if (args.Length() == 1)
+        if (info.Length() == 1)
         {
-            return NanThrowError("Must provide function type");
+            return Nan::ThrowError("Must provide function type");
         }
 
-        Local<Object> handle = args[1]->ToObject();
-        if (!NanHasInstance(TypeWrapper::prototype, handle))
+        Local<Object> handle = info[1]->ToObject();
+        /* TODO
+        if (!Nan::HasInstance(TypeWrapper::prototype, handle))
         {
-            return NanThrowError("Must provide function type");
+            return Nan::ThrowError("Must provide function type");
         }
+        */
 
-        TypeWrapper *wrapper = ObjectWrap::Unwrap<TypeWrapper>(handle);
+        TypeWrapper *wrapper = Nan::ObjectWrap::Unwrap<TypeWrapper>(handle);
 
         FunctionValueHandle *fn = self->Unit->DeclareFunction(*encoded, wrapper->Type);
 
         if (!fn)
         {
-            return NanThrowError("Unable to create function (is name unique?)");
+            return Nan::ThrowError("Unable to create function (is name unique?)");
         }
 
-        NanReturnValue(ValueWrapper::wrapValue(fn));
+        info.GetReturnValue().Set(ValueWrapper::wrapValue(fn));
     }
 
     static NAN_METHOD(Constant)
     {
-        NanScope();
 
-        CodeUnitWrapper *self = ObjectWrap::Unwrap<CodeUnitWrapper>(args.This());
+        CodeUnitWrapper *self = Nan::ObjectWrap::Unwrap<CodeUnitWrapper>(info.This());
 
-        if (args.Length() == 0)
+        if (info.Length() == 0)
         {
-            return NanThrowError("Must provide constant value");
+            return Nan::ThrowError("Must provide constant value");
         }
 
-        if (args[0]->IsString())
+        if (info[0]->IsString())
         {
-            Local<String> str = args[0].As<String>();
+            Local<String> str = info[0].As<String>();
             String::Utf8Value encoded(str);
 
             ConstantValueHandle *handle = self->Unit->ConstantString(*encoded);
-            NanReturnValue(ValueWrapper::wrapValue(handle));
+            info.GetReturnValue().Set(ValueWrapper::wrapValue(handle));
         }
         else
         {
-            return NanThrowError("Constant type yet supported");
+            return Nan::ThrowError("Constant type yet supported");
         }
     }
 
 public:
     CodeUnit *Unit;
 
-    static Persistent<FunctionTemplate> prototype;
-    static Persistent<Function> constructor;
+    static Nan::Persistent<FunctionTemplate> prototype;
+    static Nan::Persistent<Function> constructor;
 
     static void Init()
     {
-        NanScope();
+        Nan::Scope scope;
 
-        Local<FunctionTemplate> tmpl = NanNew<FunctionTemplate>(CodeUnitWrapper::New);
+        Local<FunctionTemplate> tmpl = Nan::New<FunctionTemplate>(CodeUnitWrapper::New);
 
-        tmpl->SetClassName(NanNew<String>("CodeUnit"));
+        tmpl->SetClassName(Nan::New<String>("CodeUnit").ToLocalChecked());
         tmpl->InstanceTemplate()->SetInternalFieldCount(1);
 
-        NODE_SET_PROTOTYPE_METHOD(tmpl, "dump", Dump);
-        NODE_SET_PROTOTYPE_METHOD(tmpl, "writeBitcodeToFile", WriteToFile);
-        NODE_SET_PROTOTYPE_METHOD(tmpl, "makeFunction", MakeFunction);
-        NODE_SET_PROTOTYPE_METHOD(tmpl, "declareFunction", DeclareFunction);
-        NODE_SET_PROTOTYPE_METHOD(tmpl, "constant", Constant);
+        Nan::SetPrototypeMethod(tmpl, "dump", Dump);
+        Nan::SetPrototypeMethod(tmpl, "writeBitcodeToFile", WriteToFile);
+        Nan::SetPrototypeMethod(tmpl, "makeFunction", MakeFunction);
+        Nan::SetPrototypeMethod(tmpl, "declareFunction", DeclareFunction);
+        Nan::SetPrototypeMethod(tmpl, "constant", Constant);
 
-        NanAssignPersistent(prototype, tmpl);
-        NanAssignPersistent(constructor, tmpl->GetFunction());
+        prototype.Reset(tmpl);
+        Nan::GetFunction(constructor.Reset(tmpl));
     }
 };
 
-Persistent<FunctionTemplate> FunctionBuilderWrapper::prototype;
-Persistent<Function> FunctionBuilderWrapper::constructor;
-Persistent<FunctionTemplate> TypeWrapper::prototype;
-Persistent<Function> TypeWrapper::constructor;
-Persistent<FunctionTemplate> ValueWrapper::prototype;
-Persistent<Function> ValueWrapper::constructor;
-Persistent<FunctionTemplate> CodeUnitWrapper::prototype;
-Persistent<Function> CodeUnitWrapper::constructor;
+Nan::Persistent<FunctionTemplate> FunctionBuilderWrapper::prototype;
+Nan::Persistent<Function> FunctionBuilderWrapper::constructor;
+Nan::Persistent<FunctionTemplate> TypeWrapper::prototype;
+Nan::Persistent<Function> TypeWrapper::constructor;
+Nan::Persistent<FunctionTemplate> ValueWrapper::prototype;
+Nan::Persistent<Function> ValueWrapper::constructor;
+Nan::Persistent<FunctionTemplate> CodeUnitWrapper::prototype;
+Nan::Persistent<Function> CodeUnitWrapper::constructor;
 
 void Init(Handle<Object> exports, Handle<Object> module)
 {
@@ -633,23 +634,23 @@ void Init(Handle<Object> exports, Handle<Object> module)
     CodeUnitWrapper::Init();
     FunctionBuilderWrapper::Init();
 
-    Local<Function> getVoidTy = NanNew<Function>(TypeWrapper::GetVoidTy);
-    exports->Set(NanNew<String>("getVoidTy"), getVoidTy);
+    Local<Function> getVoidTy = Nan::New<Function>(TypeWrapper::GetVoidTy);
+    Nan::Set(exports, Nan::New<String>("getVoidTy").ToLocalChecked(), getVoidTy);
 
-    Local<Function> getFunctionTy = NanNew<Function>(TypeWrapper::GetFunctionTy);
-    exports->Set(NanNew<String>("getFunctionTy"), getFunctionTy);
+    Local<Function> getFunctionTy = Nan::New<Function>(TypeWrapper::GetFunctionTy);
+    Nan::Set(exports, Nan::New<String>("getFunctionTy").ToLocalChecked(), getFunctionTy);
 
-    Local<Function> getIntTy = NanNew<Function>(TypeWrapper::GetIntTy);
-    exports->Set(NanNew<String>("getIntTy"), getIntTy);
+    Local<Function> getIntTy = Nan::New<Function>(TypeWrapper::GetIntTy);
+    Nan::Set(exports, Nan::New<String>("getIntTy").ToLocalChecked(), getIntTy);
 
-    Local<Function> getPointerTy = NanNew<Function>(TypeWrapper::GetPointerTy);
-    exports->Set(NanNew<String>("getPointerTy"), getPointerTy);
+    Local<Function> getPointerTy = Nan::New<Function>(TypeWrapper::GetPointerTy);
+    Nan::Set(exports, Nan::New<String>("getPointerTy").ToLocalChecked(), getPointerTy);
 
-    Local<Function> getArrayTy = NanNew<Function>(TypeWrapper::GetArrayTy);
-    exports->Set(NanNew<String>("getArrayTy"), getArrayTy);
+    Local<Function> getArrayTy = Nan::New<Function>(TypeWrapper::GetArrayTy);
+    Nan::Set(exports, Nan::New<String>("getArrayTy").ToLocalChecked(), getArrayTy);
 
-    Local<Function> codeUnit = NanNew(CodeUnitWrapper::constructor);
-    exports->Set(NanNew<String>("CodeUnit"), codeUnit);
+    Local<Function> codeUnit = Nan::New(CodeUnitWrapper::constructor);
+    Nan::Set(exports, Nan::New<String>("CodeUnit").ToLocalChecked(), codeUnit);
 }
 
 NODE_MODULE(codegen, Init)

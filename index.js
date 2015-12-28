@@ -7,8 +7,6 @@ codegen.type = {
     i32: codegen.getIntTy(32),
     i64: codegen.getIntTy(64),
 
-    pointerTo: function(ty) {
-        return codegen.getPointerTy(ty);
-    }
+    pointerTo: codegen.getPointerTy
 
 };

@@ -8,6 +8,9 @@
         "__STDC_CONSTANT_MACROS=1"
       ],
       "include_dirs": ["include", "<!(node -e \"require(\'nan\')\")", "<!(llvm-config --includedir)"],
+      "cflags": [
+        "-std=c++11"
+      ],
       "libraries": [
         "<!@(llvm-config --ldflags)",
         "<!@(llvm-config --libs core jit native support bitwriter)"

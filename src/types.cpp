@@ -1,6 +1,6 @@
 // types
 
-#include <stdio.h>
+#include <sstream>
 
 #include "types.h"
 
@@ -30,23 +30,22 @@ llvm::Type *FunctionTypeHandle::getLLVMType(llvm::LLVMContext &context)
 
 std::string FunctionTypeHandle::toString()
 {
-    std::string name(returns->toString());
-
-    name += " (";
+    std::stringstream ss;
+    ss << returns->toString() << " (";
 
     for (unsigned i = 0, e = params.size(); i < e; i++)
     {
         if (i != 0)
         {
-            name += ", ";
+            ss << ", ";
         }
 
-        name += params[i]->toString();
+        ss << params[i]->toString();
     }
 
-    name += ")";
+    ss << ")";
 
-    return name;
+    return ss.str();
 }
 
 llvm::Type *IntTypeHandle::getLLVMType(llvm::LLVMContext &context)
@@ -56,14 +55,9 @@ llvm::Type *IntTypeHandle::getLLVMType(llvm::LLVMContext &context)
 
 std::string IntTypeHandle::toString()
 {
-    // The number 9 is based on the assumption that the current (2015)
-    // value for MAX_INT_BITS won't be increased any time soon.  It
-    // is 8388607, which is seven digits, plus 'i' for eight, plus the
-    // null terminator. TODO: not this
-    char raw[9];
-    sprintf(raw, "i%i", numBits);
-    std::string name(raw);
-    return name;
+    std::stringstream ss;
+    ss << "i" << numBits;
+    return ss.str();
 }
 
 llvm::Type *PointerTypeHandle::getLLVMType(llvm::LLVMContext &context)
@@ -84,16 +78,7 @@ llvm::Type *ArrayTypeHandle::getLLVMType(llvm::LLVMContext &context)
 
 std::string ArrayTypeHandle::toString()
 {
-    char sizeBuf[10];
-    sprintf(sizeBuf, "%i", size);
-    std::string count(sizeBuf);
-    std::string elTy(element->toString());
-
-    std::string arrayStr("[");
-    arrayStr += count;
-    arrayStr += " x ";
-    arrayStr += elTy;
-    arrayStr += "]";
-
-    return arrayStr;
+    std::stringstream ss;
+    ss << "[" << size << " x " << element->toString() << "]";
+    return ss.str();
 }

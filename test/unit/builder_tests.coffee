@@ -21,7 +21,7 @@ describe 'CodeUnit', ->
     it 'creates a function builder', ->
       me = new llvm.CodeUnit 'foobar.baz'
 
-      fn = me.makeFunction 'doIt', llvm.getFunctionTy()
+      fn = me.makeFunction 'doIt'
 
       fn.constructor.name.should.equal 'FunctionBuilder'
 
@@ -38,10 +38,10 @@ describe 'FunctionBuilder', ->
 
   describe 'name', ->
     it 'returns the function name', ->
-      me = unit.makeFunction 'myName', llvm.getFunctionTy()
+      me = unit.makeFunction 'myName'
       me.name.should.equal 'myName'
 
   describe 'type', ->
     it 'returns the function type', ->
-      me = unit.makeFunction 'something', llvm.getFunctionTy llvm.getIntTy(1), llvm.getIntTy(2)
+      me = unit.makeFunction 'something', llvm.getIntTy(1), llvm.getIntTy(2)
       me.type.toString().should.equal 'i1 (i2)'

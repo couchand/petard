@@ -25,6 +25,13 @@ describe 'CodeUnit', ->
 
       fn.constructor.name.should.equal 'FunctionBuilder'
 
+    it 'takes parameters for return and argument types', ->
+      me = new llvm.CodeUnit 'foobar.baz'
+
+      fn = me.makeFunction 'something', llvm.getIntTy(1), llvm.getIntTy(2)
+
+      fn.type.toString().should.equal 'i1 (i2)'
+
   describe 'declareFunction', ->
     it 'is a function', ->
       llvm.CodeUnit.should.respondTo 'declareFunction'
@@ -35,6 +42,13 @@ describe 'CodeUnit', ->
       fn = me.declareFunction 'doIt'
 
       fn.constructor.name.should.equal 'Value'
+
+    it 'takes parameters for return and argument types', ->
+      me = new llvm.CodeUnit 'foobar.baz'
+
+      fn = me.declareFunction 'something', llvm.getIntTy(1), llvm.getIntTy(2)
+
+      fn.type.toString().should.equal 'i1 (i2)'
 
   describe 'constant', ->
     it 'creates string constants', ->

@@ -42,7 +42,6 @@ class TypeWrapper : public Nan::ObjectWrap
 
     static NAN_METHOD(ToString)
     {
-
         TypeWrapper *wrapper = Nan::ObjectWrap::Unwrap<TypeWrapper>(info.This());
 
         std::string name = wrapper->Type->toString();
@@ -240,6 +239,13 @@ class ValueWrapper : public Nan::ObjectWrap
         info.GetReturnValue().Set(info.This());
     }
 
+    static NAN_GETTER(GetType)
+    {
+        ValueWrapper *wrapper = Nan::ObjectWrap::Unwrap<ValueWrapper>(info.This());
+
+        info.GetReturnValue().Set(TypeWrapper::wrapType(wrapper->Val->Type));
+    }
+
 public:
     static Handle<Value> wrapValue(ValueHandle *value)
     {
@@ -265,6 +271,7 @@ public:
 
         tmpl->SetClassName(Nan::New("Value").ToLocalChecked());
         tmpl->InstanceTemplate()->SetInternalFieldCount(1);
+        Nan::SetAccessor(tmpl->PrototypeTemplate(), Nan::New("type").ToLocalChecked(), GetType);
 
         constructor().Reset(Nan::GetFunction(tmpl).ToLocalChecked());
         Nan::Set(target, Nan::New("ValueWrapper").ToLocalChecked(),

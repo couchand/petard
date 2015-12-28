@@ -439,7 +439,6 @@ class CodeUnitWrapper : public Nan::ObjectWrap
 
     static NAN_METHOD(New)
     {
-
         if (!info.IsConstructCall())
         {
             const int argc = 1;
@@ -538,7 +537,7 @@ class CodeUnitWrapper : public Nan::ObjectWrap
 
         const unsigned argc = 1;
         Handle<Value> argv[argc] = { Nan::New<External>((void *)builder) };
-        Local<Function> cons = Nan::New(constructor());
+        Local<Function> cons = Nan::New(FunctionBuilderWrapper::constructor());
 
         info.GetReturnValue().Set(Nan::NewInstance(cons, argc, argv).ToLocalChecked());
     }

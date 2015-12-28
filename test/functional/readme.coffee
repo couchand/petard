@@ -11,8 +11,8 @@ describe 'README', ->
     it 'illustrates basic usage', ->
       hello = llvm.CodeUnit "hello"
 
-      main = hello.makeFunction "main", llvm.getFunctionTy llvm.type.i32
-      puts = hello.declareFunction "puts", llvm.getFunctionTy llvm.type.i32, llvm.type.pointerTo llvm.type.i8
+      main = hello.makeFunction "main", llvm.type.i32
+      puts = hello.declareFunction "puts", llvm.type.i32, llvm.type.pointerTo llvm.type.i8
 
       text = hello.constant "Hello, world!\n"
 

@@ -9,6 +9,7 @@ a js llvm library
                     - Hamlet, Shakespeare
 
   * introduction
+  * dependencies
   * getting started
   * documentation
   * more information
@@ -19,6 +20,13 @@ introduction
 ------------
 
 Frustrated with the state of JS support for LLVM, I built another library.
+
+dependencies
+------------
+
+  * a recent version of node
+  * nan version 2.1
+  * llvm version 3.6
 
 getting started
 ---------------

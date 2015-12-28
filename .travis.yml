@@ -9,8 +9,6 @@ node_js:
   - "0.11"
   - "0.10"
 
-sudo: false
-
 #env:
 #  - LLVM_VERSION=3.4
 #  - LLVM_VERSION=3.5
@@ -53,21 +51,15 @@ sudo: false
 #          packages: ['libllvm3.7']
 
 
-before_install:
-  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
-
-compiler:
-  - clang
-  - gcc
+env:
+  - CXX=g++-4.8
 
 addons:
   apt:
     sources:
       - ubuntu-toolchain-r-test
     packages:
-      - clang
       - llvm
-      - gcc-4.8
       - g++-4.8
 
 before_script:

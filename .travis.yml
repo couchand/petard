@@ -53,8 +53,12 @@ sudo: false
 #          packages: ['libllvm3.7']
 
 
+install:
+  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
+
 compiler:
-    - clang
+  - clang
+  - gcc
 
 addons:
   apt:
@@ -63,6 +67,8 @@ addons:
     packages:
       - clang
       - llvm
+      - gcc-4.8
+      - g++-4.8
 
 before_script:
   - llc -version || true

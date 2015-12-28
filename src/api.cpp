@@ -55,26 +55,30 @@ public:
     {
         Nan::EscapableHandleScope scope;
 
+        const unsigned argc = 1;
         Handle<Value> argv[1] = { Nan::New<External>((void *)type) };
+        Local<Function> cons = Nan::New(constructor());
 
-        return Nan::NewInstance(scope.Escape(Nan::New(constructor)));
+        return scope.Escape(Nan::NewInstance(cons, argc, argv).ToLocalChecked());
     }
 
     TypeHandle *Type;
 
-    static Nan::Persistent<FunctionTemplate> prototype;
-    static Nan::Persistent<Function> constructor;
+    static inline Nan::Persistent<Function>& constructor() {
+        static Nan::Persistent<Function> my_constructor;
+        return my_constructor;
+    }
 
-    static void Init()
-    {
+    static NAN_MODULE_INIT(Init) {
         Local<FunctionTemplate> tmpl = Nan::New<FunctionTemplate>(TypeWrapper::New);
 
-        tmpl->SetClassName(Nan::New<String>("Type").ToLocalChecked());
+        tmpl->SetClassName(Nan::New("Type").ToLocalChecked());
         tmpl->InstanceTemplate()->SetInternalFieldCount(1);
         Nan::SetPrototypeMethod(tmpl, "toString", TypeWrapper::ToString);
 
-        prototype.Reset(tmpl);
-        constructor.Reset(tmpl);
+        constructor().Reset(Nan::GetFunction(tmpl).ToLocalChecked());
+        Nan::Set(target, Nan::New("TypeWrapper").ToLocalChecked(),
+            Nan::GetFunction(tmpl).ToLocalChecked());
     }
 
     static NAN_METHOD(GetVoidTy)
@@ -242,25 +246,30 @@ public:
     {
         Nan::EscapableHandleScope scope;
 
-        Handle<Value> argv[1] = { Nan::New<External>((void *)value) };
+        const unsigned argc = 1;
+        Handle<Value> argv[argc] = { Nan::New<External>((void *)value) };
+        Local<Function> cons = Nan::New(constructor());
 
-        return Nan::NewInstance(scope.Escape(Nan::New(constructor)));
+        return scope.Escape(Nan::NewInstance(cons, argc, argv).ToLocalChecked());
     }
 
     ValueHandle *Val;
 
-    static Nan::Persistent<FunctionTemplate> prototype;
-    static Nan::Persistent<Function> constructor;
+    static inline Nan::Persistent<Function>& constructor() {
+        static Nan::Persistent<Function> my_constructor;
+        return my_constructor;
+    }
 
-    static void Init()
+    static NAN_MODULE_INIT(Init)
     {
         Local<FunctionTemplate> tmpl = Nan::New<FunctionTemplate>(ValueWrapper::New);
 
-        tmpl->SetClassName(Nan::New<String>("Value").ToLocalChecked());
+        tmpl->SetClassName(Nan::New("Value").ToLocalChecked());
         tmpl->InstanceTemplate()->SetInternalFieldCount(1);
 
-        prototype.Reset(tmpl);
-        Nan::GetFunction(constructor.Reset(tmpl));
+        constructor().Reset(Nan::GetFunction(tmpl).ToLocalChecked());
+        Nan::Set(target, Nan::New("ValueWrapper").ToLocalChecked(),
+            Nan::GetFunction(tmpl).ToLocalChecked());
     }
 };
 
@@ -291,7 +300,7 @@ class FunctionBuilderWrapper : public Nan::ObjectWrap
 
         FunctionBuilderWrapper *wrapper = Nan::ObjectWrap::Unwrap<FunctionBuilderWrapper>(info.This());
 
-        info.GetReturnValue().Set(wrapper->Builder->Name);
+        info.GetReturnValue().Set(Nan::New(wrapper->Builder->Name).ToLocalChecked());
     }
 
     static NAN_GETTER(GetType)
@@ -389,7 +398,7 @@ class FunctionBuilderWrapper : public Nan::ObjectWrap
             argVals.push_back(arg->Val);
         }
 
-        ValueHandle *result = self->Builder->CallFunction(calleeals);
+        ValueHandle *result = self->Builder->CallFunction(callee, argVals);
 
         info.GetReturnValue().Set(ValueWrapper::wrapValue(result));
     }
@@ -397,12 +406,14 @@ class FunctionBuilderWrapper : public Nan::ObjectWrap
 public:
     FunctionBuilder *Builder;
 
-    static Nan::Persistent<FunctionTemplate> prototype;
-    static Nan::Persistent<Function> constructor;
+    static inline Nan::Persistent<Function>& constructor() {
+        static Nan::Persistent<Function> my_constructor;
+        return my_constructor;
+    }
 
-    static void Init()
+    static NAN_MODULE_INIT(Init)
     {
-        Nan::Scope scope;
+        Nan::HandleScope scope;
 
         Local<FunctionTemplate> tmpl = Nan::New<FunctionTemplate>(FunctionBuilderWrapper::New);
 
@@ -415,8 +426,9 @@ public:
         Nan::SetPrototypeMethod(tmpl, "loadConstant", LoadConstant);
         Nan::SetPrototypeMethod(tmpl, "callFunction", CallFunction);
 
-        prototype.Reset(tmpl);
-        Nan::GetFunction(constructor.Reset(tmpl));
+        constructor().Reset(Nan::GetFunction(tmpl).ToLocalChecked());
+        Nan::Set(target, Nan::New("FunctionBuilder").ToLocalChecked(),
+            Nan::GetFunction(tmpl).ToLocalChecked());
     }
 };
 
@@ -432,8 +444,8 @@ class CodeUnitWrapper : public Nan::ObjectWrap
         {
             const int argc = 1;
             Local<Value> argv[argc] = { info[0] };
-            Local<Function> cons = Nan::New(constructor);
-            Nan::NewInstance(info.GetReturnValue().Set(consargc));
+            Local<Function> cons = Nan::New(constructor());
+            info.GetReturnValue().Set(Nan::NewInstance(cons, argc, argv).ToLocalChecked());
         }
         else
         {
@@ -524,9 +536,11 @@ class CodeUnitWrapper : public Nan::ObjectWrap
             return Nan::ThrowError("Unable to create function (is name unique?)");
         }
 
-        Handle<Value> argv[1] = { Nan::New<External>((void *)builder) };
+        const unsigned argc = 1;
+        Handle<Value> argv[argc] = { Nan::New<External>((void *)builder) };
+        Local<Function> cons = Nan::New(constructor());
 
-        Nan::NewInstance(info.GetReturnValue().Set(Nan::New(FunctionBuilderWrapper::constructor)));
+        info.GetReturnValue().Set(Nan::NewInstance(cons, argc, argv).ToLocalChecked());
     }
 
     static NAN_METHOD(DeclareFunction)
@@ -595,16 +609,18 @@ class CodeUnitWrapper : public Nan::ObjectWrap
 public:
     CodeUnit *Unit;
 
-    static Nan::Persistent<FunctionTemplate> prototype;
-    static Nan::Persistent<Function> constructor;
+    static inline Nan::Persistent<Function>& constructor() {
+        static Nan::Persistent<Function> my_constructor;
+        return my_constructor;
+    }
 
-    static void Init()
+    static NAN_MODULE_INIT(Init)
     {
-        Nan::Scope scope;
+        Nan::HandleScope scope;
 
         Local<FunctionTemplate> tmpl = Nan::New<FunctionTemplate>(CodeUnitWrapper::New);
 
-        tmpl->SetClassName(Nan::New<String>("CodeUnit").ToLocalChecked());
+        tmpl->SetClassName(Nan::New("CodeUnit").ToLocalChecked());
         tmpl->InstanceTemplate()->SetInternalFieldCount(1);
 
         Nan::SetPrototypeMethod(tmpl, "dump", Dump);
@@ -613,44 +629,36 @@ public:
         Nan::SetPrototypeMethod(tmpl, "declareFunction", DeclareFunction);
         Nan::SetPrototypeMethod(tmpl, "constant", Constant);
 
-        prototype.Reset(tmpl);
-        Nan::GetFunction(constructor.Reset(tmpl));
+        constructor().Reset(Nan::GetFunction(tmpl).ToLocalChecked());
+        Nan::Set(target, Nan::New("CodeUnit").ToLocalChecked(),
+            Nan::GetFunction(tmpl).ToLocalChecked());
     }
 };
 
-Nan::Persistent<FunctionTemplate> FunctionBuilderWrapper::prototype;
-Nan::Persistent<Function> FunctionBuilderWrapper::constructor;
-Nan::Persistent<FunctionTemplate> TypeWrapper::prototype;
-Nan::Persistent<Function> TypeWrapper::constructor;
-Nan::Persistent<FunctionTemplate> ValueWrapper::prototype;
-Nan::Persistent<Function> ValueWrapper::constructor;
-Nan::Persistent<FunctionTemplate> CodeUnitWrapper::prototype;
-Nan::Persistent<Function> CodeUnitWrapper::constructor;
-
-void Init(Handle<Object> exports, Handle<Object> module)
+static NAN_MODULE_INIT(Init)
 {
-    TypeWrapper::Init();
-    ValueWrapper::Init();
-    CodeUnitWrapper::Init();
-    FunctionBuilderWrapper::Init();
+    TypeWrapper::Init(target);
+    ValueWrapper::Init(target);
+    CodeUnitWrapper::Init(target);
+    FunctionBuilderWrapper::Init(target);
 
-    Local<Function> getVoidTy = Nan::New<Function>(TypeWrapper::GetVoidTy);
-    Nan::Set(exports, Nan::New<String>("getVoidTy").ToLocalChecked(), getVoidTy);
+    Local<FunctionTemplate> getVoidTy = Nan::New<FunctionTemplate>(TypeWrapper::GetVoidTy);
+    Nan::Set(target, Nan::New("getVoidTy").ToLocalChecked(), Nan::GetFunction(getVoidTy).ToLocalChecked());
 
-    Local<Function> getFunctionTy = Nan::New<Function>(TypeWrapper::GetFunctionTy);
-    Nan::Set(exports, Nan::New<String>("getFunctionTy").ToLocalChecked(), getFunctionTy);
+    Local<FunctionTemplate> getFunctionTy = Nan::New<FunctionTemplate>(TypeWrapper::GetFunctionTy);
+    Nan::Set(target, Nan::New("getFunctionTy").ToLocalChecked(), Nan::GetFunction(getFunctionTy).ToLocalChecked());
 
-    Local<Function> getIntTy = Nan::New<Function>(TypeWrapper::GetIntTy);
-    Nan::Set(exports, Nan::New<String>("getIntTy").ToLocalChecked(), getIntTy);
+    Local<FunctionTemplate> getIntTy = Nan::New<FunctionTemplate>(TypeWrapper::GetIntTy);
+    Nan::Set(target, Nan::New("getIntTy").ToLocalChecked(), Nan::GetFunction(getIntTy).ToLocalChecked());
 
-    Local<Function> getPointerTy = Nan::New<Function>(TypeWrapper::GetPointerTy);
-    Nan::Set(exports, Nan::New<String>("getPointerTy").ToLocalChecked(), getPointerTy);
+    Local<FunctionTemplate> getPointerTy = Nan::New<FunctionTemplate>(TypeWrapper::GetPointerTy);
+    Nan::Set(target, Nan::New("getPointerTy").ToLocalChecked(), Nan::GetFunction(getPointerTy).ToLocalChecked());
 
-    Local<Function> getArrayTy = Nan::New<Function>(TypeWrapper::GetArrayTy);
-    Nan::Set(exports, Nan::New<String>("getArrayTy").ToLocalChecked(), getArrayTy);
+    Local<FunctionTemplate> getArrayTy = Nan::New<FunctionTemplate>(TypeWrapper::GetArrayTy);
+    Nan::Set(target, Nan::New("getArrayTy").ToLocalChecked(), Nan::GetFunction(getArrayTy).ToLocalChecked());
 
-    Local<Function> codeUnit = Nan::New(CodeUnitWrapper::constructor);
-    Nan::Set(exports, Nan::New<String>("CodeUnit").ToLocalChecked(), codeUnit);
+    Local<Function> codeUnit = Nan::New(CodeUnitWrapper::constructor());
+    Nan::Set(target, Nan::New("CodeUnit").ToLocalChecked(), codeUnit);
 }
 
 NODE_MODULE(codegen, Init)

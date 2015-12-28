@@ -21,5 +21,5 @@ main.callFunction puts, message
 
 main.return 0
 
-#hello.writeBitcodeToFile "hello.bc"
+hello.writeBitcodeToFile "hello.bc"
 hello.dump()

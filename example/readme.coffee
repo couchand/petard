@@ -3,13 +3,10 @@
 
 llvm = require '../'
 
-mainTy = llvm.getFunctionTy llvm.type.i32
-putsTy = llvm.getFunctionTy llvm.type.i32, llvm.type.pointerTo llvm.type.i8
-
 hello = llvm.CodeUnit "hello"
 
-main = hello.makeFunction "main", mainTy
-puts = hello.declareFunction "puts", putsTy
+main = hello.makeFunction "main", llvm.type.i32
+puts = hello.declareFunction "puts", llvm.type.i32, llvm.type.pointerTo llvm.type.i8
 
 text = hello.constant "Hello, world!\n"
 

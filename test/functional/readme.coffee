@@ -7,15 +7,12 @@ fs = require 'fs'
 llvm = require '../../'
 
 describe 'README', ->
-  mainTy = llvm.getFunctionTy llvm.type.i32
-  putsTy = llvm.getFunctionTy llvm.type.i32, llvm.type.pointerTo llvm.type.i8
-
   describe 'getting started', ->
     it 'illustrates basic usage', ->
       hello = llvm.CodeUnit "hello"
 
-      main = hello.makeFunction "main", mainTy
-      puts = hello.declareFunction "puts", putsTy
+      main = hello.makeFunction "main", llvm.getFunctionTy llvm.type.i32
+      puts = hello.declareFunction "puts", llvm.getFunctionTy llvm.type.i32, llvm.type.pointerTo llvm.type.i8
 
       text = hello.constant "Hello, world!\n"
 

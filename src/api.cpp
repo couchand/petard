@@ -578,22 +578,45 @@ class CodeUnitWrapper : public Nan::ObjectWrap
         Local<String> fnname = info[0].As<String>();
         String::Utf8Value encoded(fnname);
 
+        TypeHandle *returns;
+        std::vector<TypeHandle *> takes;
+
         if (info.Length() == 1)
         {
-            return Nan::ThrowError("Must provide function type");
+            returns = new VoidTypeHandle();
         }
-
-        Local<Object> handle = info[1]->ToObject();
-        /* TODO
-        if (!Nan::HasInstance(TypeWrapper::prototype, handle))
+        else
         {
-            return Nan::ThrowError("Must provide function type");
+            Local<Object> handle = info[1]->ToObject();
+
+            /*
+             * TODO
+            if (!Nan::HasInstance(prototype, handle))
+            {
+                return Nan::ThrowError("Argument must be a type specifier");
+            }
+            */
+
+            TypeWrapper *wrapper = Nan::ObjectWrap::Unwrap<TypeWrapper>(handle);
+            returns = wrapper->Type;
         }
-        */
 
-        TypeWrapper *wrapper = Nan::ObjectWrap::Unwrap<TypeWrapper>(handle);
+        for (unsigned i = 2, e = info.Length(); i < e; i += 1)
+        {
+            Local<Object> handle = info[i]->ToObject();
 
-        FunctionValueHandle *fn = self->Unit->DeclareFunction(*encoded, wrapper->Type);
+            /* TODO
+            if (!Nan::HasInstance(prototype, handle))
+            {
+                return Nan::ThrowError("Argument must be a type specifier");
+            }
+            */
+
+            TypeWrapper *wrapper = Nan::ObjectWrap::Unwrap<TypeWrapper>(handle);
+            takes.push_back(wrapper->Type);
+        }
+
+        FunctionValueHandle *fn = self->Unit->DeclareFunction(*encoded, new FunctionTypeHandle(returns, takes));
 
         if (!fn)
         {

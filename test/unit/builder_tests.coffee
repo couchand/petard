@@ -25,6 +25,17 @@ describe 'CodeUnit', ->
 
       fn.constructor.name.should.equal 'FunctionBuilder'
 
+  describe 'declareFunction', ->
+    it 'is a function', ->
+      llvm.CodeUnit.should.respondTo 'declareFunction'
+
+    it 'declares a function', ->
+      me = new llvm.CodeUnit 'foobar.baz'
+
+      fn = me.declareFunction 'doIt'
+
+      fn.constructor.name.should.equal 'Value'
+
   describe 'constant', ->
     it 'creates string constants', ->
       unit = new llvm.CodeUnit 'constant.test'

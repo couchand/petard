@@ -18,6 +18,31 @@ using namespace v8;
 #define MIN_INT_BITS 1
 #define MAX_INT_BITS (1<<23)-1
 
+// function type helper
+#define EXTRACT_FUNCTION_PARAMS(first)                                        \
+    TypeHandle *returns;                                                      \
+    std::vector<TypeHandle *> takes;                                          \
+                                                                              \
+    if (info.Length() == first)                                               \
+    {                                                                         \
+        returns = new VoidTypeHandle();                                       \
+    }                                                                         \
+    else                                                                      \
+    {                                                                         \
+        Local<Object> handle = info[first]->ToObject();                       \
+                                                                              \
+        TypeWrapper *wrapper = Nan::ObjectWrap::Unwrap<TypeWrapper>(handle);  \
+        returns = wrapper->Type;                                              \
+    }                                                                         \
+                                                                              \
+    for (unsigned i = first + 1, e = info.Length(); i < e; i += 1)            \
+    {                                                                         \
+        Local<Object> handle = info[i]->ToObject();                           \
+                                                                              \
+        TypeWrapper *wrapper = Nan::ObjectWrap::Unwrap<TypeWrapper>(handle);  \
+        takes.push_back(wrapper->Type);                                       \
+    }
+
 class TypeWrapper : public Nan::ObjectWrap
 {
     TypeWrapper(TypeHandle *t)
@@ -172,46 +197,9 @@ public:
         info.GetReturnValue().Set(wrapType(new ArrayTypeHandle(size, element)));
     }
 
-
     static NAN_METHOD(GetFunctionTy)
     {
-        TypeHandle *returns;
-        std::vector<TypeHandle *> takes;
-
-        if (info.Length() == 0)
-        {
-            returns = new VoidTypeHandle();
-        }
-        else
-        {
-            Local<Object> handle = info[0]->ToObject();
-
-            /*
-             * TODO
-            if (!Nan::HasInstance(prototype, handle))
-            {
-                return Nan::ThrowError("Argument must be a type specifier");
-            }
-            */
-
-            TypeWrapper *wrapper = Nan::ObjectWrap::Unwrap<TypeWrapper>(handle);
-            returns = wrapper->Type;
-        }
-
-        for (unsigned i = 1, e = info.Length(); i < e; i += 1)
-        {
-            Local<Object> handle = info[i]->ToObject();
-
-            /* TODO
-            if (!Nan::HasInstance(prototype, handle))
-            {
-                return Nan::ThrowError("Argument must be a type specifier");
-            }
-            */
-
-            TypeWrapper *wrapper = Nan::ObjectWrap::Unwrap<TypeWrapper>(handle);
-            takes.push_back(wrapper->Type);
-        }
+        EXTRACT_FUNCTION_PARAMS(0)
 
         info.GetReturnValue().Set(wrapType(new FunctionTypeHandle(returns, takes)));
     }
@@ -519,43 +507,7 @@ class CodeUnitWrapper : public Nan::ObjectWrap
         Local<String> fnname = info[0].As<String>();
         String::Utf8Value encoded(fnname);
 
-        TypeHandle *returns;
-        std::vector<TypeHandle *> takes;
-
-        if (info.Length() == 1)
-        {
-            returns = new VoidTypeHandle();
-        }
-        else
-        {
-            Local<Object> handle = info[1]->ToObject();
-
-            /*
-             * TODO
-            if (!Nan::HasInstance(prototype, handle))
-            {
-                return Nan::ThrowError("Argument must be a type specifier");
-            }
-            */
-
-            TypeWrapper *wrapper = Nan::ObjectWrap::Unwrap<TypeWrapper>(handle);
-            returns = wrapper->Type;
-        }
-
-        for (unsigned i = 2, e = info.Length(); i < e; i += 1)
-        {
-            Local<Object> handle = info[i]->ToObject();
-
-            /* TODO
-            if (!Nan::HasInstance(prototype, handle))
-            {
-                return Nan::ThrowError("Argument must be a type specifier");
-            }
-            */
-
-            TypeWrapper *wrapper = Nan::ObjectWrap::Unwrap<TypeWrapper>(handle);
-            takes.push_back(wrapper->Type);
-        }
+        EXTRACT_FUNCTION_PARAMS(1)
 
         FunctionBuilder *builder = self->Unit->MakeFunction(*encoded, new FunctionTypeHandle(returns, takes));
 
@@ -585,43 +537,7 @@ class CodeUnitWrapper : public Nan::ObjectWrap
         Local<String> fnname = info[0].As<String>();
         String::Utf8Value encoded(fnname);
 
-        TypeHandle *returns;
-        std::vector<TypeHandle *> takes;
-
-        if (info.Length() == 1)
-        {
-            returns = new VoidTypeHandle();
-        }
-        else
-        {
-            Local<Object> handle = info[1]->ToObject();
-
-            /*
-             * TODO
-            if (!Nan::HasInstance(prototype, handle))
-            {
-                return Nan::ThrowError("Argument must be a type specifier");
-            }
-            */
-
-            TypeWrapper *wrapper = Nan::ObjectWrap::Unwrap<TypeWrapper>(handle);
-            returns = wrapper->Type;
-        }
-
-        for (unsigned i = 2, e = info.Length(); i < e; i += 1)
-        {
-            Local<Object> handle = info[i]->ToObject();
-
-            /* TODO
-            if (!Nan::HasInstance(prototype, handle))
-            {
-                return Nan::ThrowError("Argument must be a type specifier");
-            }
-            */
-
-            TypeWrapper *wrapper = Nan::ObjectWrap::Unwrap<TypeWrapper>(handle);
-            takes.push_back(wrapper->Type);
-        }
+        EXTRACT_FUNCTION_PARAMS(1)
 
         FunctionValueHandle *fn = self->Unit->DeclareFunction(*encoded, new FunctionTypeHandle(returns, takes));
 

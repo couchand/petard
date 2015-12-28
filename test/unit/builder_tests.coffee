@@ -56,7 +56,7 @@ describe 'CodeUnit', ->
 
       foobar = unit.constant 'foobar'
 
-      foobar.toString().should.equal '[object Value]'
+      foobar.type.toString().should.equal '[7 x i8]'
 
 describe 'FunctionBuilder', ->
   unit = beforeEach -> unit = new llvm.CodeUnit 'foobar.baz'

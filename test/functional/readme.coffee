@@ -7,11 +7,8 @@ fs = require 'fs'
 llvm = require '../../'
 
 describe 'README', ->
-  int32 = llvm.getIntTy 32
-  int8 = llvm.getIntTy 8
-
-  mainTy = llvm.getFunctionTy int32
-  putsTy = llvm.getFunctionTy int32, llvm.getPointerTy int8
+  mainTy = llvm.getFunctionTy llvm.type.i32
+  putsTy = llvm.getFunctionTy llvm.type.i32, llvm.type.pointerTo llvm.type.i8
 
   describe 'getting started', ->
     it 'illustrates basic usage', ->

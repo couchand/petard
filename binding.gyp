@@ -10,7 +10,7 @@
       "include_dirs": ["include", "<!(node -e \"require(\'nan\')\")", "<!(llvm-config --includedir)"],
       "libraries": [
         "<!@(llvm-config --ldflags)",
-        "<!@(llvm-config --libs core jit native support bitwriter)"
+        "<!@(llvm-config --libs core native support bitwriter)"
       ]
     }
   ]

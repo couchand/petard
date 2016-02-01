@@ -28,11 +28,11 @@ llvm::Function *CodeUnit::buildFunctionHeader(const char *name, TypeHandle *type
 bool CodeUnit::WriteToFile(const char *name)
 {
     std::error_code ec;
-    llvm::raw_fd_ostream output(name, ec, (llvm::sys::fs::OpenFlags)1);
-    if (!ec && ec.message() != "" && ec.message() != "Success") // brain dead
+    llvm::raw_fd_ostream output(name, ec, (llvm::sys::fs::OpenFlags)1); // don't overwrite files
+    if (ec.message() != "" && ec.message() != "Success") // brain dead
     {
         // TODO: not this
-        std::cout << ec.value() << ": " << ec.message() << " [" << ec.category().name() << "]";
+        std::cout << ec.value() << ": " << ec.message() << " [" << ec.category().name() << "]" << std::endl;
         return false;
     }
     output.SetUseAtomicWrites(true);

@@ -1,6 +1,7 @@
 # tests from the README
 
 fs = require 'fs'
+tmp = require 'tmp'
 
 {chai, should} = require '../helper'
 
@@ -21,10 +22,14 @@ describe 'README', ->
 
       main.return 0
 
-      hello.writeBitcodeToFile "hello.bc"
+      filename = tmp.tmpNameSync()
 
-      fs.statSync "hello.bc"
+      hello.writeBitcodeToFile filename
+
+      fs.statSync filename
         .should.not.be.null
 
-      fs.readFileSync "hello.bc"
+      fs.readFileSync filename
         .should.have.length.greaterThan 0
+
+      fs.unlink filename

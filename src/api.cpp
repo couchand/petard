@@ -322,6 +322,11 @@ class FunctionBuilderWrapper : public Nan::ObjectWrap
             return Nan::ThrowError("Alloca type required");
         }
 
+        if (!Nan::New(TypeWrapper::prototype)->HasInstance(info[0]))
+        {
+            return Nan::ThrowError("Alloca type required");
+        }
+
         TypeWrapper *t = Nan::ObjectWrap::Unwrap<TypeWrapper>(info[0].As<Object>());
 
         ValueHandle *h = 0;
@@ -340,6 +345,12 @@ class FunctionBuilderWrapper : public Nan::ObjectWrap
         else if (Nan::New(ValueWrapper::prototype)->HasInstance(info[1]))
         {
             ValueWrapper *value = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[1].As<Object>());
+
+            if (!value->Val->Type->isIntType())
+            {
+                return Nan::ThrowError("Alloca array size must be an integer value");
+            }
+
             h = wrapper->Builder->Alloca(t->Type, value->Val);
         }
         else
@@ -356,10 +367,20 @@ class FunctionBuilderWrapper : public Nan::ObjectWrap
         
         if (info.Length() < 1)
         {
-            return Nan::ThrowError("Load pointer required");
+            return Nan::ThrowError("Load requires a pointer to load from");
+        }
+
+        if (!Nan::New(ValueWrapper::prototype)->HasInstance(info[0]))
+        {
+            return Nan::ThrowError("Load requires a pointer to load from");
         }
 
         ValueWrapper *ptr = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[0].As<Object>());
+
+        if (!ptr->Val->Type->isPointerType())
+        {
+            return Nan::ThrowError("Load requires pointer type");
+        }
 
         ValueHandle *load = wrapper->Builder->Load(ptr->Val);
         
@@ -372,13 +393,30 @@ class FunctionBuilderWrapper : public Nan::ObjectWrap
 
         if (info.Length() < 2)
         {
-            return Nan::ThrowError("Store value and pointer required");
+            return Nan::ThrowError("Store requires a value and a pointer to store");
+        }
+
+        if (!Nan::New(ValueWrapper::prototype)->HasInstance(info[1]))
+        {
+            return Nan::ThrowError("Store requires a pointer to store to");
         }
 
         ValueWrapper *ptr = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[1].As<Object>());
 
+        if (!ptr->Val->Type->isPointerType())
+        {
+            return Nan::ThrowError("Store requires pointer type");
+        }
+
+        PointerTypeHandle *pt = static_cast<PointerTypeHandle *>(ptr->Val->Type);
+
         if (info[0]->IsNumber())
         {
+            if (!pt->pointee->isIntType())
+            {
+                return Nan::ThrowError("Store type mismatch");
+            }
+
             Local<Number> num = info[0].As<Number>();
             double numVal = num->Value();
 
@@ -387,6 +425,9 @@ class FunctionBuilderWrapper : public Nan::ObjectWrap
         else if (Nan::New(ValueWrapper::prototype)->HasInstance(info[0]))
         {
             ValueWrapper *value = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[0].As<Object>());
+
+            // TODO: unify types
+
             wrapper->Builder->Store(value->Val, ptr->Val);
         }
         else
@@ -481,6 +522,11 @@ class FunctionBuilderWrapper : public Nan::ObjectWrap
             return Nan::ThrowError("Value type and value required");
         }
 
+        if (!Nan::New(TypeWrapper::prototype)->HasInstance(info[0]))
+        {
+            return Nan::ThrowError("Value requires a type");
+        }
+
         TypeWrapper *type = Nan::ObjectWrap::Unwrap<TypeWrapper>(info[0].As<Object>());
 
         ValueHandle *result;
@@ -511,6 +557,11 @@ class FunctionBuilderWrapper : public Nan::ObjectWrap
         }
         else if (info[0]->IsNumber())
         {
+            if (!wrapper->Builder->Type->returns->isIntType())
+            {
+                return Nan::ThrowError("Return value type mismatch");
+            }
+
             Local<Number> num = info[0].As<Number>();
             double numVal = num->Value();
 
@@ -519,11 +570,14 @@ class FunctionBuilderWrapper : public Nan::ObjectWrap
         else if (Nan::New(ValueWrapper::prototype)->HasInstance(info[0]))
         {
             ValueWrapper *value = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[0].As<Object>());
+
+            // TODO: unify types
+
             wrapper->Builder->Return(value->Val);
         }
         else
         {
-            return Nan::ThrowError("Return value not supported");
+            return Nan::ThrowError("Return value type not supported");
         }
 
         info.GetReturnValue().Set(info.This());
@@ -582,7 +636,7 @@ class FunctionBuilderWrapper : public Nan::ObjectWrap
 
         if (info.Length() == 0)
         {
-            return Nan::ThrowError("Must provide function value");
+            return Nan::ThrowError("Must provide function to call");
         }
 
         std::vector<ValueHandle *> argVals;
@@ -608,6 +662,11 @@ class FunctionBuilderWrapper : public Nan::ObjectWrap
         {
             ValueWrapper *wrapper = Nan::ObjectWrap::Unwrap<ValueWrapper>(handle);
             ValueHandle *callee = wrapper->Val;
+
+            if (!callee->Type->isFunctionType())
+            {
+                return Nan::ThrowError("Only function values are callable");
+            }
 
             result = self->Builder->CallFunction(callee, argVals);
         }

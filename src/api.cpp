@@ -397,6 +397,39 @@ class FunctionBuilderWrapper : public Nan::ObjectWrap
         info.GetReturnValue().Set(info.This());
     }
 
+#define BINARY_METHOD(name) \
+    static NAN_METHOD(name) \
+    { \
+        FunctionBuilderWrapper *wrapper = Nan::ObjectWrap::Unwrap<FunctionBuilderWrapper>(info.This()); \
+\
+        if (info.Length() < 2) \
+        { \
+            return Nan::ThrowError("Two values required"); \
+        } \
+\
+        Local<FunctionTemplate> val = Nan::New(ValueWrapper::prototype); \
+\
+        if (!val->HasInstance(info[0]) || !val->HasInstance(info[1])) \
+        { \
+            return Nan::ThrowError("Two values required"); \
+        } \
+\
+        ValueWrapper *lhs = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[0].As<Object>()); \
+        ValueWrapper *rhs = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[1].As<Object>()); \
+\
+        ValueHandle *result = wrapper->Builder->name(lhs->Val, rhs->Val);\
+\
+        info.GetReturnValue().Set(ValueWrapper::wrapValue(result));\
+    }
+
+    BINARY_METHOD(Add)
+    BINARY_METHOD(Sub)
+    BINARY_METHOD(Mul)
+    BINARY_METHOD(UDiv)
+    BINARY_METHOD(SDiv)
+    BINARY_METHOD(URem)
+    BINARY_METHOD(SRem)
+
     static NAN_METHOD(Value)
     {
         FunctionBuilderWrapper *wrapper = Nan::ObjectWrap::Unwrap<FunctionBuilderWrapper>(info.This());
@@ -573,6 +606,13 @@ public:
         Nan::SetPrototypeMethod(tmpl, "alloca", Alloca);
         Nan::SetPrototypeMethod(tmpl, "load", Load);
         Nan::SetPrototypeMethod(tmpl, "store", Store);
+        Nan::SetPrototypeMethod(tmpl, "add", Add);
+        Nan::SetPrototypeMethod(tmpl, "sub", Sub);
+        Nan::SetPrototypeMethod(tmpl, "mul", Mul);
+        Nan::SetPrototypeMethod(tmpl, "udiv", UDiv);
+        Nan::SetPrototypeMethod(tmpl, "sdiv", SDiv);
+        Nan::SetPrototypeMethod(tmpl, "urem", URem);
+        Nan::SetPrototypeMethod(tmpl, "srem", SRem);
 
         Nan::SetPrototypeMethod(tmpl, "value", Value);
 

@@ -62,6 +62,22 @@ void FunctionBuilder::Store(ValueHandle *value, ValueHandle *ptr)
     builder.CreateStore(value->getLLVMValue(), ptr->getLLVMValue());
 }
 
+#define BINARY_BUILDER(name, factory) \
+ValueHandle *FunctionBuilder::name(ValueHandle *lhs, ValueHandle *rhs) \
+{ \
+    TypeHandle *t = lhs->Type; /* TODO: something better */ \
+    llvm::Value *val = builder.factory(lhs->getLLVMValue(), rhs->getLLVMValue()); \
+    return new PlainValueHandle(t, val); \
+}
+
+BINARY_BUILDER(Add, CreateAdd)
+BINARY_BUILDER(Sub, CreateSub)
+BINARY_BUILDER(Mul, CreateMul)
+BINARY_BUILDER(UDiv, CreateUDiv)
+BINARY_BUILDER(SDiv, CreateSDiv)
+BINARY_BUILDER(URem, CreateURem)
+BINARY_BUILDER(SRem, CreateSRem)
+
 ValueHandle *FunctionBuilder::Parameter(size_t index)
 {
     if (index >= parameters.size())

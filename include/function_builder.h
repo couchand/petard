@@ -62,6 +62,16 @@ public:
     void Store(int value, ValueHandle *ptr);
     void Store(ValueHandle *value, ValueHandle *ptr);
 
+#define BINARY_HEADER(name) ValueHandle *name(ValueHandle *lhs, ValueHandle *rhs);
+
+    BINARY_HEADER(Add)
+    BINARY_HEADER(Sub)
+    BINARY_HEADER(Mul)
+    BINARY_HEADER(UDiv)
+    BINARY_HEADER(SDiv)
+    BINARY_HEADER(URem)
+    BINARY_HEADER(SRem)
+
     ValueHandle *Parameter(size_t index);
 };
 

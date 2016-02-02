@@ -16,6 +16,11 @@ class TypeHandle
 public:
     virtual llvm::Type *getLLVMType(llvm::LLVMContext &context) = 0;
     virtual std::string toString() = 0;
+
+    virtual bool isIntType() { return false; }
+    virtual bool isPointerType() { return false; }
+    virtual bool isFunctionType() { return false; }
+    virtual bool isArrayType() { return false; }
 };
 
 class VoidTypeHandle : public TypeHandle
@@ -36,6 +41,8 @@ public:
 
     llvm::Type *getLLVMType(llvm::LLVMContext &context);
     std::string toString();
+
+    bool isFunctionType() { return true; }
 };
 
 class IntTypeHandle : public TypeHandle
@@ -48,6 +55,8 @@ public:
 
     llvm::Type *getLLVMType(llvm::LLVMContext &context);
     std::string toString();
+
+    bool isIntType() { return true; }
 };
 
 class PointerTypeHandle : public TypeHandle
@@ -60,6 +69,8 @@ public:
 
     llvm::Type *getLLVMType(llvm::LLVMContext &context);
     std::string toString();
+
+    bool isPointerType() { return true; }
 };
 
 class ArrayTypeHandle : public TypeHandle
@@ -73,6 +84,8 @@ public:
 
     llvm::Type *getLLVMType(llvm::LLVMContext &context);
     std::string toString();
+
+    bool isArrayType() { return true; }
 };
 
 #endif

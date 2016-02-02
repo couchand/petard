@@ -438,6 +438,14 @@ class FunctionBuilderWrapper : public Nan::ObjectWrap
 
     BINARY_METHOD(Equal)
     BINARY_METHOD(NotEqual)
+    BINARY_METHOD(UGreaterThan)
+    BINARY_METHOD(UAtLeast)
+    BINARY_METHOD(ULessThan)
+    BINARY_METHOD(UAtMost)
+    BINARY_METHOD(SGreaterThan)
+    BINARY_METHOD(SAtLeast)
+    BINARY_METHOD(SLessThan)
+    BINARY_METHOD(SAtMost)
 
     static NAN_METHOD(Value)
     {
@@ -637,6 +645,14 @@ public:
 
         Nan::SetPrototypeMethod(tmpl, "equal", Equal);
         Nan::SetPrototypeMethod(tmpl, "notEqual", NotEqual);
+        Nan::SetPrototypeMethod(tmpl, "uGreaterThan", UGreaterThan);
+        Nan::SetPrototypeMethod(tmpl, "uAtLeast", UAtLeast);
+        Nan::SetPrototypeMethod(tmpl, "uLessThan", ULessThan);
+        Nan::SetPrototypeMethod(tmpl, "uAtMost", UAtMost);
+        Nan::SetPrototypeMethod(tmpl, "sGreaterThan", UGreaterThan);
+        Nan::SetPrototypeMethod(tmpl, "sAtLeast", UAtLeast);
+        Nan::SetPrototypeMethod(tmpl, "sLessThan", ULessThan);
+        Nan::SetPrototypeMethod(tmpl, "sAtMost", UAtMost);
 
         Nan::SetPrototypeMethod(tmpl, "value", Value);
 

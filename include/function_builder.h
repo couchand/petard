@@ -80,6 +80,14 @@ public:
 
     BINARY_HEADER(Equal)
     BINARY_HEADER(NotEqual)
+    BINARY_HEADER(UGreaterThan)
+    BINARY_HEADER(UAtLeast)
+    BINARY_HEADER(ULessThan)
+    BINARY_HEADER(UAtMost)
+    BINARY_HEADER(SGreaterThan)
+    BINARY_HEADER(SAtLeast)
+    BINARY_HEADER(SLessThan)
+    BINARY_HEADER(SAtMost)
 
     ValueHandle *Parameter(size_t index);
 };

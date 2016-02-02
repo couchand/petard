@@ -102,6 +102,14 @@ ValueHandle *FunctionBuilder::name(ValueHandle *lhs, ValueHandle *rhs) \
 
 BINARY_PREDICATE(Equal, CreateICmpEQ)
 BINARY_PREDICATE(NotEqual, CreateICmpNE)
+BINARY_PREDICATE(UGreaterThan, CreateICmpUGT)
+BINARY_PREDICATE(UAtLeast, CreateICmpUGE)
+BINARY_PREDICATE(ULessThan, CreateICmpULT)
+BINARY_PREDICATE(UAtMost, CreateICmpULE)
+BINARY_PREDICATE(SGreaterThan, CreateICmpSGT)
+BINARY_PREDICATE(SAtLeast, CreateICmpSGE)
+BINARY_PREDICATE(SLessThan, CreateICmpSLT)
+BINARY_PREDICATE(SAtMost, CreateICmpSLE)
 
 ValueHandle *FunctionBuilder::Parameter(size_t index)
 {

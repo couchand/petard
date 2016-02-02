@@ -509,6 +509,12 @@ class FunctionBuilderWrapper : public Nan::ObjectWrap
         double numVal = num->Value();
 
         ValueHandle *val = wrapper->Builder->Parameter((size_t)numVal);
+
+        if (val == 0)
+        {
+            return Nan::ThrowError("Parameter index invalid");
+        }
+
         info.GetReturnValue().Set(ValueWrapper::wrapValue(val));
     }
 

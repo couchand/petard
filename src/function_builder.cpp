@@ -105,7 +105,7 @@ BINARY_PREDICATE(NotEqual, CreateICmpNE)
 
 ValueHandle *FunctionBuilder::Parameter(size_t index)
 {
-    if (index >= parameters.size())
+    if (index >= Type->params.size())
     {
         return 0;
     }

@@ -60,18 +60,27 @@ ValueHandle *FunctionBuilder::LoadConstant(ValueHandle *value)
     return new PlainValueHandle(value->Type, expression);
 }
 
-ValueHandle *FunctionBuilder::CallFunction(ValueHandle *fn, std::vector<ValueHandle *> args)
+ValueHandle *FunctionBuilder::callFunction(FunctionTypeHandle *fnTy, llvm::Value *fn, std::vector<ValueHandle *> args)
 {
-    llvm::Value *callee = fn->getLLVMValue();
-
     std::vector<llvm::Value *> argVals;
     for (unsigned i = 0, e = args.size(); i < e; i++)
     {
         argVals.push_back(args[i]->getLLVMValue());
     }
 
-    llvm::Value *call = builder.CreateCall(callee, argVals);
+    llvm::Value *call = builder.CreateCall(fn, argVals);
 
-    FunctionTypeHandle *fnTy = static_cast<FunctionTypeHandle *>(fn->Type);
     return new PlainValueHandle(fnTy->returns, call);
+}
+
+ValueHandle *FunctionBuilder::CallFunction(ValueHandle *fn, std::vector<ValueHandle *> args)
+{
+    FunctionTypeHandle *fnTy = static_cast<FunctionTypeHandle *>(fn->Type);
+    return callFunction(fnTy, fn->getLLVMValue(), args);
+}
+
+ValueHandle *FunctionBuilder::CallFunction(FunctionBuilder *fn, std::vector<ValueHandle *> args)
+{
+    FunctionTypeHandle *fnTy = static_cast<FunctionTypeHandle *>(fn->Type);
+    return callFunction(fnTy, fn->F, args);
 }

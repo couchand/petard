@@ -18,6 +18,8 @@ class FunctionBuilder
 
     std::vector<llvm::Value *> parameters;
 
+    ValueHandle* callFunction(FunctionTypeHandle *fnTy, llvm::Value *fn, std::vector<ValueHandle *> args);
+
 public:
     FunctionBuilder(const char *name, FunctionTypeHandle *t, llvm::LLVMContext &c, llvm::Function *f)
     : builder(c), context(c), Name(name), Type(t), F(f)
@@ -45,6 +47,7 @@ public:
     ValueHandle *LoadConstant(ValueHandle *value);
 
     ValueHandle *CallFunction(ValueHandle *fn, std::vector<ValueHandle *> args);
+    ValueHandle *CallFunction(FunctionBuilder *fn, std::vector<ValueHandle *> args);
 
     void Return();
     void Return(int value);

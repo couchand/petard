@@ -429,16 +429,6 @@ class FunctionBuilderWrapper : public Nan::ObjectWrap
             return Nan::ThrowError("Must provide function value");
         }
 
-        Local<Object> handle = info[0]->ToObject();
-
-        if (!Nan::New(ValueWrapper::prototype)->HasInstance(handle))
-        {
-            return Nan::ThrowError("Must provide function value");
-        }
-
-        ValueWrapper *wrapper = Nan::ObjectWrap::Unwrap<ValueWrapper>(handle);
-        ValueHandle *callee = wrapper->Val;
-
         std::vector<ValueHandle *> argVals;
 
         for (unsigned i = 1, e = info.Length(); i < e; i += 1)
@@ -454,13 +444,36 @@ class FunctionBuilderWrapper : public Nan::ObjectWrap
             argVals.push_back(arg->Val);
         }
 
-        ValueHandle *result = self->Builder->CallFunction(callee, argVals);
+        Local<Object> handle = info[0]->ToObject();
+
+        ValueHandle *result;
+
+        if (Nan::New(ValueWrapper::prototype)->HasInstance(handle))
+        {
+            ValueWrapper *wrapper = Nan::ObjectWrap::Unwrap<ValueWrapper>(handle);
+            ValueHandle *callee = wrapper->Val;
+
+            result = self->Builder->CallFunction(callee, argVals);
+        }
+        else if (Nan::New(FunctionBuilderWrapper::prototype)->HasInstance(handle))
+        {
+            FunctionBuilderWrapper *wrapper = Nan::ObjectWrap::Unwrap<FunctionBuilderWrapper>(handle);
+            FunctionBuilder *callee = wrapper->Builder;
+
+            result = self->Builder->CallFunction(callee, argVals);
+        }
+        else
+        {
+            return Nan::ThrowError("Must provide function value");
+        }
 
         info.GetReturnValue().Set(ValueWrapper::wrapValue(result));
     }
 
 public:
     FunctionBuilder *Builder;
+
+    static Nan::Persistent<FunctionTemplate> prototype;
 
     static inline Nan::Persistent<Function>& constructor() {
         static Nan::Persistent<Function> my_constructor;
@@ -487,8 +500,12 @@ public:
         constructor().Reset(Nan::GetFunction(tmpl).ToLocalChecked());
         Nan::Set(target, Nan::New("FunctionBuilder").ToLocalChecked(),
             Nan::GetFunction(tmpl).ToLocalChecked());
+
+        prototype.Reset(tmpl);
     }
 };
+
+Nan::Persistent<FunctionTemplate> FunctionBuilderWrapper::prototype;
 
 class CodeUnitWrapper : public Nan::ObjectWrap
 {

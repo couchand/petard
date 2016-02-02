@@ -327,6 +327,11 @@ class FunctionBuilderWrapper : public Nan::ObjectWrap
 
             wrapper->Builder->Return((int)numVal);
         }
+        else if (Nan::New(ValueWrapper::prototype)->HasInstance(info[0]))
+        {
+            ValueWrapper *value = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[0].As<Object>());
+            wrapper->Builder->Return(value->Val);
+        }
         else
         {
             return Nan::ThrowError("Return value not supported");

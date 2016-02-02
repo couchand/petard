@@ -14,6 +14,13 @@ void FunctionBuilder::Return(int value)
     builder.CreateRet(returnValue);
 }
 
+void FunctionBuilder::Return(ValueHandle *value)
+{
+    llvm::Value *returnValue = value->getLLVMValue();
+
+    builder.CreateRet(returnValue);
+}
+
 ValueHandle *FunctionBuilder::LoadConstant(ValueHandle *value)
 {
     llvm::Value *expression = builder.CreateConstGEP2_32(value->getLLVMValue(), 0, 0);

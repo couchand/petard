@@ -34,6 +34,7 @@ public:
 
     void Return();
     void Return(int value);
+    void Return(ValueHandle *value);
 };
 
 #endif

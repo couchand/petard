@@ -436,6 +436,9 @@ class FunctionBuilderWrapper : public Nan::ObjectWrap
     BINARY_METHOD(LShr)
     BINARY_METHOD(AShr)
 
+    BINARY_METHOD(Equal)
+    BINARY_METHOD(NotEqual)
+
     static NAN_METHOD(Value)
     {
         FunctionBuilderWrapper *wrapper = Nan::ObjectWrap::Unwrap<FunctionBuilderWrapper>(info.This());
@@ -625,6 +628,9 @@ public:
         Nan::SetPrototypeMethod(tmpl, "shl", Shl);
         Nan::SetPrototypeMethod(tmpl, "lshr", LShr);
         Nan::SetPrototypeMethod(tmpl, "ashr", AShr);
+
+        Nan::SetPrototypeMethod(tmpl, "equal", Equal);
+        Nan::SetPrototypeMethod(tmpl, "notEqual", NotEqual);
 
         Nan::SetPrototypeMethod(tmpl, "value", Value);
 

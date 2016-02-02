@@ -84,6 +84,25 @@ BINARY_BUILDER(Shl, CreateShl)
 BINARY_BUILDER(LShr, CreateLShr)
 BINARY_BUILDER(AShr, CreateAShr)
 
+#define BINARY_PREDICATE(name, intfactory) \
+ValueHandle *FunctionBuilder::name(ValueHandle *lhs, ValueHandle *rhs) \
+{ \
+    TypeHandle *t = lhs->Type; /* TODO: unify types */ \
+    llvm::Value *val; \
+    if (t->isIntType()) \
+    { \
+        val = builder.intfactory(lhs->getLLVMValue(), rhs->getLLVMValue()); \
+    } \
+    else \
+    { \
+        return 0; \
+    } \
+    return new PlainValueHandle(new IntTypeHandle(1), val); \
+}
+
+BINARY_PREDICATE(Equal, CreateICmpEQ)
+BINARY_PREDICATE(NotEqual, CreateICmpNE)
+
 ValueHandle *FunctionBuilder::Parameter(size_t index)
 {
     if (index >= parameters.size())

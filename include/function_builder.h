@@ -78,6 +78,9 @@ public:
     BINARY_HEADER(LShr)
     BINARY_HEADER(AShr)
 
+    BINARY_HEADER(Equal)
+    BINARY_HEADER(NotEqual)
+
     ValueHandle *Parameter(size_t index);
 };
 

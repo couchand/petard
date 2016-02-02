@@ -311,6 +311,43 @@ class FunctionBuilderWrapper : public Nan::ObjectWrap
         info.GetReturnValue().Set(TypeWrapper::wrapType(wrapper->Builder->Type));
     }
 
+    static NAN_METHOD(Alloca)
+    {
+        FunctionBuilderWrapper *wrapper = Nan::ObjectWrap::Unwrap<FunctionBuilderWrapper>(info.This());
+
+        if (info.Length() == 0)
+        {
+            return Nan::ThrowError("Alloca type required");
+        }
+
+        TypeWrapper *t = Nan::ObjectWrap::Unwrap<TypeWrapper>(info[0].As<Object>());
+
+        ValueHandle *h = 0;
+
+        if (info.Length() == 1)
+        {
+            h = wrapper->Builder->Alloca(t->Type);
+        }
+        else if (info[1]->IsNumber())
+        {
+            Local<Number> num = info[1].As<Number>();
+            double numVal = num->Value();
+
+            h = wrapper->Builder->Alloca(t->Type, (int)numVal);
+        }
+        else if (Nan::New(ValueWrapper::prototype)->HasInstance(info[1]))
+        {
+            ValueWrapper *value = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[1].As<Object>());
+            h = wrapper->Builder->Alloca(t->Type, value->Val);
+        }
+        else
+        {
+            return Nan::ThrowError("Alloca array size type not supported");
+        }
+
+        info.GetReturnValue().Set(ValueWrapper::wrapValue(h));
+    }
+
     static NAN_METHOD(Return)
     {
 
@@ -443,6 +480,7 @@ public:
         Nan::SetPrototypeMethod(tmpl, "parameter", Parameter);
         Nan::SetPrototypeMethod(tmpl, "loadConstant", LoadConstant);
         Nan::SetPrototypeMethod(tmpl, "callFunction", CallFunction);
+        Nan::SetPrototypeMethod(tmpl, "alloca", Alloca);
 
         constructor().Reset(Nan::GetFunction(tmpl).ToLocalChecked());
         Nan::Set(target, Nan::New("FunctionBuilder").ToLocalChecked(),

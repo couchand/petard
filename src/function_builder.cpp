@@ -25,6 +25,24 @@ void FunctionBuilder::Return(ValueHandle *value)
     builder.CreateRet(returnValue);
 }
 
+ValueHandle *FunctionBuilder::Alloca(TypeHandle *t)
+{
+    llvm::AllocaInst *alloca = builder.CreateAlloca(t->getLLVMType(context));
+    return new PlainValueHandle(new PointerTypeHandle(t), alloca);
+}
+
+ValueHandle *FunctionBuilder::Alloca(TypeHandle *t, int size)
+{
+    ValueHandle *s = makeValue(new IntTypeHandle(32), size);
+    return Alloca(t, s);
+}
+
+ValueHandle *FunctionBuilder::Alloca(TypeHandle *t, ValueHandle *size)
+{
+    llvm::AllocaInst *alloca = builder.CreateAlloca(t->getLLVMType(context), size->getLLVMValue());
+    return new PlainValueHandle(new PointerTypeHandle(t), alloca);
+}
+
 ValueHandle *FunctionBuilder::Parameter(size_t index)
 {
     if (index >= parameters.size())

@@ -50,6 +50,10 @@ public:
     void Return(int value);
     void Return(ValueHandle *value);
 
+    ValueHandle *Alloca(TypeHandle *type);
+    ValueHandle *Alloca(TypeHandle *type, int arraySize);
+    ValueHandle *Alloca(TypeHandle *type, ValueHandle* arraySize);
+
     ValueHandle *Parameter(size_t index);
 };
 

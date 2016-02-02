@@ -55,7 +55,12 @@ public:
 
     ValueHandle *Alloca(TypeHandle *type);
     ValueHandle *Alloca(TypeHandle *type, int arraySize);
-    ValueHandle *Alloca(TypeHandle *type, ValueHandle* arraySize);
+    ValueHandle *Alloca(TypeHandle *type, ValueHandle *arraySize);
+
+    ValueHandle *Load(ValueHandle *ptr);
+
+    void Store(int value, ValueHandle *ptr);
+    void Store(ValueHandle *value, ValueHandle *ptr);
 
     ValueHandle *Parameter(size_t index);
 };

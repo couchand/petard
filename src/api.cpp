@@ -350,6 +350,81 @@ class FunctionBuilderWrapper : public Nan::ObjectWrap
         info.GetReturnValue().Set(ValueWrapper::wrapValue(h));
     }
 
+    static NAN_METHOD(Load)
+    {
+        FunctionBuilderWrapper *wrapper = Nan::ObjectWrap::Unwrap<FunctionBuilderWrapper>(info.This());
+        
+        if (info.Length() < 1)
+        {
+            return Nan::ThrowError("Load pointer required");
+        }
+
+        ValueWrapper *ptr = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[0].As<Object>());
+
+        ValueHandle *load = wrapper->Builder->Load(ptr->Val);
+        
+        info.GetReturnValue().Set(ValueWrapper::wrapValue(load));
+    }
+
+    static NAN_METHOD(Store)
+    {
+        FunctionBuilderWrapper *wrapper = Nan::ObjectWrap::Unwrap<FunctionBuilderWrapper>(info.This());
+
+        if (info.Length() < 2)
+        {
+            return Nan::ThrowError("Store value and pointer required");
+        }
+
+        ValueWrapper *ptr = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[1].As<Object>());
+
+        if (info[0]->IsNumber())
+        {
+            Local<Number> num = info[0].As<Number>();
+            double numVal = num->Value();
+
+            wrapper->Builder->Store((int)numVal, ptr->Val);
+        }
+        else if (Nan::New(ValueWrapper::prototype)->HasInstance(info[0]))
+        {
+            ValueWrapper *value = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[0].As<Object>());
+            wrapper->Builder->Store(value->Val, ptr->Val);
+        }
+        else
+        {
+            return Nan::ThrowError("Store value type not supported");
+        }
+
+        info.GetReturnValue().Set(info.This());
+    }
+
+    static NAN_METHOD(Value)
+    {
+        FunctionBuilderWrapper *wrapper = Nan::ObjectWrap::Unwrap<FunctionBuilderWrapper>(info.This());
+
+        if (info.Length() < 2)
+        {
+            return Nan::ThrowError("Value type and value required");
+        }
+
+        TypeWrapper *type = Nan::ObjectWrap::Unwrap<TypeWrapper>(info[0].As<Object>());
+
+        ValueHandle *result;
+
+        if (info[1]->IsNumber())
+        {
+            Local<Number> num = info[1].As<Number>();
+            double numVal = num->Value();
+
+            result = wrapper->Builder->makeValue(type->Type, (int)numVal);
+        }
+        else
+        {
+            return Nan::ThrowError("Value type not supported");
+        }
+
+        info.GetReturnValue().Set(ValueWrapper::wrapValue(result));
+    }
+
     static NAN_METHOD(Return)
     {
 
@@ -496,6 +571,10 @@ public:
         Nan::SetPrototypeMethod(tmpl, "loadConstant", LoadConstant);
         Nan::SetPrototypeMethod(tmpl, "callFunction", CallFunction);
         Nan::SetPrototypeMethod(tmpl, "alloca", Alloca);
+        Nan::SetPrototypeMethod(tmpl, "load", Load);
+        Nan::SetPrototypeMethod(tmpl, "store", Store);
+
+        Nan::SetPrototypeMethod(tmpl, "value", Value);
 
         constructor().Reset(Nan::GetFunction(tmpl).ToLocalChecked());
         Nan::Set(target, Nan::New("FunctionBuilder").ToLocalChecked(),

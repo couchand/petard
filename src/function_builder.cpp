@@ -43,6 +43,25 @@ ValueHandle *FunctionBuilder::Alloca(TypeHandle *t, ValueHandle *size)
     return new PlainValueHandle(new PointerTypeHandle(t), alloca);
 }
 
+ValueHandle *FunctionBuilder::Load(ValueHandle *ptr)
+{
+    PointerTypeHandle *pt = static_cast<PointerTypeHandle *>(ptr->Type);
+
+    llvm::LoadInst *load = builder.CreateLoad(ptr->getLLVMValue());
+    return new PlainValueHandle(pt->pointee, load);
+}
+
+void FunctionBuilder::Store(int value, ValueHandle *ptr)
+{
+    PointerTypeHandle *pt = static_cast<PointerTypeHandle *>(ptr->Type);
+    Store(makeValue(pt->pointee, value), ptr);
+}
+
+void FunctionBuilder::Store(ValueHandle *value, ValueHandle *ptr)
+{
+    builder.CreateStore(value->getLLVMValue(), ptr->getLLVMValue());
+}
+
 ValueHandle *FunctionBuilder::Parameter(size_t index)
 {
     if (index >= parameters.size())

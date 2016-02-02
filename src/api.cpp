@@ -429,6 +429,12 @@ class FunctionBuilderWrapper : public Nan::ObjectWrap
     BINARY_METHOD(SDiv)
     BINARY_METHOD(URem)
     BINARY_METHOD(SRem)
+    BINARY_METHOD(And)
+    BINARY_METHOD(Or)
+    BINARY_METHOD(Xor)
+    BINARY_METHOD(Shl)
+    BINARY_METHOD(LShr)
+    BINARY_METHOD(AShr)
 
     static NAN_METHOD(Value)
     {
@@ -613,6 +619,12 @@ public:
         Nan::SetPrototypeMethod(tmpl, "sdiv", SDiv);
         Nan::SetPrototypeMethod(tmpl, "urem", URem);
         Nan::SetPrototypeMethod(tmpl, "srem", SRem);
+        Nan::SetPrototypeMethod(tmpl, "and", And);
+        Nan::SetPrototypeMethod(tmpl, "or", Or);
+        Nan::SetPrototypeMethod(tmpl, "xor", Xor);
+        Nan::SetPrototypeMethod(tmpl, "shl", Shl);
+        Nan::SetPrototypeMethod(tmpl, "lshr", LShr);
+        Nan::SetPrototypeMethod(tmpl, "ashr", AShr);
 
         Nan::SetPrototypeMethod(tmpl, "value", Value);
 

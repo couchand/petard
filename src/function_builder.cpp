@@ -77,6 +77,12 @@ BINARY_BUILDER(UDiv, CreateUDiv)
 BINARY_BUILDER(SDiv, CreateSDiv)
 BINARY_BUILDER(URem, CreateURem)
 BINARY_BUILDER(SRem, CreateSRem)
+BINARY_BUILDER(And, CreateAnd)
+BINARY_BUILDER(Or, CreateOr)
+BINARY_BUILDER(Xor, CreateXor)
+BINARY_BUILDER(Shl, CreateShl)
+BINARY_BUILDER(LShr, CreateLShr)
+BINARY_BUILDER(AShr, CreateAShr)
 
 ValueHandle *FunctionBuilder::Parameter(size_t index)
 {

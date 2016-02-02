@@ -71,6 +71,12 @@ public:
     BINARY_HEADER(SDiv)
     BINARY_HEADER(URem)
     BINARY_HEADER(SRem)
+    BINARY_HEADER(And)
+    BINARY_HEADER(Or)
+    BINARY_HEADER(Xor)
+    BINARY_HEADER(Shl)
+    BINARY_HEADER(LShr)
+    BINARY_HEADER(AShr)
 
     ValueHandle *Parameter(size_t index);
 };

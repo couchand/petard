@@ -7,8 +7,7 @@ node_js:
   - "4.0"
 
 env:
-  - CXX=g++-4.8
-  - LLVM_CONFIG="llvm-config-3.6"
+  - CXX=g++-4.8 LLVM_CONFIG=llvm-config-3.6
 
 addons:
   apt:

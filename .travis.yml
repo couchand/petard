@@ -16,6 +16,7 @@ addons:
       - ubuntu-toolchain-r-test
     packages:
       - llvm-3.6
+      - llvm-3.6-dev
       - g++-4.8
 
 before_script:

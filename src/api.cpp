@@ -340,6 +340,22 @@ class FunctionBuilderWrapper : public Nan::ObjectWrap
         info.GetReturnValue().Set(info.This());
     }
 
+    static NAN_METHOD(Parameter)
+    {
+        FunctionBuilderWrapper *wrapper = Nan::ObjectWrap::Unwrap<FunctionBuilderWrapper>(info.This());
+
+        if (info.Length() == 0 || !(info[0]->IsNumber()))
+        {
+            return Nan::ThrowError("Must provide parameter index");
+        }
+
+        Local<Number> num = info[0].As<Number>();
+        double numVal = num->Value();
+
+        ValueHandle *val = wrapper->Builder->Parameter((size_t)numVal);
+        info.GetReturnValue().Set(ValueWrapper::wrapValue(val));
+    }
+
     static NAN_METHOD(LoadConstant)
     {
 
@@ -424,6 +440,7 @@ public:
         Nan::SetAccessor(tmpl->PrototypeTemplate(), Nan::New("type").ToLocalChecked(), GetType);
 
         Nan::SetPrototypeMethod(tmpl, "return", Return);
+        Nan::SetPrototypeMethod(tmpl, "parameter", Parameter);
         Nan::SetPrototypeMethod(tmpl, "loadConstant", LoadConstant);
         Nan::SetPrototypeMethod(tmpl, "callFunction", CallFunction);
 

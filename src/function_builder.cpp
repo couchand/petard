@@ -21,6 +21,16 @@ void FunctionBuilder::Return(ValueHandle *value)
     builder.CreateRet(returnValue);
 }
 
+ValueHandle *FunctionBuilder::Parameter(size_t index)
+{
+    if (index >= parameters.size())
+    {
+        return 0;
+    }
+    TypeHandle *t = Type->params[index];
+    return new PlainValueHandle(t, parameters[index]);
+}
+
 ValueHandle *FunctionBuilder::LoadConstant(ValueHandle *value)
 {
     llvm::Value *expression = builder.CreateConstGEP2_32(value->getLLVMValue(), 0, 0);

@@ -16,12 +16,24 @@ class FunctionBuilder
     llvm::IRBuilder<> builder;
     llvm::LLVMContext &context;
 
+    std::vector<llvm::Value *> parameters;
+
 public:
     FunctionBuilder(const char *name, FunctionTypeHandle *t, llvm::LLVMContext &c, llvm::Function *f)
     : builder(c), context(c), Name(name), Type(t), F(f)
     {
         llvm::BasicBlock *entry = llvm::BasicBlock::Create(context, "entry", F);
         builder.SetInsertPoint(entry);
+
+        parameters.reserve(F->arg_size());
+
+        for (llvm::Function::arg_iterator AI = F->arg_begin()
+            ,AE = F->arg_end()
+            ;AI != AE
+            ;++AI)
+        {
+            parameters.push_back(AI);
+        }
     }
 
     std::string Name;
@@ -35,6 +47,8 @@ public:
     void Return();
     void Return(int value);
     void Return(ValueHandle *value);
+
+    ValueHandle *Parameter(size_t index);
 };
 
 #endif

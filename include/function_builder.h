@@ -40,6 +40,8 @@ public:
     FunctionTypeHandle *Type;
     llvm::Function *F;
 
+    ValueHandle *makeValue(TypeHandle *t, int i);
+
     ValueHandle *LoadConstant(ValueHandle *value);
 
     ValueHandle *CallFunction(ValueHandle *fn, std::vector<ValueHandle *> args);

@@ -2,6 +2,12 @@
 
 #include "function_builder.h"
 
+ValueHandle *FunctionBuilder::makeValue(TypeHandle *t, int i)
+{
+    llvm::Value *v = llvm::ConstantInt::get(t->getLLVMType(context), i);
+    return new PlainValueHandle(t, v);
+}
+
 void FunctionBuilder::Return()
 {
     builder.CreateRetVoid();
@@ -9,9 +15,7 @@ void FunctionBuilder::Return()
 
 void FunctionBuilder::Return(int value)
 {
-    llvm::Value *returnValue = llvm::ConstantInt::get(llvm::Type::getInt32Ty(context), value);
-
-    builder.CreateRet(returnValue);
+    Return(makeValue(Type->returns, value));
 }
 
 void FunctionBuilder::Return(ValueHandle *value)

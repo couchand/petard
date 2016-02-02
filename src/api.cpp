@@ -248,6 +248,8 @@ public:
 
     ValueHandle *Val;
 
+    static Nan::Persistent<FunctionTemplate> prototype;
+
     static inline Nan::Persistent<Function>& constructor() {
         static Nan::Persistent<Function> my_constructor;
         return my_constructor;
@@ -264,8 +266,12 @@ public:
         constructor().Reset(Nan::GetFunction(tmpl).ToLocalChecked());
         Nan::Set(target, Nan::New("ValueWrapper").ToLocalChecked(),
             Nan::GetFunction(tmpl).ToLocalChecked());
+
+        prototype.Reset(tmpl);
     }
 };
+
+Nan::Persistent<FunctionTemplate> ValueWrapper::prototype;
 
 class FunctionBuilderWrapper : public Nan::ObjectWrap
 {
@@ -340,12 +346,11 @@ class FunctionBuilderWrapper : public Nan::ObjectWrap
         }
 
         Local<Object> handle = info[0]->ToObject();
-        /* TODO
-        if (!Nan::HasInstance(ValueWrapper::prototype, handle))
+
+        if (!Nan::New(ValueWrapper::prototype)->HasInstance(handle))
         {
             return Nan::ThrowError("Must provide constant value");
         }
-        */
 
         ValueWrapper *wrapper = Nan::ObjectWrap::Unwrap<ValueWrapper>(handle);
 
@@ -365,12 +370,11 @@ class FunctionBuilderWrapper : public Nan::ObjectWrap
         }
 
         Local<Object> handle = info[0]->ToObject();
-        /* TODO
-        if (!Nan::HasInstance(ValueWrapper::prototype, handle))
+
+        if (!Nan::New(ValueWrapper::prototype)->HasInstance(handle))
         {
             return Nan::ThrowError("Must provide function value");
         }
-        */
 
         ValueWrapper *wrapper = Nan::ObjectWrap::Unwrap<ValueWrapper>(handle);
         ValueHandle *callee = wrapper->Val;
@@ -381,12 +385,10 @@ class FunctionBuilderWrapper : public Nan::ObjectWrap
         {
             Local<Object> handle = info[i]->ToObject();
 
-            /* TODO
-            if (!Nan::HasInstance(ValueWrapper::prototype, handle))
+            if (!Nan::New(ValueWrapper::prototype)->HasInstance(handle))
             {
                 return Nan::ThrowError("Argument must be a value");
             }
-            */
 
             ValueWrapper *arg = Nan::ObjectWrap::Unwrap<ValueWrapper>(handle);
             argVals.push_back(arg->Val);

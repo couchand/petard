@@ -447,6 +447,31 @@ class FunctionBuilderWrapper : public Nan::ObjectWrap
     BINARY_METHOD(SLessThan)
     BINARY_METHOD(SAtMost)
 
+    static NAN_METHOD(Select)
+    {
+        FunctionBuilderWrapper *wrapper = Nan::ObjectWrap::Unwrap<FunctionBuilderWrapper>(info.This());
+
+        if (info.Length() < 3)
+        {
+            return Nan::ThrowError("Select requires three values");
+        }
+
+        Local<FunctionTemplate> val = Nan::New(ValueWrapper::prototype);
+
+        if (!val->HasInstance(info[0]) || !val->HasInstance(info[1]) || !val->HasInstance(info[2]))
+        {
+            return Nan::ThrowError("Select requires three values");
+        }
+
+        ValueWrapper *cond = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[0].As<Object>());
+        ValueWrapper *ifTrue = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[1].As<Object>());
+        ValueWrapper *ifFalse = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[2].As<Object>());
+
+        ValueHandle *result = wrapper->Builder->Select(cond->Val, ifTrue->Val, ifFalse->Val);
+
+        info.GetReturnValue().Set(ValueWrapper::wrapValue(result));
+    }
+
     static NAN_METHOD(Value)
     {
         FunctionBuilderWrapper *wrapper = Nan::ObjectWrap::Unwrap<FunctionBuilderWrapper>(info.This());
@@ -653,6 +678,8 @@ public:
         Nan::SetPrototypeMethod(tmpl, "sAtLeast", UAtLeast);
         Nan::SetPrototypeMethod(tmpl, "sLessThan", ULessThan);
         Nan::SetPrototypeMethod(tmpl, "sAtMost", UAtMost);
+
+        Nan::SetPrototypeMethod(tmpl, "select", Select);
 
         Nan::SetPrototypeMethod(tmpl, "value", Value);
 

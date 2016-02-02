@@ -89,6 +89,8 @@ public:
     BINARY_HEADER(SLessThan)
     BINARY_HEADER(SAtMost)
 
+    ValueHandle *Select(ValueHandle *cond, ValueHandle *ifTrue, ValueHandle *ifFalse);
+
     ValueHandle *Parameter(size_t index);
 };
 

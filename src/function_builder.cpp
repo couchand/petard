@@ -111,6 +111,19 @@ BINARY_PREDICATE(SAtLeast, CreateICmpSGE)
 BINARY_PREDICATE(SLessThan, CreateICmpSLT)
 BINARY_PREDICATE(SAtMost, CreateICmpSLE)
 
+ValueHandle *FunctionBuilder::Select(ValueHandle *cond, ValueHandle *ifTrue, ValueHandle *ifFalse)
+{
+    TypeHandle *t = ifTrue->Type; // TODO: unify types
+
+    llvm::Value *val = builder.CreateSelect(
+        cond->getLLVMValue(),
+        ifTrue->getLLVMValue(),
+        ifFalse->getLLVMValue()
+    );
+
+    return new PlainValueHandle(t, val);
+}
+
 ValueHandle *FunctionBuilder::Parameter(size_t index)
 {
     if (index >= Type->params.size())

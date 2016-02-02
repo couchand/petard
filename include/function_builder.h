@@ -17,7 +17,7 @@ class FunctionBuilder
     llvm::LLVMContext &context;
 
 public:
-    FunctionBuilder(const char *name, TypeHandle *t, llvm::LLVMContext &c, llvm::Function *f)
+    FunctionBuilder(const char *name, FunctionTypeHandle *t, llvm::LLVMContext &c, llvm::Function *f)
     : builder(c), context(c), Name(name), Type(t), F(f)
     {
         llvm::BasicBlock *entry = llvm::BasicBlock::Create(context, "entry", F);
@@ -25,7 +25,7 @@ public:
     }
 
     std::string Name;
-    TypeHandle *Type;
+    FunctionTypeHandle *Type;
     llvm::Function *F;
 
     ValueHandle *LoadConstant(ValueHandle *value);

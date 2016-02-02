@@ -8,7 +8,7 @@
 #include "llvm/Bitcode/BitstreamWriter.h"
 #include "llvm/Bitcode/ReaderWriter.h"
 
-llvm::Function *CodeUnit::buildFunctionHeader(const char *name, TypeHandle *type)
+llvm::Function *CodeUnit::buildFunctionHeader(const char *name, FunctionTypeHandle *type)
 {
     std::string myName(name);
 
@@ -44,14 +44,14 @@ bool CodeUnit::WriteToFile(const char *name)
     return true;
 }
 
-FunctionBuilder *CodeUnit::MakeFunction(const char *name, TypeHandle *type)
+FunctionBuilder *CodeUnit::MakeFunction(const char *name, FunctionTypeHandle *type)
 {
     llvm::Function *f = buildFunctionHeader(name, type);
 
     return new FunctionBuilder(name, type, Context, f);
 }
 
-FunctionValueHandle *CodeUnit::DeclareFunction(const char *name, TypeHandle *type)
+FunctionValueHandle *CodeUnit::DeclareFunction(const char *name, FunctionTypeHandle *type)
 {
     llvm::Function *f = buildFunctionHeader(name, type);
 

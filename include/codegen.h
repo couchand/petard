@@ -14,7 +14,7 @@
 
 class CodeUnit
 {
-    llvm::Function *buildFunctionHeader(const char *name, TypeHandle *type);
+    llvm::Function *buildFunctionHeader(const char *name, FunctionTypeHandle *type);
 
 public:
     CodeUnit(const char *filename)
@@ -30,8 +30,8 @@ public:
 
     bool WriteToFile(const char *filename);
 
-    FunctionBuilder *MakeFunction(const char *name, TypeHandle *type);
-    FunctionValueHandle *DeclareFunction(const char *name, TypeHandle *type);
+    FunctionBuilder *MakeFunction(const char *name, FunctionTypeHandle *type);
+    FunctionValueHandle *DeclareFunction(const char *name, FunctionTypeHandle *type);
 
     ConstantValueHandle *ConstantString(const std::string &value);
 

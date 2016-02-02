@@ -7,10 +7,10 @@
         "__STDC_LIMIT_MACROS=1",
         "__STDC_CONSTANT_MACROS=1"
       ],
-      "include_dirs": ["include", "<!(node -e \"require(\'nan\')\")", "<!(llvm-config --includedir)"],
+      "include_dirs": ["include", "<!(node -e \"require(\'nan\')\")", "<!($LLVM_CONFIG --includedir)"],
       "libraries": [
-        "<!@(llvm-config --ldflags)",
-        "<!@(llvm-config --libs core native support bitwriter)"
+        "<!@($LLVM_CONFIG --ldflags)",
+        "<!@($LLVM_CONFIG --libs core native support bitwriter)"
       ]
     }
   ]

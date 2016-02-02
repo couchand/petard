@@ -88,6 +88,8 @@ public:
 
     TypeHandle *Type;
 
+    static Nan::Persistent<FunctionTemplate> prototype;
+
     static inline Nan::Persistent<Function>& constructor() {
         static Nan::Persistent<Function> my_constructor;
         return my_constructor;
@@ -103,6 +105,8 @@ public:
         constructor().Reset(Nan::GetFunction(tmpl).ToLocalChecked());
         Nan::Set(target, Nan::New("TypeWrapper").ToLocalChecked(),
             Nan::GetFunction(tmpl).ToLocalChecked());
+
+        prototype.Reset(tmpl);
     }
 
     static NAN_METHOD(GetVoidTy)
@@ -149,12 +153,10 @@ public:
 
         Local<Object> handle = info[0]->ToObject();
 
-        /* TODO
-        if (!Nan::HasInstance(prototype, handle))
+        if (!Nan::New(prototype)->HasInstance(handle))
         {
             return Nan::ThrowError("Argument must be a type specifier");
         }
-        */
 
         TypeWrapper *wrapper = Nan::ObjectWrap::Unwrap<TypeWrapper>(handle);
         pointee = wrapper->Type;
@@ -184,12 +186,10 @@ public:
 
         Local<Object> handle = info[1]->ToObject();
 
-        /* TODO
-        if (!Nan::HasInstance(prototype, handle))
+        if (!Nan::New(prototype)->HasInstance(handle))
         {
             return Nan::ThrowError("Argument must be a type specifier");
         }
-        */
 
         TypeWrapper *wrapper = Nan::ObjectWrap::Unwrap<TypeWrapper>(handle);
         element = wrapper->Type;
@@ -204,6 +204,8 @@ public:
         info.GetReturnValue().Set(wrapType(new FunctionTypeHandle(returns, takes)));
     }
 };
+
+Nan::Persistent<FunctionTemplate> TypeWrapper::prototype;
 
 class ValueWrapper : public Nan::ObjectWrap
 {

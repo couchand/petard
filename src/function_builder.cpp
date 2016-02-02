@@ -4,124 +4,87 @@
 
 ValueHandle *FunctionBuilder::makeValue(TypeHandle *t, int i)
 {
-    llvm::Value *v = llvm::ConstantInt::get(t->getLLVMType(context), i);
-    return new PlainValueHandle(t, v);
+    return builder->makeValue(t, i);
 }
 
 void FunctionBuilder::Return()
 {
-    builder.CreateRetVoid();
+    builder->Return();
 }
 
 void FunctionBuilder::Return(int value)
 {
-    Return(makeValue(Type->returns, value));
+    builder->Return(value);
 }
 
 void FunctionBuilder::Return(ValueHandle *value)
 {
-    llvm::Value *returnValue = value->getLLVMValue();
-
-    builder.CreateRet(returnValue);
+    builder->Return(value);
 }
 
 ValueHandle *FunctionBuilder::Alloca(TypeHandle *t)
 {
-    llvm::AllocaInst *alloca = builder.CreateAlloca(t->getLLVMType(context));
-    return new PlainValueHandle(new PointerTypeHandle(t), alloca);
+    return builder->Alloca(t);
 }
 
 ValueHandle *FunctionBuilder::Alloca(TypeHandle *t, int size)
 {
-    ValueHandle *s = makeValue(new IntTypeHandle(32), size);
-    return Alloca(t, s);
+    return builder->Alloca(t, size);
 }
 
 ValueHandle *FunctionBuilder::Alloca(TypeHandle *t, ValueHandle *size)
 {
-    llvm::AllocaInst *alloca = builder.CreateAlloca(t->getLLVMType(context), size->getLLVMValue());
-    return new PlainValueHandle(new PointerTypeHandle(t), alloca);
+    return builder->Alloca(t, size);
 }
 
 ValueHandle *FunctionBuilder::Load(ValueHandle *ptr)
 {
-    PointerTypeHandle *pt = static_cast<PointerTypeHandle *>(ptr->Type);
-
-    llvm::LoadInst *load = builder.CreateLoad(ptr->getLLVMValue());
-    return new PlainValueHandle(pt->pointee, load);
+    return builder->Load(ptr);
 }
 
 void FunctionBuilder::Store(int value, ValueHandle *ptr)
 {
-    PointerTypeHandle *pt = static_cast<PointerTypeHandle *>(ptr->Type);
-    Store(makeValue(pt->pointee, value), ptr);
+    builder->Store(value, ptr);
 }
 
 void FunctionBuilder::Store(ValueHandle *value, ValueHandle *ptr)
 {
-    builder.CreateStore(value->getLLVMValue(), ptr->getLLVMValue());
+    builder->Store(value, ptr);
 }
 
-#define BINARY_BUILDER(name, factory) \
+#define BINARY_BUILDER(name) \
 ValueHandle *FunctionBuilder::name(ValueHandle *lhs, ValueHandle *rhs) \
 { \
-    TypeHandle *t = lhs->Type; /* TODO: something better */ \
-    llvm::Value *val = builder.factory(lhs->getLLVMValue(), rhs->getLLVMValue()); \
-    return new PlainValueHandle(t, val); \
+    return builder->name(lhs, rhs); \
 }
 
-BINARY_BUILDER(Add, CreateAdd)
-BINARY_BUILDER(Sub, CreateSub)
-BINARY_BUILDER(Mul, CreateMul)
-BINARY_BUILDER(UDiv, CreateUDiv)
-BINARY_BUILDER(SDiv, CreateSDiv)
-BINARY_BUILDER(URem, CreateURem)
-BINARY_BUILDER(SRem, CreateSRem)
-BINARY_BUILDER(And, CreateAnd)
-BINARY_BUILDER(Or, CreateOr)
-BINARY_BUILDER(Xor, CreateXor)
-BINARY_BUILDER(Shl, CreateShl)
-BINARY_BUILDER(LShr, CreateLShr)
-BINARY_BUILDER(AShr, CreateAShr)
-
-#define BINARY_PREDICATE(name, intfactory) \
-ValueHandle *FunctionBuilder::name(ValueHandle *lhs, ValueHandle *rhs) \
-{ \
-    TypeHandle *t = lhs->Type; /* TODO: unify types */ \
-    llvm::Value *val; \
-    if (t->isIntType()) \
-    { \
-        val = builder.intfactory(lhs->getLLVMValue(), rhs->getLLVMValue()); \
-    } \
-    else \
-    { \
-        return 0; \
-    } \
-    return new PlainValueHandle(new IntTypeHandle(1), val); \
-}
-
-BINARY_PREDICATE(Equal, CreateICmpEQ)
-BINARY_PREDICATE(NotEqual, CreateICmpNE)
-BINARY_PREDICATE(UGreaterThan, CreateICmpUGT)
-BINARY_PREDICATE(UAtLeast, CreateICmpUGE)
-BINARY_PREDICATE(ULessThan, CreateICmpULT)
-BINARY_PREDICATE(UAtMost, CreateICmpULE)
-BINARY_PREDICATE(SGreaterThan, CreateICmpSGT)
-BINARY_PREDICATE(SAtLeast, CreateICmpSGE)
-BINARY_PREDICATE(SLessThan, CreateICmpSLT)
-BINARY_PREDICATE(SAtMost, CreateICmpSLE)
+BINARY_BUILDER(Add)
+BINARY_BUILDER(Sub)
+BINARY_BUILDER(Mul)
+BINARY_BUILDER(UDiv)
+BINARY_BUILDER(SDiv)
+BINARY_BUILDER(URem)
+BINARY_BUILDER(SRem)
+BINARY_BUILDER(And)
+BINARY_BUILDER(Or)
+BINARY_BUILDER(Xor)
+BINARY_BUILDER(Shl)
+BINARY_BUILDER(LShr)
+BINARY_BUILDER(AShr)
+BINARY_BUILDER(Equal)
+BINARY_BUILDER(NotEqual)
+BINARY_BUILDER(UGreaterThan)
+BINARY_BUILDER(UAtLeast)
+BINARY_BUILDER(ULessThan)
+BINARY_BUILDER(UAtMost)
+BINARY_BUILDER(SGreaterThan)
+BINARY_BUILDER(SAtLeast)
+BINARY_BUILDER(SLessThan)
+BINARY_BUILDER(SAtMost)
 
 ValueHandle *FunctionBuilder::Select(ValueHandle *cond, ValueHandle *ifTrue, ValueHandle *ifFalse)
 {
-    TypeHandle *t = ifTrue->Type; // TODO: unify types
-
-    llvm::Value *val = builder.CreateSelect(
-        cond->getLLVMValue(),
-        ifTrue->getLLVMValue(),
-        ifFalse->getLLVMValue()
-    );
-
-    return new PlainValueHandle(t, val);
+    return builder->Select(cond, ifTrue, ifFalse);
 }
 
 ValueHandle *FunctionBuilder::Parameter(size_t index)
@@ -136,32 +99,15 @@ ValueHandle *FunctionBuilder::Parameter(size_t index)
 
 ValueHandle *FunctionBuilder::LoadConstant(ValueHandle *value)
 {
-    llvm::Value *expression = builder.CreateConstGEP2_32(value->getLLVMValue(), 0, 0);
-
-    return new PlainValueHandle(value->Type, expression);
-}
-
-ValueHandle *FunctionBuilder::callFunction(FunctionTypeHandle *fnTy, llvm::Value *fn, std::vector<ValueHandle *> args)
-{
-    std::vector<llvm::Value *> argVals;
-    for (unsigned i = 0, e = args.size(); i < e; i++)
-    {
-        argVals.push_back(args[i]->getLLVMValue());
-    }
-
-    llvm::Value *call = builder.CreateCall(fn, argVals);
-
-    return new PlainValueHandle(fnTy->returns, call);
+    return builder->LoadConstant(value);
 }
 
 ValueHandle *FunctionBuilder::CallFunction(ValueHandle *fn, std::vector<ValueHandle *> args)
 {
-    FunctionTypeHandle *fnTy = static_cast<FunctionTypeHandle *>(fn->Type);
-    return callFunction(fnTy, fn->getLLVMValue(), args);
+    return builder->CallFunction(fn, args);
 }
 
 ValueHandle *FunctionBuilder::CallFunction(FunctionBuilder *fn, std::vector<ValueHandle *> args)
 {
-    FunctionTypeHandle *fnTy = static_cast<FunctionTypeHandle *>(fn->Type);
-    return callFunction(fnTy, fn->F, args);
+    return builder->CallFunction(fn, args);
 }

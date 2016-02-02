@@ -1,7 +1,7 @@
-// function builder
+// block builder
 
-#ifndef FUNCTION_BUILDER_H
-#define FUNCTION_BUILDER_H
+#ifndef BLOCK_BUILDER_H
+#define BLOCK_BUILDER_H
 
 #include <string>
 #include <vector>
@@ -11,38 +11,22 @@
 #include "types.h"
 #include "value.h"
 
-// forward declaration for nested built-in builder
-//class BlockBuilder;
-#include "block_builder.h"
+class FunctionBuilder;
 
-class FunctionBuilder
+class BlockBuilder
 {
+    FunctionBuilder *parent;
+    llvm::IRBuilder<> builder;
     llvm::LLVMContext &context;
-    BlockBuilder *builder;
 
-    std::vector<llvm::Value *> parameters;
+    ValueHandle* callFunction(FunctionTypeHandle *fnTy, llvm::Value *fn, std::vector<ValueHandle *> args);
 
 public:
-    FunctionBuilder(const char *name, FunctionTypeHandle *t, llvm::LLVMContext &c, llvm::Function *f)
-    : context(c), Name(name), Type(t), F(f)
+    BlockBuilder(llvm::LLVMContext &c, FunctionBuilder *p, llvm::BasicBlock *block)
+    : parent(p), builder(c), context(c)
     {
-        llvm::BasicBlock *entry = llvm::BasicBlock::Create(context, "entry", F);
-        builder = new BlockBuilder(context, this, entry);
-
-        parameters.reserve(F->arg_size());
-
-        for (llvm::Function::arg_iterator AI = F->arg_begin()
-            ,AE = F->arg_end()
-            ;AI != AE
-            ;++AI)
-        {
-            parameters.push_back(AI);
-        }
+        builder.SetInsertPoint(block);
     }
-
-    std::string Name;
-    FunctionTypeHandle *Type;
-    llvm::Function *F;
 
     ValueHandle *makeValue(TypeHandle *t, int i);
 

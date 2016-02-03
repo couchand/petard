@@ -670,6 +670,68 @@ protected:
         info.GetReturnValue().Set(ValueWrapper::wrapValue(result));
     }
 
+    static NAN_METHOD(If)
+    {
+        BuilderWrapper *self = Nan::ObjectWrap::Unwrap<BuilderWrapper>(info.This());
+
+        if (info.Length() == 0)
+        {
+            return Nan::ThrowError("Must provide nested clauses");
+        }
+
+        Local<Object> options = info[0].As<Object>();
+
+        Local<Context> ctx = Nan::GetCurrentContext();
+
+        MaybeLocal<v8::Value> condClause = options->Get(ctx, Nan::New("cond").ToLocalChecked());
+        MaybeLocal<v8::Value> thenClause = options->Get(ctx, Nan::New("then").ToLocalChecked());
+        MaybeLocal<v8::Value> elseClause = options->Get(ctx, Nan::New("else").ToLocalChecked());
+
+        if (condClause.IsEmpty())
+        {
+            return Nan::ThrowError("Must provide condition as `cond` property");
+        }
+
+        if (thenClause.IsEmpty() || !thenClause.ToLocalChecked()->IsFunction())
+        {
+            return Nan::ThrowError("Must provide consequent as `then` property");
+        }
+
+        if (elseClause.IsEmpty() || !elseClause.ToLocalChecked()->IsFunction())
+        {
+            return Nan::ThrowError("Must provide alternate as `else` property");
+        }
+
+        Local<Object> condC = condClause.ToLocalChecked().As<Object>();
+        Local<Function> thenC = thenClause.ToLocalChecked().As<Function>();
+        Local<Function> elseC = elseClause.ToLocalChecked().As<Function>();
+
+        if (!Nan::New(ValueWrapper::prototype)->HasInstance(condC))
+        {
+            return Nan::ThrowError("Condition must be a value");
+        }
+
+        ValueWrapper *cond = Nan::ObjectWrap::Unwrap<ValueWrapper>(condC);
+
+        BlockBuilder *consequent = self->Builder->ChildBlock("then");
+        BlockBuilder *alternate = self->Builder->ChildBlock("else");
+
+        self->Builder->If(cond->Val, consequent, alternate);
+
+        const unsigned cargc = 1;
+        Local<v8::Value> cargv[cargc] = { BuilderWrapper::wrapBuilder(consequent) };
+        Nan::MakeCallback(Nan::GetCurrentContext()->Global(), thenC, cargc, cargv);
+
+        const unsigned aargc = 1;
+        Local<v8::Value> aargv[aargc] = { BuilderWrapper::wrapBuilder(alternate) };
+        Nan::MakeCallback(Nan::GetCurrentContext()->Global(), elseC, aargc, aargv);
+
+        consequent->Br(self->Builder);
+        alternate->Br(self->Builder);
+
+        info.GetReturnValue().Set(info.This());
+    }
+
 public:
     static Handle<v8::Value> wrapBuilder(InstructionBuilder *value)
     {
@@ -735,6 +797,8 @@ public:
         Nan::SetPrototypeMethod(tmpl, "select", Select);
 
         Nan::SetPrototypeMethod(tmpl, "value", Value);
+
+        Nan::SetPrototypeMethod(tmpl, "if", If);
 
         constructor().Reset(Nan::GetFunction(tmpl).ToLocalChecked());
         Nan::Set(target, Nan::New("Builder").ToLocalChecked(),
@@ -839,6 +903,8 @@ public:
         Nan::SetPrototypeMethod(tmpl, "select", Select);
 
         Nan::SetPrototypeMethod(tmpl, "value", Value);
+
+        Nan::SetPrototypeMethod(tmpl, "if", If);
 
         constructor().Reset(Nan::GetFunction(tmpl).ToLocalChecked());
         Nan::Set(target, Nan::New("FunctionBuilder").ToLocalChecked(),

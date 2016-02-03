@@ -9,6 +9,27 @@ ValueHandle *BlockBuilder::MakeValue(TypeHandle *t, int i)
     return new PlainValueHandle(t, v);
 }
 
+BlockBuilder *BlockBuilder::ChildBlock(const char *name)
+{
+    llvm::BasicBlock *block = llvm::BasicBlock::Create(context, name, parent->F);
+    return new BlockBuilder(context, parent, block);
+}
+
+void BlockBuilder::If(ValueHandle *condition, InstructionBuilder *consequent, InstructionBuilder *alternate)
+{
+    BlockBuilder *merge = ChildBlock("merge");
+
+    builder.CreateCondBr(condition->getLLVMValue(), consequent->GetBlock(), alternate->GetBlock());
+
+    builder.SetInsertPoint(merge->block);
+    block = merge->block;
+}
+
+void BlockBuilder::Br(InstructionBuilder *dest)
+{
+    builder.CreateBr(dest->GetBlock());
+}
+
 void BlockBuilder::Return()
 {
     builder.CreateRetVoid();

@@ -29,7 +29,14 @@ public:
         builder.SetInsertPoint(block);
     }
 
+    llvm::BasicBlock *GetBlock() { return block; }
+
     ValueHandle *MakeValue(TypeHandle *t, int i);
+
+    BlockBuilder *ChildBlock(const char *name);
+
+    void If(ValueHandle *condition, InstructionBuilder *consequent, InstructionBuilder *alternate);
+    void Br(InstructionBuilder *dest);
 
     ValueHandle *LoadConstant(ValueHandle *value);
 

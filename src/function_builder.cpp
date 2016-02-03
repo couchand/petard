@@ -7,6 +7,21 @@ ValueHandle *FunctionBuilder::MakeValue(TypeHandle *t, int i)
     return builder->MakeValue(t, i);
 }
 
+BlockBuilder *FunctionBuilder::ChildBlock(const char *name)
+{
+    return builder->ChildBlock(name);
+}
+
+void FunctionBuilder::If(ValueHandle *condition, InstructionBuilder *consequent, InstructionBuilder *alternate)
+{
+    builder->If(condition, consequent, alternate);
+}
+
+void FunctionBuilder::Br(InstructionBuilder *dest)
+{
+    builder->Br(dest);
+}
+
 void FunctionBuilder::Return()
 {
     builder->Return();

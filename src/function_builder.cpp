@@ -2,9 +2,9 @@
 
 #include "function_builder.h"
 
-ValueHandle *FunctionBuilder::makeValue(TypeHandle *t, int i)
+ValueHandle *FunctionBuilder::MakeValue(TypeHandle *t, int i)
 {
-    return builder->makeValue(t, i);
+    return builder->MakeValue(t, i);
 }
 
 void FunctionBuilder::Return()

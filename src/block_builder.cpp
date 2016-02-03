@@ -3,7 +3,7 @@
 #include "block_builder.h"
 #include "function_builder.h"
 
-ValueHandle *BlockBuilder::makeValue(TypeHandle *t, int i)
+ValueHandle *BlockBuilder::MakeValue(TypeHandle *t, int i)
 {
     llvm::Value *v = llvm::ConstantInt::get(t->getLLVMType(context), i);
     return new PlainValueHandle(t, v);
@@ -16,7 +16,7 @@ void BlockBuilder::Return()
 
 void BlockBuilder::Return(int value)
 {
-    Return(makeValue(parent->Type->returns, value));
+    Return(MakeValue(parent->Type->returns, value));
 }
 
 void BlockBuilder::Return(ValueHandle *value)
@@ -34,7 +34,7 @@ ValueHandle *BlockBuilder::Alloca(TypeHandle *t)
 
 ValueHandle *BlockBuilder::Alloca(TypeHandle *t, int size)
 {
-    ValueHandle *s = makeValue(new IntTypeHandle(32), size);
+    ValueHandle *s = MakeValue(new IntTypeHandle(32), size);
     return Alloca(t, s);
 }
 
@@ -55,7 +55,7 @@ ValueHandle *BlockBuilder::Load(ValueHandle *ptr)
 void BlockBuilder::Store(int value, ValueHandle *ptr)
 {
     PointerTypeHandle *pt = static_cast<PointerTypeHandle *>(ptr->Type);
-    Store(makeValue(pt->pointee, value), ptr);
+    Store(MakeValue(pt->pointee, value), ptr);
 }
 
 void BlockBuilder::Store(ValueHandle *value, ValueHandle *ptr)

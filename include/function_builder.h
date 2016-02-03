@@ -11,11 +11,10 @@
 #include "types.h"
 #include "value.h"
 
-// forward declaration for nested built-in builder
-//class BlockBuilder;
+#include "builder.h"
 #include "block_builder.h"
 
-class FunctionBuilder
+class FunctionBuilder : public InstructionBuilder
 {
     llvm::LLVMContext &context;
     BlockBuilder *builder;
@@ -44,7 +43,7 @@ public:
     FunctionTypeHandle *Type;
     llvm::Function *F;
 
-    ValueHandle *makeValue(TypeHandle *t, int i);
+    ValueHandle *MakeValue(TypeHandle *t, int i);
 
     ValueHandle *LoadConstant(ValueHandle *value);
 

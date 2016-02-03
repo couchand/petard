@@ -11,24 +11,25 @@
 #include "types.h"
 #include "value.h"
 
-class FunctionBuilder;
+#include "builder.h"
 
-class BlockBuilder
+class BlockBuilder : public InstructionBuilder
 {
-    FunctionBuilder *parent;
     llvm::IRBuilder<> builder;
     llvm::LLVMContext &context;
+    FunctionBuilder *parent;
+    llvm::BasicBlock *block;
 
     ValueHandle* callFunction(FunctionTypeHandle *fnTy, llvm::Value *fn, std::vector<ValueHandle *> args);
 
 public:
-    BlockBuilder(llvm::LLVMContext &c, FunctionBuilder *p, llvm::BasicBlock *block)
-    : parent(p), builder(c), context(c)
+    BlockBuilder(llvm::LLVMContext &c, FunctionBuilder *p, llvm::BasicBlock *b)
+    : builder(c), context(c), parent(p), block(b)
     {
         builder.SetInsertPoint(block);
     }
 
-    ValueHandle *makeValue(TypeHandle *t, int i);
+    ValueHandle *MakeValue(TypeHandle *t, int i);
 
     ValueHandle *LoadConstant(ValueHandle *value);
 

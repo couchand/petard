@@ -11,15 +11,25 @@ ValueHandle *BlockBuilder::MakeValue(TypeHandle *t, int i)
 
 BlockBuilder *BlockBuilder::ChildBlock(const char *name)
 {
-    llvm::BasicBlock *block = llvm::BasicBlock::Create(context, name, parent->F);
-    return new BlockBuilder(context, parent, block);
+    llvm::BasicBlock *child = llvm::BasicBlock::Create(context, name, parent->F);
+    return new BlockBuilder(context, parent, child);
+}
+
+BlockBuilder *BlockBuilder::SplitBlock()
+{
+    llvm::BasicBlock *child = block->splitBasicBlock(builder.GetInsertPoint(), "merge");
+    builder.SetInsertPoint(block);
+    return new BlockBuilder(context, parent, child);
 }
 
 IfBuilder BlockBuilder::If(ValueHandle *condition)
 {
     BlockBuilder *consequent = ChildBlock("then");
     BlockBuilder *alternate = ChildBlock("else");
-    BlockBuilder *merge = ChildBlock("merge");
+    BlockBuilder *merge = SplitBlock();
+
+    llvm::Instruction *term = block->getTerminator();
+    if (term) term->eraseFromParent();
 
     builder.CreateCondBr(condition->getLLVMValue(), consequent->GetBlock(), alternate->GetBlock());
 
@@ -39,13 +49,23 @@ IfBuilder BlockBuilder::If(ValueHandle *condition)
 
 void BlockBuilder::Br(InstructionBuilder *dest)
 {
+    llvm::Instruction *term = block->getTerminator();
+    if (term) term->eraseFromParent();
+    builder.SetInsertPoint(block);
+
     llvm::BranchInst *inst = builder.CreateBr(dest->GetBlock());
+
     if (insertAfter) builder.SetInsertPoint(inst);
 }
 
 void BlockBuilder::Return()
 {
+    llvm::Instruction *term = block->getTerminator();
+    if (term) term->eraseFromParent();
+    builder.SetInsertPoint(block);
+
     llvm::ReturnInst *inst = builder.CreateRetVoid();
+
     if (insertAfter) builder.SetInsertPoint(inst);
 }
 
@@ -58,7 +78,12 @@ void BlockBuilder::Return(ValueHandle *value)
 {
     llvm::Value *returnValue = value->getLLVMValue();
 
+    llvm::Instruction *term = block->getTerminator();
+    if (term) term->eraseFromParent();
+    builder.SetInsertPoint(block);
+
     llvm::ReturnInst *inst = builder.CreateRet(returnValue);
+
     if (insertAfter) builder.SetInsertPoint(inst);
 }
 

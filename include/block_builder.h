@@ -38,6 +38,7 @@ public:
     ValueHandle *MakeValue(TypeHandle *t, int i);
 
     BlockBuilder *ChildBlock(const char *name);
+    BlockBuilder *SplitBlock();
 
     IfBuilder If(ValueHandle *condition);
     void Br(InstructionBuilder *dest);

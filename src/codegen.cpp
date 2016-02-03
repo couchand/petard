@@ -48,6 +48,8 @@ FunctionBuilder *CodeUnit::MakeFunction(const char *name, FunctionTypeHandle *ty
 {
     llvm::Function *f = buildFunctionHeader(name, type);
 
+    if (!f) return 0;
+
     return new FunctionBuilder(name, type, Context, f);
 }
 

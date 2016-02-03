@@ -14,16 +14,24 @@
 class BlockBuilder;
 class FunctionBuilder;
 
+struct IfBuilder
+{
+    BlockBuilder *Then;
+    BlockBuilder *Else;
+};
+
 class InstructionBuilder
 {
 public:
     virtual llvm::BasicBlock *GetBlock() = 0;
+    virtual void InsertAfter() = 0;
+    virtual void InsertBefore() = 0;
 
     virtual ValueHandle *MakeValue(TypeHandle *t, int i) = 0;
 
     virtual BlockBuilder *ChildBlock(const char *name) = 0;
 
-    virtual void If(ValueHandle *condition, InstructionBuilder *consequent, InstructionBuilder *alternate) = 0;
+    virtual IfBuilder If(ValueHandle *condition) = 0;
     virtual void Br(InstructionBuilder *dest) = 0;
 
     virtual ValueHandle *LoadConstant(ValueHandle *value) = 0;

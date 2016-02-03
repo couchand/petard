@@ -12,9 +12,9 @@ BlockBuilder *FunctionBuilder::ChildBlock(const char *name)
     return builder->ChildBlock(name);
 }
 
-void FunctionBuilder::If(ValueHandle *condition, InstructionBuilder *consequent, InstructionBuilder *alternate)
+IfBuilder FunctionBuilder::If(ValueHandle *condition)
 {
-    builder->If(condition, consequent, alternate);
+    return builder->If(condition);
 }
 
 void FunctionBuilder::Br(InstructionBuilder *dest)

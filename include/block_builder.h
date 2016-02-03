@@ -19,6 +19,7 @@ class BlockBuilder : public InstructionBuilder
     llvm::LLVMContext &context;
     FunctionBuilder *parent;
     llvm::BasicBlock *block;
+    bool insertAfter = false;
 
     ValueHandle* callFunction(FunctionTypeHandle *fnTy, llvm::Value *fn, std::vector<ValueHandle *> args);
 
@@ -31,11 +32,14 @@ public:
 
     llvm::BasicBlock *GetBlock() { return block; }
 
+    void InsertAfter() { insertAfter = true; }
+    void InsertBefore() { insertAfter = false; }
+
     ValueHandle *MakeValue(TypeHandle *t, int i);
 
     BlockBuilder *ChildBlock(const char *name);
 
-    void If(ValueHandle *condition, InstructionBuilder *consequent, InstructionBuilder *alternate);
+    IfBuilder If(ValueHandle *condition);
     void Br(InstructionBuilder *dest);
 
     ValueHandle *LoadConstant(ValueHandle *value);

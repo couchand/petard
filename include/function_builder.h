@@ -44,12 +44,14 @@ public:
     llvm::Function *F;
 
     llvm::BasicBlock *GetBlock() { return builder->GetBlock(); }
+    void InsertAfter() { builder->InsertAfter(); }
+    void InsertBefore() { builder->InsertBefore(); }
 
     ValueHandle *MakeValue(TypeHandle *t, int i);
 
     BlockBuilder *ChildBlock(const char *name);
 
-    void If(ValueHandle *condition, InstructionBuilder *consequent, InstructionBuilder *alternate);
+    IfBuilder If(ValueHandle *condition);
     void Br(InstructionBuilder *dest);
 
     ValueHandle *LoadConstant(ValueHandle *value);

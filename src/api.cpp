@@ -672,64 +672,30 @@ protected:
 
     static NAN_METHOD(If)
     {
+        Nan::EscapableHandleScope scope;
+
         BuilderWrapper *self = Nan::ObjectWrap::Unwrap<BuilderWrapper>(info.This());
 
         if (info.Length() == 0)
         {
-            return Nan::ThrowError("Must provide nested clauses");
+            return Nan::ThrowError("If requires a condition value");
         }
 
-        Local<Object> options = info[0].As<Object>();
-
-        Local<Context> ctx = Nan::GetCurrentContext();
-
-        MaybeLocal<v8::Value> condClause = options->Get(ctx, Nan::New("cond").ToLocalChecked());
-        MaybeLocal<v8::Value> thenClause = options->Get(ctx, Nan::New("then").ToLocalChecked());
-        MaybeLocal<v8::Value> elseClause = options->Get(ctx, Nan::New("else").ToLocalChecked());
-
-        if (condClause.IsEmpty())
+        if (!Nan::New(ValueWrapper::prototype)->HasInstance(info[0]))
         {
-            return Nan::ThrowError("Must provide condition as `cond` property");
+            return Nan::ThrowError("If condition must be a value");
         }
 
-        if (thenClause.IsEmpty() || !thenClause.ToLocalChecked()->IsFunction())
-        {
-            return Nan::ThrowError("Must provide consequent as `then` property");
-        }
+        ValueWrapper *cond = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[0].As<Object>());
 
-        if (elseClause.IsEmpty() || !elseClause.ToLocalChecked()->IsFunction())
-        {
-            return Nan::ThrowError("Must provide alternate as `else` property");
-        }
+        IfBuilder clauses = self->Builder->If(cond->Val);
 
-        Local<Object> condC = condClause.ToLocalChecked().As<Object>();
-        Local<Function> thenC = thenClause.ToLocalChecked().As<Function>();
-        Local<Function> elseC = elseClause.ToLocalChecked().As<Function>();
+        Local<Object> result = Nan::New<v8::Object>();
 
-        if (!Nan::New(ValueWrapper::prototype)->HasInstance(condC))
-        {
-            return Nan::ThrowError("Condition must be a value");
-        }
+        result->Set(Nan::New("then").ToLocalChecked(), BuilderWrapper::wrapBuilder(clauses.Then));
+        result->Set(Nan::New("else").ToLocalChecked(), BuilderWrapper::wrapBuilder(clauses.Else));
 
-        ValueWrapper *cond = Nan::ObjectWrap::Unwrap<ValueWrapper>(condC);
-
-        BlockBuilder *consequent = self->Builder->ChildBlock("then");
-        BlockBuilder *alternate = self->Builder->ChildBlock("else");
-
-        self->Builder->If(cond->Val, consequent, alternate);
-
-        const unsigned cargc = 1;
-        Local<v8::Value> cargv[cargc] = { BuilderWrapper::wrapBuilder(consequent) };
-        Nan::MakeCallback(Nan::GetCurrentContext()->Global(), thenC, cargc, cargv);
-
-        const unsigned aargc = 1;
-        Local<v8::Value> aargv[aargc] = { BuilderWrapper::wrapBuilder(alternate) };
-        Nan::MakeCallback(Nan::GetCurrentContext()->Global(), elseC, aargc, aargv);
-
-        consequent->Br(self->Builder);
-        alternate->Br(self->Builder);
-
-        info.GetReturnValue().Set(info.This());
+        info.GetReturnValue().Set(scope.Escape(result));
     }
 
 public:

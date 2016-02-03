@@ -15,24 +15,38 @@ BlockBuilder *BlockBuilder::ChildBlock(const char *name)
     return new BlockBuilder(context, parent, block);
 }
 
-void BlockBuilder::If(ValueHandle *condition, InstructionBuilder *consequent, InstructionBuilder *alternate)
+IfBuilder BlockBuilder::If(ValueHandle *condition)
 {
+    BlockBuilder *consequent = ChildBlock("then");
+    BlockBuilder *alternate = ChildBlock("else");
     BlockBuilder *merge = ChildBlock("merge");
 
     builder.CreateCondBr(condition->getLLVMValue(), consequent->GetBlock(), alternate->GetBlock());
 
+    consequent->InsertAfter();
+    consequent->Br(merge);
+    consequent->InsertBefore();
+
+    alternate->InsertAfter();
+    alternate->Br(merge);
+    alternate->InsertBefore();
+
     builder.SetInsertPoint(merge->block);
     block = merge->block;
+
+    return IfBuilder { consequent, alternate };
 }
 
 void BlockBuilder::Br(InstructionBuilder *dest)
 {
-    builder.CreateBr(dest->GetBlock());
+    llvm::BranchInst *inst = builder.CreateBr(dest->GetBlock());
+    if (insertAfter) builder.SetInsertPoint(inst);
 }
 
 void BlockBuilder::Return()
 {
-    builder.CreateRetVoid();
+    llvm::ReturnInst *inst = builder.CreateRetVoid();
+    if (insertAfter) builder.SetInsertPoint(inst);
 }
 
 void BlockBuilder::Return(int value)
@@ -44,12 +58,14 @@ void BlockBuilder::Return(ValueHandle *value)
 {
     llvm::Value *returnValue = value->getLLVMValue();
 
-    builder.CreateRet(returnValue);
+    llvm::ReturnInst *inst = builder.CreateRet(returnValue);
+    if (insertAfter) builder.SetInsertPoint(inst);
 }
 
 ValueHandle *BlockBuilder::Alloca(TypeHandle *t)
 {
     llvm::AllocaInst *alloca = builder.CreateAlloca(t->getLLVMType(context));
+    if (insertAfter) builder.SetInsertPoint(alloca);
     return new PlainValueHandle(new PointerTypeHandle(t), alloca);
 }
 
@@ -62,6 +78,7 @@ ValueHandle *BlockBuilder::Alloca(TypeHandle *t, int size)
 ValueHandle *BlockBuilder::Alloca(TypeHandle *t, ValueHandle *size)
 {
     llvm::AllocaInst *alloca = builder.CreateAlloca(t->getLLVMType(context), size->getLLVMValue());
+    if (insertAfter) builder.SetInsertPoint(alloca);
     return new PlainValueHandle(new PointerTypeHandle(t), alloca);
 }
 
@@ -70,6 +87,7 @@ ValueHandle *BlockBuilder::Load(ValueHandle *ptr)
     PointerTypeHandle *pt = static_cast<PointerTypeHandle *>(ptr->Type);
 
     llvm::LoadInst *load = builder.CreateLoad(ptr->getLLVMValue());
+    if (insertAfter) builder.SetInsertPoint(load);
     return new PlainValueHandle(pt->pointee, load);
 }
 
@@ -81,7 +99,8 @@ void BlockBuilder::Store(int value, ValueHandle *ptr)
 
 void BlockBuilder::Store(ValueHandle *value, ValueHandle *ptr)
 {
-    builder.CreateStore(value->getLLVMValue(), ptr->getLLVMValue());
+    llvm::StoreInst *store = builder.CreateStore(value->getLLVMValue(), ptr->getLLVMValue());
+    if (insertAfter) builder.SetInsertPoint(store);
 }
 
 #define BINARY_BUILDER(name, factory) \

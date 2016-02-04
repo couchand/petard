@@ -3,10 +3,7 @@
 #ifndef BLOCK_BUILDER_H
 #define BLOCK_BUILDER_H
 
-#include <string>
 #include <vector>
-
-#include "llvm/IR/IRBuilder.h"
 
 #include "type.h"
 #include "value.h"

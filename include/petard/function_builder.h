@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-#include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/Module.h"
 
 #include "type.h"
 #include "value.h"

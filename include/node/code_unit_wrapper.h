@@ -8,12 +8,7 @@ using Nan::ObjectWrap;
 
 using namespace v8;
 
-#include "type.h"
-#include "function_builder.h"
 #include "code_unit.h"
-
-#include "value_wrapper.h"
-#include "function_builder_wrapper.h"
 
 class CodeUnitWrapper : public Nan::ObjectWrap
 {

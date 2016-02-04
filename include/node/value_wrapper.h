@@ -10,8 +10,6 @@ using namespace v8;
 
 #include "value.h"
 
-#include "type_wrapper.h"
-
 class ValueWrapper : public Nan::ObjectWrap
 {
     ValueWrapper(ValueHandle *v)

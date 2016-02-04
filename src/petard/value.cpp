@@ -2,6 +2,8 @@
 
 #include "value.h"
 
+#include "llvm/IR/Module.h"
+
 llvm::Value *ConstantValueHandle::getLLVMValue()
 {
     return Storage;

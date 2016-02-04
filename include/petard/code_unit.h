@@ -1,12 +1,7 @@
 // codeunit
 
-#ifndef CODEGEN_H
-#define CODEGEN_H
-
-#include "llvm/IR/IRBuilder.h"
-#include "llvm/IR/LLVMContext.h"
-#include "llvm/IR/Module.h"
-#include "llvm/IR/TypeBuilder.h"
+#ifndef CODE_UNIT_H
+#define CODE_UNIT_H
 
 #include "type.h"
 #include "value.h"

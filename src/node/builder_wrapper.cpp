@@ -1,6 +1,9 @@
 // builder
 
 #include "builder_wrapper.h"
+
+#include "type_wrapper.h"
+#include "value_wrapper.h"
 #include "function_builder_wrapper.h"
 
 NAN_METHOD(BuilderWrapper::New)

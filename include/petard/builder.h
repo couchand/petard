@@ -3,10 +3,7 @@
 #ifndef BUILDER_H
 #define BUILDER_H
 
-#include <string>
 #include <vector>
-
-#include "llvm/IR/IRBuilder.h"
 
 #include "type.h"
 #include "value.h"

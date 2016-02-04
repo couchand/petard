@@ -10,8 +10,6 @@ using namespace v8;
 
 #include "function_builder.h"
 
-#include "type_wrapper.h"
-#include "value_wrapper.h"
 #include "builder_wrapper.h"
 
 class FunctionBuilderWrapper : public BuilderWrapper

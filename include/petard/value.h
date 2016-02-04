@@ -3,8 +3,6 @@
 #ifndef VALUE_H
 #define VALUE_H
 
-#include <string>
-
 #include "llvm/IR/IRBuilder.h"
 
 #include "type.h"

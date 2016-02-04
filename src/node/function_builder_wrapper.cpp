@@ -2,6 +2,8 @@
 
 #include "function_builder_wrapper.h"
 
+#include "type_wrapper.h"
+
 NAN_METHOD(FunctionBuilderWrapper::New)
 {
     if (!info.IsConstructCall() || info.Length() == 0 || !info[0]->IsExternal())

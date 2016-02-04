@@ -8,7 +8,7 @@ using Nan::ObjectWrap;
 
 using namespace v8;
 
-#include <string>
+#include <vector>
 
 #include "type.h"
 

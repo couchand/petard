@@ -2,6 +2,11 @@
 
 #include "code_unit_wrapper.h"
 
+#include "function_builder.h"
+#include "type_wrapper.h"
+#include "value_wrapper.h"
+#include "function_builder_wrapper.h"
+
 NAN_METHOD(CodeUnitWrapper::New)
 {
     if (!info.IsConstructCall())

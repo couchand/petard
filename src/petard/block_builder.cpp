@@ -28,11 +28,6 @@ IfBuilder BlockBuilder::If(ValueHandle *condition)
     BlockBuilder *alternate = ChildBlock("else");
     BlockBuilder *merge = SplitBlock();
 
-    llvm::Instruction *term = block->getTerminator();
-    if (term) term->eraseFromParent();
-
-    builder.CreateCondBr(condition->getLLVMValue(), consequent->GetBlock(), alternate->GetBlock());
-
     consequent->InsertAfter();
     consequent->Br(merge);
     consequent->InsertBefore();
@@ -40,6 +35,8 @@ IfBuilder BlockBuilder::If(ValueHandle *condition)
     alternate->InsertAfter();
     alternate->Br(merge);
     alternate->InsertBefore();
+
+    CondBr(condition, consequent, alternate);
 
     builder.SetInsertPoint(merge->block);
     block = merge->block;
@@ -54,6 +51,17 @@ void BlockBuilder::Br(InstructionBuilder *dest)
     builder.SetInsertPoint(block);
 
     llvm::BranchInst *inst = builder.CreateBr(dest->GetBlock());
+
+    if (insertAfter) builder.SetInsertPoint(inst);
+}
+
+void BlockBuilder::CondBr(ValueHandle *condition, InstructionBuilder *ifTrue, InstructionBuilder *ifFalse)
+{
+    llvm::Instruction *term = block->getTerminator();
+    if (term) term->eraseFromParent();
+    builder.SetInsertPoint(block);
+
+    llvm::BranchInst *inst = builder.CreateCondBr(condition->getLLVMValue(), ifTrue->GetBlock(), ifFalse->GetBlock());
 
     if (insertAfter) builder.SetInsertPoint(inst);
 }

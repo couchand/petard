@@ -21,6 +21,10 @@ void FunctionBuilder::Br(InstructionBuilder *dest)
 {
     builder->Br(dest);
 }
+void FunctionBuilder::CondBr(ValueHandle *condition, InstructionBuilder *ifTrue, InstructionBuilder *ifFalse)
+{
+    builder->CondBr(condition, ifTrue, ifFalse);
+}
 
 void FunctionBuilder::Return()
 {

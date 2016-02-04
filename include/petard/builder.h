@@ -30,6 +30,7 @@ public:
 
     virtual IfBuilder If(ValueHandle *condition) = 0;
     virtual void Br(InstructionBuilder *dest) = 0;
+    virtual void CondBr(ValueHandle *condition, InstructionBuilder *ifTrue, InstructionBuilder *ifFalse) = 0;
 
     virtual ValueHandle *LoadConstant(ValueHandle *value) = 0;
 

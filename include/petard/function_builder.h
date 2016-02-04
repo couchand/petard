@@ -53,6 +53,7 @@ public:
 
     IfBuilder If(ValueHandle *condition);
     void Br(InstructionBuilder *dest);
+    void CondBr(ValueHandle *condition, InstructionBuilder *ifTrue, InstructionBuilder *ifFalse);
 
     ValueHandle *LoadConstant(ValueHandle *value);
 

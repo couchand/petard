@@ -8,6 +8,7 @@
         "src/node/value_wrapper.cpp",
         "src/node/builder_wrapper.cpp",
         "src/node/function_builder_wrapper.cpp",
+        "src/node/code_unit_wrapper.cpp",
         "src/petard/codegen.cpp",
         "src/petard/types.cpp",
         "src/petard/function_builder.cpp",

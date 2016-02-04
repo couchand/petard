@@ -23,6 +23,7 @@ public:
     virtual BlockBuilder *ChildBlock(const char *name) = 0;
     virtual BlockBuilder *SplitBlock(const char *name) = 0;
     virtual void UseBlock(InstructionBuilder *replacement) = 0;
+    virtual void RemoveTerminator() = 0;
 
     virtual void Br(InstructionBuilder *dest) = 0;
     virtual void CondBr(ValueHandle *condition, InstructionBuilder *ifTrue, InstructionBuilder *ifFalse) = 0;

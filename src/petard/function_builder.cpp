@@ -19,7 +19,12 @@ BlockBuilder *FunctionBuilder::SplitBlock(const char *name)
 
 void FunctionBuilder::UseBlock(InstructionBuilder *replacement)
 {
-    return builder->UseBlock(replacement);
+    builder->UseBlock(replacement);
+}
+
+void FunctionBuilder::RemoveTerminator()
+{
+    builder->RemoveTerminator();
 }
 
 void FunctionBuilder::Br(InstructionBuilder *dest)

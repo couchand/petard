@@ -3,6 +3,8 @@
 #include "block_builder.h"
 #include "function_builder.h"
 
+#include "llvm_utils.h"
+
 ValueHandle *BlockBuilder::MakeValue(TypeHandle *t, int i)
 {
     llvm::Value *v = llvm::ConstantInt::get(t->getLLVMType(context), i);
@@ -28,11 +30,15 @@ void BlockBuilder::UseBlock(InstructionBuilder *replacement)
     builder.SetInsertPoint(block);
 }
 
+void BlockBuilder::RemoveTerminator()
+{
+    llvm_utils::RemoveTerminator(block);
+    builder.SetInsertPoint(block);
+}
+
 void BlockBuilder::Br(InstructionBuilder *dest)
 {
-    llvm::Instruction *term = block->getTerminator();
-    if (term) term->eraseFromParent();
-    builder.SetInsertPoint(block);
+    RemoveTerminator();
 
     llvm::BranchInst *inst = builder.CreateBr(dest->GetBlock());
 
@@ -41,9 +47,7 @@ void BlockBuilder::Br(InstructionBuilder *dest)
 
 void BlockBuilder::CondBr(ValueHandle *condition, InstructionBuilder *ifTrue, InstructionBuilder *ifFalse)
 {
-    llvm::Instruction *term = block->getTerminator();
-    if (term) term->eraseFromParent();
-    builder.SetInsertPoint(block);
+    RemoveTerminator();
 
     llvm::BranchInst *inst = builder.CreateCondBr(condition->getLLVMValue(), ifTrue->GetBlock(), ifFalse->GetBlock());
 
@@ -52,9 +56,7 @@ void BlockBuilder::CondBr(ValueHandle *condition, InstructionBuilder *ifTrue, In
 
 void BlockBuilder::Return()
 {
-    llvm::Instruction *term = block->getTerminator();
-    if (term) term->eraseFromParent();
-    builder.SetInsertPoint(block);
+    RemoveTerminator();
 
     llvm::ReturnInst *inst = builder.CreateRetVoid();
 
@@ -70,9 +72,7 @@ void BlockBuilder::Return(ValueHandle *value)
 {
     llvm::Value *returnValue = value->getLLVMValue();
 
-    llvm::Instruction *term = block->getTerminator();
-    if (term) term->eraseFromParent();
-    builder.SetInsertPoint(block);
+    RemoveTerminator();
 
     llvm::ReturnInst *inst = builder.CreateRet(returnValue);
 

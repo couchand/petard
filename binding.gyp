@@ -3,6 +3,7 @@
     {
       "target_name": "petard",
       "sources": [
+        "src/utils/llvm_utils.cpp",
         "src/petard/type.cpp",
         "src/petard/value.cpp",
         "src/petard/block_builder.cpp",
@@ -20,6 +21,7 @@
         "__STDC_CONSTANT_MACROS=1"
       ],
       "include_dirs": [
+        "include/utils",
         "include/petard",
         "include/node",
         "<!(node -e \"require(\'nan\')\")",

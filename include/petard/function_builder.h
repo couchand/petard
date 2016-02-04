@@ -52,6 +52,7 @@ public:
     BlockBuilder *ChildBlock(const char *name);
     BlockBuilder *SplitBlock(const char *name);
     void UseBlock(InstructionBuilder *replacement);
+    void RemoveTerminator();
 
     void Br(InstructionBuilder *dest);
     void CondBr(ValueHandle *condition, InstructionBuilder *ifTrue, InstructionBuilder *ifFalse);

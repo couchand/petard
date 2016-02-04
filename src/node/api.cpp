@@ -38,4 +38,4 @@ static NAN_MODULE_INIT(Init)
     Nan::Set(target, Nan::New("CodeUnit").ToLocalChecked(), codeUnit);
 }
 
-NODE_MODULE(codegen, Init)
+NODE_MODULE(petard, Init)

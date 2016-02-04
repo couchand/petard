@@ -1,7 +1,7 @@
 {
   "targets": [
     {
-      "target_name": "codegen",
+      "target_name": "petard",
       "sources": [
         "src/petard/type.cpp",
         "src/petard/value.cpp",

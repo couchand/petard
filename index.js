@@ -1,4 +1,4 @@
-module.exports = codegen = require('bindings')('codegen');
+module.exports = codegen = require('bindings')('petard');
 
 codegen.type = {
 

@@ -62,12 +62,6 @@ lessTwo = nested.else.callFunction fib, nested.else.sub p, two
 
 nested.else.return nested.else.add lessOne, lessTwo
 
-# required because of my poor design
-# dead code elimination needs a well-formed function
-# so even if it's not possible to reach here, since we
-# have the blocks aready we have to terminate them.
-fib.return one
-
 fibFrom = mod.makeFunction "fibFromTo", vd, i32
 
 from = fibFrom.parameter 0

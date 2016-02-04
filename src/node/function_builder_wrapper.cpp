@@ -85,7 +85,13 @@ NAN_MODULE_INIT(FunctionBuilderWrapper::Init)
 
     Nan::SetPrototypeMethod(tmpl, "value", Value);
 
-    Nan::SetPrototypeMethod(tmpl, "if", If);
+    Nan::SetPrototypeMethod(tmpl, "br", Br);
+
+    Nan::SetPrototypeMethod(tmpl, "createBlock", CreateBlock);
+    Nan::SetPrototypeMethod(tmpl, "splitBlock", SplitBlock);
+    Nan::SetPrototypeMethod(tmpl, "useBlock", UseBlock);
+    Nan::SetPrototypeMethod(tmpl, "insertAfter", InsertAfter);
+    Nan::SetPrototypeMethod(tmpl, "insertBefore", InsertBefore);
 
     constructor().Reset(Nan::GetFunction(tmpl).ToLocalChecked());
     Nan::Set(target, Nan::New("FunctionBuilder").ToLocalChecked(),

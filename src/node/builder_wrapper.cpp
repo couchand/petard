@@ -478,32 +478,30 @@ NAN_METHOD(BuilderWrapper::SplitBlock)
     info.GetReturnValue().Set(BuilderWrapper::wrapBuilder(child));
 }
 
-NAN_METHOD(BuilderWrapper::If)
+NAN_METHOD(BuilderWrapper::UseBlock)
 {
-    Nan::EscapableHandleScope scope;
-
     BuilderWrapper *self = Nan::ObjectWrap::Unwrap<BuilderWrapper>(info.This());
 
-    if (info.Length() == 0)
+    if (!Nan::New(BuilderWrapper::prototype)->HasInstance(info[0]))
     {
-        return Nan::ThrowError("If requires a condition value");
+        return Nan::ThrowError("UseBlock requires a builder");
     }
 
-    if (!Nan::New(ValueWrapper::prototype)->HasInstance(info[0]))
-    {
-        return Nan::ThrowError("If condition must be a value");
-    }
+    BuilderWrapper *replacement = Nan::ObjectWrap::Unwrap<BuilderWrapper>(info[0].As<Object>());
 
-    ValueWrapper *cond = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[0].As<Object>());
+    self->Builder->UseBlock(replacement->Builder);
+}
 
-    IfBuilder clauses = self->Builder->If(cond->Val);
+NAN_METHOD(BuilderWrapper::InsertBefore)
+{
+    BuilderWrapper *self = Nan::ObjectWrap::Unwrap<BuilderWrapper>(info.This());
+    self->Builder->InsertBefore();
+}
 
-    Local<Object> result = Nan::New<v8::Object>();
-
-    result->Set(Nan::New("then").ToLocalChecked(), BuilderWrapper::wrapBuilder(clauses.Then));
-    result->Set(Nan::New("else").ToLocalChecked(), BuilderWrapper::wrapBuilder(clauses.Else));
-
-    info.GetReturnValue().Set(scope.Escape(result));
+NAN_METHOD(BuilderWrapper::InsertAfter)
+{
+    BuilderWrapper *self = Nan::ObjectWrap::Unwrap<BuilderWrapper>(info.This());
+    self->Builder->InsertAfter();
 }
 
 Handle<v8::Value> BuilderWrapper::wrapBuilder(InstructionBuilder *value)
@@ -566,8 +564,9 @@ NAN_MODULE_INIT(BuilderWrapper::Init)
 
     Nan::SetPrototypeMethod(tmpl, "createBlock", CreateBlock);
     Nan::SetPrototypeMethod(tmpl, "splitBlock", SplitBlock);
-
-    Nan::SetPrototypeMethod(tmpl, "if", If);
+    Nan::SetPrototypeMethod(tmpl, "useBlock", UseBlock);
+    Nan::SetPrototypeMethod(tmpl, "insertAfter", InsertAfter);
+    Nan::SetPrototypeMethod(tmpl, "insertBefore", InsertBefore);
 
     constructor().Reset(Nan::GetFunction(tmpl).ToLocalChecked());
     Nan::Set(target, Nan::New("Builder").ToLocalChecked(),

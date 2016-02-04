@@ -62,8 +62,9 @@ protected:
 
     static NAN_METHOD(CreateBlock);
     static NAN_METHOD(SplitBlock);
-
-    static NAN_METHOD(If);
+    static NAN_METHOD(UseBlock);
+    static NAN_METHOD(InsertBefore);
+    static NAN_METHOD(InsertAfter);
 
 public:
     static Handle<v8::Value> wrapBuilder(InstructionBuilder *value);

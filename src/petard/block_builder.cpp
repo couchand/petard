@@ -22,26 +22,10 @@ BlockBuilder *BlockBuilder::SplitBlock(const char *name)
     return new BlockBuilder(context, parent, child);
 }
 
-IfBuilder BlockBuilder::If(ValueHandle *condition)
+void BlockBuilder::UseBlock(InstructionBuilder *replacement)
 {
-    BlockBuilder *consequent = ChildBlock("then");
-    BlockBuilder *alternate = ChildBlock("else");
-    BlockBuilder *merge = SplitBlock("merge");
-
-    consequent->InsertAfter();
-    consequent->Br(merge);
-    consequent->InsertBefore();
-
-    alternate->InsertAfter();
-    alternate->Br(merge);
-    alternate->InsertBefore();
-
-    CondBr(condition, consequent, alternate);
-
-    builder.SetInsertPoint(merge->block);
-    block = merge->block;
-
-    return IfBuilder { consequent, alternate };
+    block = replacement->GetBlock();
+    builder.SetInsertPoint(block);
 }
 
 void BlockBuilder::Br(InstructionBuilder *dest)

@@ -47,7 +47,7 @@ NAN_MODULE_INIT(TypeWrapper::Init)
     Nan::SetPrototypeMethod(tmpl, "toString", TypeWrapper::ToString);
 
     constructor().Reset(Nan::GetFunction(tmpl).ToLocalChecked());
-    Nan::Set(target, Nan::New("TypeWrapper").ToLocalChecked(),
+    Nan::Set(target, Nan::New("Type").ToLocalChecked(),
         Nan::GetFunction(tmpl).ToLocalChecked());
 
     prototype.Reset(tmpl);

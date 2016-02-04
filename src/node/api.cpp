@@ -36,6 +36,18 @@ static NAN_MODULE_INIT(Init)
 
     Local<Function> codeUnit = Nan::New(CodeUnitWrapper::constructor());
     Nan::Set(target, Nan::New("CodeUnit").ToLocalChecked(), codeUnit);
+
+    Local<Function> builder = Nan::New(BuilderWrapper::constructor());
+    Nan::Set(target, Nan::New("Builder").ToLocalChecked(), builder);
+
+    Local<Function> functionBuilder = Nan::New(FunctionBuilderWrapper::constructor());
+    Nan::Set(target, Nan::New("FunctionBuilder").ToLocalChecked(), functionBuilder);
+
+    Local<Function> value = Nan::New(ValueWrapper::constructor());
+    Nan::Set(target, Nan::New("Value").ToLocalChecked(), value);
+
+    Local<Function> type = Nan::New(TypeWrapper::constructor());
+    Nan::Set(target, Nan::New("Type").ToLocalChecked(), type);
 }
 
 NODE_MODULE(petard, Init)

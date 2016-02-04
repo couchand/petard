@@ -11,12 +11,6 @@
 class BlockBuilder;
 class FunctionBuilder;
 
-struct IfBuilder
-{
-    BlockBuilder *Then;
-    BlockBuilder *Else;
-};
-
 class InstructionBuilder
 {
 public:
@@ -28,8 +22,8 @@ public:
 
     virtual BlockBuilder *ChildBlock(const char *name) = 0;
     virtual BlockBuilder *SplitBlock(const char *name) = 0;
+    virtual void UseBlock(InstructionBuilder *replacement) = 0;
 
-    virtual IfBuilder If(ValueHandle *condition) = 0;
     virtual void Br(InstructionBuilder *dest) = 0;
     virtual void CondBr(ValueHandle *condition, InstructionBuilder *ifTrue, InstructionBuilder *ifFalse) = 0;
 

@@ -17,9 +17,9 @@ BlockBuilder *FunctionBuilder::SplitBlock(const char *name)
     return builder->SplitBlock(name);
 }
 
-IfBuilder FunctionBuilder::If(ValueHandle *condition)
+void FunctionBuilder::UseBlock(InstructionBuilder *replacement)
 {
-    return builder->If(condition);
+    return builder->UseBlock(replacement);
 }
 
 void FunctionBuilder::Br(InstructionBuilder *dest)

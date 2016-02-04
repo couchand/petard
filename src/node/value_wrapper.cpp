@@ -47,7 +47,7 @@ NAN_MODULE_INIT(ValueWrapper::Init)
     Nan::SetAccessor(tmpl->PrototypeTemplate(), Nan::New("type").ToLocalChecked(), GetType);
 
     constructor().Reset(Nan::GetFunction(tmpl).ToLocalChecked());
-    Nan::Set(target, Nan::New("ValueWrapper").ToLocalChecked(),
+    Nan::Set(target, Nan::New("Value").ToLocalChecked(),
         Nan::GetFunction(tmpl).ToLocalChecked());
 
     prototype.Reset(tmpl);

@@ -2,7 +2,7 @@
 
 #include <sstream>
 
-#include "types.h"
+#include "type.h"
 
 llvm::Type *VoidTypeHandle::getLLVMType(llvm::LLVMContext &context)
 {

@@ -5,12 +5,6 @@ using Nan::ObjectWrap;
 
 using namespace v8;
 
-#include <vector>
-
-#include "types.h"
-#include "function_builder.h"
-#include "codegen.h"
-
 #include "type_wrapper.h"
 #include "value_wrapper.h"
 #include "builder_wrapper.h"

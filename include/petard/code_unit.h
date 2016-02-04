@@ -1,4 +1,4 @@
-// codegen
+// codeunit
 
 #ifndef CODEGEN_H
 #define CODEGEN_H
@@ -8,7 +8,7 @@
 #include "llvm/IR/Module.h"
 #include "llvm/IR/TypeBuilder.h"
 
-#include "types.h"
+#include "type.h"
 #include "value.h"
 #include "function_builder.h"
 

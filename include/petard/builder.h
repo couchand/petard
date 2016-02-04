@@ -8,7 +8,7 @@
 
 #include "llvm/IR/IRBuilder.h"
 
-#include "types.h"
+#include "type.h"
 #include "value.h"
 
 class BlockBuilder;

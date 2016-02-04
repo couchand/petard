@@ -10,7 +10,7 @@ using namespace v8;
 
 #include <vector>
 
-#include "types.h"
+#include "type.h"
 #include "values.h"
 #include "builder.h"
 

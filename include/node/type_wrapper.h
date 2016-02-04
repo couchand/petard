@@ -10,7 +10,7 @@ using namespace v8;
 
 #include <string>
 
-#include "types.h"
+#include "type.h"
 
 // definitions from http://www.llvm.org/docs/doxygen/html/DerivedTypes_8h_source.html#l00046
 #define MIN_INT_BITS 1

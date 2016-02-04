@@ -8,9 +8,9 @@ using Nan::ObjectWrap;
 
 using namespace v8;
 
-#include "types.h"
+#include "type.h"
 #include "function_builder.h"
-#include "codegen.h"
+#include "code_unit.h"
 
 #include "value_wrapper.h"
 #include "function_builder_wrapper.h"

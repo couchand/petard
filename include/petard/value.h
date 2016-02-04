@@ -7,7 +7,7 @@
 
 #include "llvm/IR/IRBuilder.h"
 
-#include "types.h"
+#include "type.h"
 
 class ValueHandle
 {

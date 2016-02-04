@@ -5,9 +5,6 @@ using Nan::ObjectWrap;
 
 using namespace v8;
 
-#include <iostream>
-#include <string>
-#include <map>
 #include <vector>
 
 #include "types.h"
@@ -15,74 +12,7 @@ using namespace v8;
 #include "codegen.h"
 
 #include "type_wrapper.h"
-
-class ValueWrapper : public Nan::ObjectWrap
-{
-    ValueWrapper(ValueHandle *v)
-    : Val(v) {}
-
-    static NAN_METHOD(New)
-    {
-
-        if (!info.IsConstructCall() || info.Length() == 0 || !info[0]->IsExternal())
-        {
-            return Nan::ThrowError("Cannot instantiate value directly, use factory");
-        }
-
-        Handle<External> handle = Handle<External>::Cast(info[0]);
-        ValueHandle *v = static_cast<ValueHandle *>(handle->Value());
-        ValueWrapper *instance = new ValueWrapper(v);
-
-        instance->Wrap(info.This());
-
-        info.GetReturnValue().Set(info.This());
-    }
-
-    static NAN_GETTER(GetType)
-    {
-        ValueWrapper *wrapper = Nan::ObjectWrap::Unwrap<ValueWrapper>(info.This());
-
-        info.GetReturnValue().Set(TypeWrapper::wrapType(wrapper->Val->Type));
-    }
-
-public:
-    static Handle<Value> wrapValue(ValueHandle *value)
-    {
-        Nan::EscapableHandleScope scope;
-
-        const unsigned argc = 1;
-        Handle<Value> argv[argc] = { Nan::New<External>((void *)value) };
-        Local<Function> cons = Nan::New(constructor());
-
-        return scope.Escape(Nan::NewInstance(cons, argc, argv).ToLocalChecked());
-    }
-
-    ValueHandle *Val;
-
-    static Nan::Persistent<FunctionTemplate> prototype;
-
-    static inline Nan::Persistent<Function>& constructor() {
-        static Nan::Persistent<Function> my_constructor;
-        return my_constructor;
-    }
-
-    static NAN_MODULE_INIT(Init)
-    {
-        Local<FunctionTemplate> tmpl = Nan::New<FunctionTemplate>(ValueWrapper::New);
-
-        tmpl->SetClassName(Nan::New("Value").ToLocalChecked());
-        tmpl->InstanceTemplate()->SetInternalFieldCount(1);
-        Nan::SetAccessor(tmpl->PrototypeTemplate(), Nan::New("type").ToLocalChecked(), GetType);
-
-        constructor().Reset(Nan::GetFunction(tmpl).ToLocalChecked());
-        Nan::Set(target, Nan::New("ValueWrapper").ToLocalChecked(),
-            Nan::GetFunction(tmpl).ToLocalChecked());
-
-        prototype.Reset(tmpl);
-    }
-};
-
-Nan::Persistent<FunctionTemplate> ValueWrapper::prototype;
+#include "value_wrapper.h"
 
 class FunctionBuilderWrapper;
 

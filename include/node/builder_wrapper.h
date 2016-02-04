@@ -57,6 +57,9 @@ protected:
 
     static NAN_METHOD(CallFunction);
 
+    static NAN_METHOD(Br);
+    static NAN_METHOD(CondBr);
+
     static NAN_METHOD(If);
 
 public:

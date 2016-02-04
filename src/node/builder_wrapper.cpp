@@ -388,6 +388,52 @@ NAN_METHOD(BuilderWrapper::CallFunction)
     info.GetReturnValue().Set(ValueWrapper::wrapValue(result));
 }
 
+NAN_METHOD(BuilderWrapper::Br)
+{
+    BuilderWrapper *self = Nan::ObjectWrap::Unwrap<BuilderWrapper>(info.This());
+
+    if (info.Length() == 0)
+    {
+        return Nan::ThrowError("Br requires a branch target");
+    }
+
+    auto builderProto = Nan::New(BuilderWrapper::prototype);
+    auto valueProto = Nan::New(ValueWrapper::prototype);
+
+    if (builderProto->HasInstance(info[0]))
+    {
+        // unconditional branch
+
+        BuilderWrapper *target = Nan::ObjectWrap::Unwrap<BuilderWrapper>(info[0].As<Object>());
+
+        self->Builder->Br(target->Builder);
+    }
+    else if (valueProto->HasInstance(info[0]))
+    {
+        // conditional branch
+
+        ValueWrapper *cond = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[0].As<Object>());
+
+        if (!builderProto->HasInstance(info[1]))
+        {
+            return Nan::ThrowError("Br requires if true target");
+        }
+        BuilderWrapper *ifTrue = Nan::ObjectWrap::Unwrap<BuilderWrapper>(info[1].As<Object>());
+
+        if (!builderProto->HasInstance(info[2]))
+        {
+            return Nan::ThrowError("Br requires if false target");
+        }
+        BuilderWrapper *ifFalse = Nan::ObjectWrap::Unwrap<BuilderWrapper>(info[2].As<Object>());
+
+        self->Builder->CondBr(cond->Val, ifTrue->Builder, ifFalse->Builder);
+    }
+    else
+    {
+        return Nan::ThrowError("Br requires a branch target");
+    }
+}
+
 NAN_METHOD(BuilderWrapper::If)
 {
     Nan::EscapableHandleScope scope;
@@ -471,6 +517,8 @@ NAN_MODULE_INIT(BuilderWrapper::Init)
     Nan::SetPrototypeMethod(tmpl, "select", Select);
 
     Nan::SetPrototypeMethod(tmpl, "value", Value);
+
+    Nan::SetPrototypeMethod(tmpl, "br", Br);
 
     Nan::SetPrototypeMethod(tmpl, "if", If);
 

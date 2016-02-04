@@ -35,7 +35,7 @@ public:
     ValueHandle *MakeValue(TypeHandle *t, int i);
 
     BlockBuilder *ChildBlock(const char *name);
-    BlockBuilder *SplitBlock();
+    BlockBuilder *SplitBlock(const char *name);
 
     IfBuilder If(ValueHandle *condition);
     void Br(InstructionBuilder *dest);

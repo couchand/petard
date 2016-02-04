@@ -15,9 +15,9 @@ BlockBuilder *BlockBuilder::ChildBlock(const char *name)
     return new BlockBuilder(context, parent, child);
 }
 
-BlockBuilder *BlockBuilder::SplitBlock()
+BlockBuilder *BlockBuilder::SplitBlock(const char *name)
 {
-    llvm::BasicBlock *child = block->splitBasicBlock(builder.GetInsertPoint(), "merge");
+    llvm::BasicBlock *child = block->splitBasicBlock(builder.GetInsertPoint(), name);
     builder.SetInsertPoint(block);
     return new BlockBuilder(context, parent, child);
 }
@@ -26,7 +26,7 @@ IfBuilder BlockBuilder::If(ValueHandle *condition)
 {
     BlockBuilder *consequent = ChildBlock("then");
     BlockBuilder *alternate = ChildBlock("else");
-    BlockBuilder *merge = SplitBlock();
+    BlockBuilder *merge = SplitBlock("merge");
 
     consequent->InsertAfter();
     consequent->Br(merge);

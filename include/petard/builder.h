@@ -27,6 +27,7 @@ public:
     virtual ValueHandle *MakeValue(TypeHandle *t, int i) = 0;
 
     virtual BlockBuilder *ChildBlock(const char *name) = 0;
+    virtual BlockBuilder *SplitBlock(const char *name) = 0;
 
     virtual IfBuilder If(ValueHandle *condition) = 0;
     virtual void Br(InstructionBuilder *dest) = 0;

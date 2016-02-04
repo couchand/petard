@@ -434,6 +434,50 @@ NAN_METHOD(BuilderWrapper::Br)
     }
 }
 
+NAN_METHOD(BuilderWrapper::CreateBlock)
+{
+    BuilderWrapper *self = Nan::ObjectWrap::Unwrap<BuilderWrapper>(info.This());
+
+    if (info.Length() == 0)
+    {
+        // TODO: should we really?
+        return Nan::ThrowError("CreateBlock requires a block name");
+    }
+
+    if (!info[0]->IsString())
+    {
+        return Nan::ThrowError("Block name must be a string");
+    }
+
+    Local<String> name = info[0].As<String>();
+    String::Utf8Value encoded(name);
+
+    InstructionBuilder *child = self->Builder->ChildBlock(*encoded);
+    info.GetReturnValue().Set(BuilderWrapper::wrapBuilder(child));
+}
+
+NAN_METHOD(BuilderWrapper::SplitBlock)
+{
+    BuilderWrapper *self = Nan::ObjectWrap::Unwrap<BuilderWrapper>(info.This());
+
+    if (info.Length() == 0)
+    {
+        // TODO: should we really?
+        return Nan::ThrowError("SplitBlock requires a block name");
+    }
+
+    if (!info[0]->IsString())
+    {
+        return Nan::ThrowError("Block name must be a string");
+    }
+
+    Local<String> name = info[0].As<String>();
+    String::Utf8Value encoded(name);
+
+    InstructionBuilder *child = self->Builder->SplitBlock(*encoded);
+    info.GetReturnValue().Set(BuilderWrapper::wrapBuilder(child));
+}
+
 NAN_METHOD(BuilderWrapper::If)
 {
     Nan::EscapableHandleScope scope;
@@ -519,6 +563,9 @@ NAN_MODULE_INIT(BuilderWrapper::Init)
     Nan::SetPrototypeMethod(tmpl, "value", Value);
 
     Nan::SetPrototypeMethod(tmpl, "br", Br);
+
+    Nan::SetPrototypeMethod(tmpl, "createBlock", CreateBlock);
+    Nan::SetPrototypeMethod(tmpl, "splitBlock", SplitBlock);
 
     Nan::SetPrototypeMethod(tmpl, "if", If);
 

@@ -60,6 +60,9 @@ protected:
     static NAN_METHOD(Br);
     static NAN_METHOD(CondBr);
 
+    static NAN_METHOD(CreateBlock);
+    static NAN_METHOD(SplitBlock);
+
     static NAN_METHOD(If);
 
 public:

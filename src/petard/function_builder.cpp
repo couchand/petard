@@ -12,6 +12,11 @@ BlockBuilder *FunctionBuilder::ChildBlock(const char *name)
     return builder->ChildBlock(name);
 }
 
+BlockBuilder *FunctionBuilder::SplitBlock(const char *name)
+{
+    return builder->SplitBlock(name);
+}
+
 IfBuilder FunctionBuilder::If(ValueHandle *condition)
 {
     return builder->If(condition);

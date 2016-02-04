@@ -4,6 +4,7 @@
       "target_name": "codegen",
       "sources": [
         "src/node/api.cpp",
+        "src/node/type_wrapper.cpp",
         "src/petard/codegen.cpp",
         "src/petard/types.cpp",
         "src/petard/function_builder.cpp",

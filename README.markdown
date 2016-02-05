@@ -56,8 +56,13 @@ Look to the Travis build config for details.
 
 when you're building **petard** you will need to set the environment variable
 `LLVM_CONFIG` to be the llvm-config you've installed.  For example, if you're on
-Ubuntu and it's `llvm-config-3.6`, you'll type `LLVM_CONFIG=llvm-config-3.6` on
-the command line before the `npm i` or `npm run build`.
+Ubuntu where it's isntalled as `llvm-config-3.6`, you'll enter:
+
+    > LLVM_CONFIG=llvm-config-3.6 npm run build
+
+or
+
+    > LLVM_CONFIG=llvm-config-3.6 npm install petard
 
 Once you've got it built successfully, try this:
 

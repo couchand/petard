@@ -54,5 +54,28 @@ var ifimpl = function If(cond) {
 
 attach("if", ifimpl);
 
+// structured while statement helper
+var whileimpl = function While(condFn) {
+
+  var merge = this.splitBlock("after");
+  var condCheck = this.createBlock("cond");
+  var body = this.createBlock("body");
+  body.insertAfter();
+  body.br(condCheck);
+  body.insertBefore();
+
+  var cond = condFn(condCheck);
+  condCheck.br(cond, body, merge);
+
+  this.br(condCheck);
+
+  this.useBlock(merge);
+
+  return body;
+
+};
+
+attach("while", whileimpl);
+
 // export everything
 module.exports = petard;

@@ -1,5 +1,12 @@
 # conditionals
 
+# expected output:
+
+# Hello!
+#
+# Goodbye!
+#
+
 llvm = require '../'
 
 {i1, i8, i32, pointerTo} = llvm.type

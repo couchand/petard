@@ -1,5 +1,10 @@
 # fib-iterative
 
+# expected output:
+#   the program's return value will be the targeted fibonacci number
+
+TARGET_INDEX = 10
+
 llvm = require '../'
 
 i32 = llvm.type.i32
@@ -39,7 +44,7 @@ f.return f.load nlesstwofib
 
 main = mod.makeFunction "main", i32
 
-main.return main.callFunction f, main.value i32, 10
+main.return main.callFunction f, main.value i32, TARGET_INDEX
 
 mod.dump()
 mod.writeBitcodeToFile 'fib-iterative.bc'

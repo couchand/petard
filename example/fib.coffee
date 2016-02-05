@@ -1,5 +1,8 @@
 # fibonacci numbers
 
+# expected output:
+#   the fibonacci numbers up to 832040, one per line
+
 MAX_FIB = 29
 
 llvm = require '../'

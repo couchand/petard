@@ -77,5 +77,42 @@ var whileimpl = function While(condFn) {
 
 attach("while", whileimpl);
 
+// structured switch statement helper
+var switchimpl = function Switch(cond) {
+
+  var that = this;
+
+  var merge = this.splitBlock("after");
+
+  var defaultBlock = this.createBlock("default");
+
+  defaultBlock.insertAfter();
+  defaultBlock.br(merge);
+  defaultBlock.insertBefore();
+
+  var sw = this.switch(cond, defaultBlock);
+
+  this.useBlock(merge);
+
+  return {
+    defaultCase: defaultBlock,
+
+    addCase: function addCase(onVal) {
+      var caseBlock = that.createBlock("case" + onVal);
+
+      caseBlock.insertAfter();
+      caseBlock.br(merge);
+      caseBlock.insertBefore();
+
+      sw.addCase(onVal, caseBlock);
+
+      return caseBlock;
+    }
+  };
+
+};
+
+attach("select", switchimpl);
+
 // export everything
 module.exports = petard;

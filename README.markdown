@@ -72,10 +72,12 @@ Once you've got it built successfully, try this:
 ```coffeescript
 llvm = require 'petard'
 
+{i8, i32, pointerTo} = llvm.type
+
 hello = llvm.createModule "hello"
 
-main = hello.createFunction "main", llvm.type.i32
-puts = hello.declareFunction "puts", llvm.type.i32, llvm.type.pointerTo llvm.type.i8
+main = hello.createFunction "main", i32
+puts = hello.declareFunction "puts", i32, pointerTo i8
 
 text = hello.constant "Hello, world!\n"
 

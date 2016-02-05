@@ -106,6 +106,180 @@ function (an LLVM block) as well as a cursor within that block where
 instructions will be placed.  Calls to builder methods construct LLVM IR and
 take and return values and other builders.
 
+##### return(\[Number|Value value\])
+
+Return from the function.  If a value is provided, it is the return value of the
+function.  You must ensure that the value passed is of the same type as the
+return type of the function.
+
+##### Value parameter(Number index)
+
+Reference function parameter `index`.
+
+##### Value loadConstant(Value constant)
+
+Load a constant value.  Currently the only usage is to load a string constant,
+see the first example.
+
+##### Value callFunction(FunctionBuilder|FunctionValue fn, \[Value params...\])
+
+Call the given internal or external function, passing in the parameter values.
+
+##### Value alloca(Type type, \[Number|Value arraySize\])
+
+Allocate space the size of type on the stack.  If an arraySize is provided,
+instead allocate that much space times the arraySize.  Returns a pointer value
+to the space.
+
+##### Value load(Value pointer)
+
+Load a value from the memory pointed to by pointer.
+
+##### store(Value value, Value pointer)
+
+Store the value in the memory pointed to by pointer.
+
+##### Value add(Value left, Value right)
+
+Add the values.
+
+##### Value sub(Value left, Value right)
+
+Subtract the right value from the left.
+
+##### Value mul(Value left, Value right)
+
+Multiply the values.
+
+##### Value udiv(Value left, Value right)
+
+Unsigned integer divide the left value by the right.
+
+##### Value sdiv(Value left, Value right)
+
+Signed integer divide the left value by the right.
+
+##### Value urem(Value left, Value right)
+
+The remainder when the left value is unsigned integer divided by the right.
+
+##### Value srem(Value left, Value right)
+
+The remainder when the left value is signed integer divided by the right.
+
+##### Value and(Value left, Value right)
+
+Bitwise and the values.
+
+##### Value or(Value left, Value right)
+
+Bitwise or the values.
+
+##### Value xor(Value left, Value right)
+
+Bitwise xor the values.
+
+##### Value shl(Value left, Value right)
+
+Shift the left value left by the right value number of bits.
+
+##### Value lshr(Value left, Value right)
+
+Shift the left value right logically (sign-ignoring) by the right value number
+of bits.
+
+##### Value ashr(Value left, Value right)
+
+Shift the left value right arithmetically (sign-preserving) by the right value
+number of bits.
+
+##### Value equal(Value left, Value right)
+
+Compare the values for equality.
+
+##### Value notEqual(Value left, Value right)
+
+Compare the values for inequality.
+
+##### Value uGreaterThan(Value left, Value right)
+
+Unsigned greater than comparison.
+
+##### Value uAtLeast(Value left, Value right)
+
+Unsigned greater than or equal to comparison.
+
+##### Value uLessThan(Value left, Value right)
+
+Unsigned less than comparison.
+
+##### Value uAtMost(Value left, Value right)
+
+Unsigned less than or equal to comparison.
+
+##### Value sGreaterThan(Value left, Value right)
+
+Signed greater than comparison.
+
+##### Value sAtLeast(Value left, Value right)
+
+Signed greater than or equal to comparison.
+
+##### Value sLessThan(Value left, Value right)
+
+Signed less than comparison.
+
+##### Value sAtMost(Value left, Value right)
+
+Signed less than or equal to comparison.
+
+##### Value select(Value condition, Value ifTrue, Value ifFalse)
+
+Non-branching value select.  Returns the value corresponding to the ifTrue value
+if the condition is true, and the ifFalse value if the condition is not true.
+
+##### Value value(Type type, Any value)
+
+Construct a new LLVM value of the given type for the given JavaScript value.
+
+##### br(Builder target)
+
+Unconditional branch to the target.
+
+##### br(Value condition, Builder ifTrue, Builder ifFalse)
+
+Conditional branch.  If the condition is true, branch to the ifTrue builder,
+otherwise branch to the ifFalse builder.
+
+##### Builder createBlock(String name)
+
+Create another block in the same function.  Use with the branching instructions
+to create custom control structures.  See the node wrapper for examples on
+using `createBlock`, `splitBlock`, `useBlock`, `insertBefore`, `insertAfter`,
+and `br` to build control structures.
+
+##### Builder splitBlock(String name)
+
+Split the current block at the cursor.  The object itself retains the top half
+(all the instructions written _before_) and the returned builder takes the
+bottom half (all the instructions written _after_).  In practice this usually
+means the terminator of the block is the only instruction in the new block.
+
+##### useBlock(Builder target)
+
+Set this builder to start building in the target block.  Make sure this builder
+already has a terminator or you'll get into trouble.
+
+##### insertAfter()
+
+Start inserting instructions _after_ the cursor rather than before.  Mainly
+useful to appending a terminator to a block ahead of time.
+
+##### insertBefore()
+
+Resume inserting instructions _before_ the cursor, the default behavior.  Used
+to restore the standard mode after inserting a terminator.
+
 #### FunctionBuilder
 
 A specialization of a builder corresponding to a complete function.  In addition
@@ -129,12 +303,12 @@ LLVM Module.  It has a few helpful methods.
 Compile a constant value into the IR.  At the moment the only use is to load a
 constant string.  See the first example for usage.
 
-##### Value unit.declareFunction(String name, Type returns, Type takes...)
+##### Value unit.declareFunction(String name, \[Type returns\], \[Type takes...\])
 
 Declare a function external to this code unit that will be linked in.  Takes the
 name of the function and optionally the return type and parameter types.
 
-##### FunctionBuilder unit.makeFunction(String name, Type returns, Type takes...)
+##### FunctionBuilder unit.makeFunction(String name, \[Type returns\], \[Type takes...\])
 
 Create a new function in this code unit with the given name and optionall the
 return type and parameter types.

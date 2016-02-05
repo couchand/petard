@@ -18,6 +18,9 @@ one = f.value i32, 1
 f.store one, nlesstwofib
 f.store one, nlessonefib
 
+zero = f.value i32, 0
+f.store zero, n
+
 body = f.while (w) ->
   w.uLessThan w.load(n), target
 

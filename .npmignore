@@ -1,0 +1,5 @@
+build
+*.bc
+node_modules
+example
+test

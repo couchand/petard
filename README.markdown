@@ -17,6 +17,7 @@ a js llvm library
       * [Value][11]
       * [Builder][12]
       * [FunctionBuilder][13]
+      * [SwitchBuilder][18]
       * [CodeUnit][14]
     * [helpers][16]
       * [`type` dict][17]
@@ -104,6 +105,7 @@ methods in JavaScript are marked with a *(js)*.
     * [Value][11]
     * [Builder][12]
     * [FunctionBuilder][13]
+    * [SwitchBuilder][18]
     * [CodeUnit][14]
   * [helpers][16]
     * [`type` dict][17]
@@ -295,6 +297,11 @@ Unconditional branch to the target.
 Conditional branch.  If the condition is true, branch to the ifTrue builder,
 otherwise branch to the ifFalse builder.
 
+##### [SwitchBuilder][18] switch([Value][11] condition, [Builder][12] defaultDest)
+
+Multi-way branch.  If none of the cases added to the returned switch builder
+match the value of the condition, control follows the defaultDest.
+
 ##### [Builder][12] createBlock(String name)
 
 Create another block in the same function.  Use with the branching instructions
@@ -336,6 +343,15 @@ A property containing the name of the function.
 ##### [Type][10] fnBuilder.type
 
 A property containing the type of the function.
+
+#### SwitchBuilder
+
+A special tool for working with switch statements.  It is returned from the
+`switch` method of a builder.
+
+##### [Builder][12] addCase(Number onVal)
+
+Adds a case for the value `onVal`, returning a builder for the case.
 
 #### CodeUnit
 
@@ -398,6 +414,7 @@ more information
 [15]: https://github.com/couchand/petard#petard-types
 [16]: https://github.com/couchand/petard#helpers
 [17]: https://github.com/couchand/petard#type-dict
+[18]: https://github.com/couchand/petard#switchbuilder
 
 [20]: https://github.com/couchand/petard#value-unitdeclarefunctionstring-name-type-returns-type-takes
 [21]: https://github.com/couchand/petard/tree/master/example

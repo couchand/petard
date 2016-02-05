@@ -18,6 +18,7 @@ a js llvm library
       * [Builder][12]
       * [FunctionBuilder][13]
       * [SwitchBuilder][18]
+      * [SelectBuilder][19]
       * [CodeUnit][14]
     * [helpers][16]
       * [`type` dict][17]
@@ -302,6 +303,12 @@ otherwise branch to the ifFalse builder.
 Multi-way branch.  If none of the cases added to the returned switch builder
 match the value of the condition, control follows the defaultDest.
 
+##### [SelectBuilder][19] select([Value][11] condition) *(js)*
+
+Builds the switch control structure.  While the `switch` method simply produces
+a multi-way branch, this provides the high-level control you're expecting
+out of the box, namely merging back to one place at the end.
+
 ##### [Builder][12] createBlock(String name)
 
 Create another block in the same function.  Use with the branching instructions
@@ -348,6 +355,18 @@ A property containing the type of the function.
 
 A special tool for working with switch statements.  It is returned from the
 `switch` method of a builder.
+
+##### addCase(Number onVal, [Builder][12] target)
+
+Adds a case for the value `onVal`, branching to target.
+
+#### SelectBuilder *(js)*
+
+The same thing as the switch builder, but for select statements.
+
+##### [Builder][12] defaultCase
+
+The default case builder.
 
 ##### [Builder][12] addCase(Number onVal)
 
@@ -415,6 +434,7 @@ more information
 [16]: https://github.com/couchand/petard#helpers
 [17]: https://github.com/couchand/petard#type-dict
 [18]: https://github.com/couchand/petard#switchbuilder
+[18]: https://github.com/couchand/petard#selectbuilder-js
 
 [20]: https://github.com/couchand/petard#value-unitdeclarefunctionstring-name-type-returns-type-takes
 [21]: https://github.com/couchand/petard/tree/master/example

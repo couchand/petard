@@ -41,6 +41,9 @@ JavaScript errors, but we don't have very good coverage yet.  Please do submit
 a ticket or pull request if there's a type of programmer error that could be
 caught earlier and an error thrown.
 
+one more warning: it is currently VERY leaky.  don't use in any program that
+will be running very long.
+
 dependencies
 ------------
 

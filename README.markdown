@@ -84,7 +84,8 @@ main.return 0
 hello.writeBitcodeToFile "hello.bc"
 ```
 
-Then use opt and clang as usual with the LLVM IR bitcode file.
+Then use opt and clang as usual with the LLVM IR bitcode file.  Look at the
+[example][21] folder for more examples.
 
 documentation
 -------------
@@ -394,6 +395,7 @@ more information
 [17]: https://github.com/couchand/petard#type-dict
 
 [20]: https://github.com/couchand/petard#value-unitdeclarefunctionstring-name-type-returns-type-takes
+[21]: https://github.com/couchand/petard/tree/master/example
 
 [90]: https://github.com/couchand/petard#introduction
 [91]: https://github.com/couchand/petard#dependencies

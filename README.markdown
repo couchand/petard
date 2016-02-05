@@ -12,6 +12,14 @@ a js llvm library
   * [dependencies][91]
   * [getting started][92]
   * [documentation][93]
+    * [petard types][15]
+      * [Type][10]
+      * [Value][11]
+      * [Builder][12]
+      * [FunctionBuilder][13]
+      * [CodeUnit][14]
+    * [helpers][16]
+      * [`type` dict][17]
   * [more information][94]
 
 [![Build Status](https://travis-ci.org/couchand/petard.svg?branch=master)](https://travis-ci.org/couchand/petard)
@@ -68,14 +76,14 @@ The underlying C++ API exposes the basics of LLVM IR construction, and the node
 wrapper adds some higher-level functionality on top of that.  In the listing the
 methods in JavaScript are marked with a *(js)*.
 
-  * petard types
+  * [petard types][15]
     * [Type][10]
     * [Value][11]
     * [Builder][12]
     * [FunctionBuilder][13]
     * [CodeUnit][14]
-  * helpers
-    * `type` dict
+  * [helpers][16]
+    * [`type` dict][17]
 
 ### petard types
 
@@ -364,6 +372,9 @@ more information
 [12]: https://github.com/couchand/petard#builder
 [13]: https://github.com/couchand/petard#functionbuilder
 [14]: https://github.com/couchand/petard#codeunit
+[15]: https://github.com/couchand/petard#petard-types
+[16]: https://github.com/couchand/petard#helpers
+[17]: https://github.com/couchand/petard#type-dict
 
 [20]: https://github.com/couchand/petard#value-unitdeclarefunctionstring-name-type-returns-type-takes
 

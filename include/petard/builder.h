@@ -10,6 +10,7 @@
 
 class BlockBuilder;
 class FunctionBuilder;
+class SwitchBuilder;
 
 class InstructionBuilder
 {
@@ -27,6 +28,7 @@ public:
 
     virtual void Br(InstructionBuilder *dest) = 0;
     virtual void CondBr(ValueHandle *condition, InstructionBuilder *ifTrue, InstructionBuilder *ifFalse) = 0;
+    virtual SwitchBuilder *Switch(ValueHandle *condition, InstructionBuilder *defaultDest) = 0;
 
     virtual ValueHandle *LoadConstant(ValueHandle *value) = 0;
 

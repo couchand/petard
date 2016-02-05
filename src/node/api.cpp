@@ -9,15 +9,17 @@ using namespace v8;
 #include "value_wrapper.h"
 #include "builder_wrapper.h"
 #include "function_builder_wrapper.h"
+#include "switch_builder_wrapper.h"
 #include "code_unit_wrapper.h"
 
 static NAN_MODULE_INIT(Init)
 {
     TypeWrapper::Init(target);
     ValueWrapper::Init(target);
-    CodeUnitWrapper::Init(target);
     BuilderWrapper::Init(target);
     FunctionBuilderWrapper::Init(target);
+    SwitchBuilderWrapper::Init(target);
+    CodeUnitWrapper::Init(target);
 
     Local<FunctionTemplate> getVoidTy = Nan::New<FunctionTemplate>(TypeWrapper::GetVoidTy);
     Nan::Set(target, Nan::New("getVoidTy").ToLocalChecked(), Nan::GetFunction(getVoidTy).ToLocalChecked());

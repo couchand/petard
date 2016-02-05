@@ -7,8 +7,8 @@
 
 #include "type.h"
 #include "value.h"
-
 #include "builder.h"
+#include "switch_builder.h"
 
 class BlockBuilder : public InstructionBuilder
 {
@@ -41,6 +41,7 @@ public:
 
     void Br(InstructionBuilder *dest);
     void CondBr(ValueHandle *condition, InstructionBuilder *ifTrue, InstructionBuilder *ifFalse);
+    SwitchBuilder *Switch(ValueHandle *condition, InstructionBuilder *defaultDest);
 
     ValueHandle *LoadConstant(ValueHandle *value);
 

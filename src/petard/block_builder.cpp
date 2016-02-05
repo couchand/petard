@@ -2,6 +2,7 @@
 
 #include "block_builder.h"
 #include "function_builder.h"
+#include "switch_builder.h"
 
 #include "llvm_utils.h"
 
@@ -20,6 +21,7 @@ BlockBuilder *BlockBuilder::ChildBlock(const char *name)
 BlockBuilder *BlockBuilder::SplitBlock(const char *name)
 {
     llvm::BasicBlock *child = block->splitBasicBlock(builder.GetInsertPoint(), name);
+    llvm_utils::RemoveTerminator(block, false); // don't prune away new child
     builder.SetInsertPoint(block);
     return new BlockBuilder(context, parent, child);
 }
@@ -52,6 +54,17 @@ void BlockBuilder::CondBr(ValueHandle *condition, InstructionBuilder *ifTrue, In
     llvm::BranchInst *inst = builder.CreateCondBr(condition->getLLVMValue(), ifTrue->GetBlock(), ifFalse->GetBlock());
 
     if (insertAfter) builder.SetInsertPoint(inst);
+}
+
+SwitchBuilder *BlockBuilder::Switch(ValueHandle *condition, InstructionBuilder *defaultDest)
+{
+    RemoveTerminator();
+
+    llvm::SwitchInst *inst = builder.CreateSwitch(condition->getLLVMValue(), defaultDest->GetBlock());
+
+    if (insertAfter) builder.SetInsertPoint(inst);
+
+    return new SwitchBuilder(inst);
 }
 
 void BlockBuilder::Return()

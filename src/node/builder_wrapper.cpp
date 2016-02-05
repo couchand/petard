@@ -5,6 +5,7 @@
 #include "type_wrapper.h"
 #include "value_wrapper.h"
 #include "function_builder_wrapper.h"
+#include "switch_builder_wrapper.h"
 
 NAN_METHOD(BuilderWrapper::New)
 {
@@ -388,6 +389,33 @@ NAN_METHOD(BuilderWrapper::CallFunction)
     info.GetReturnValue().Set(ValueWrapper::wrapValue(result));
 }
 
+NAN_METHOD(BuilderWrapper::Switch)
+{
+    BuilderWrapper *self = Nan::ObjectWrap::Unwrap<BuilderWrapper>(info.This());
+
+    if (info.Length() == 0)
+    {
+        return Nan::ThrowError("Switch requires a condition");
+    }
+
+    if (!Nan::New(ValueWrapper::prototype)->HasInstance(info[0]))
+    {
+        return Nan::ThrowError("Switch condition must be a value");
+    }
+
+    ValueWrapper *cond = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[0].As<Object>());
+
+    if (!Nan::New(BuilderWrapper::prototype)->HasInstance(info[1]))
+    {
+        return Nan::ThrowError("Switch requires default target");
+    }
+
+    BuilderWrapper *def = Nan::ObjectWrap::Unwrap<BuilderWrapper>(info[1].As<Object>());
+
+    SwitchBuilder *sw = self->Builder->Switch(cond->Val, def->Builder);
+    info.GetReturnValue().Set(SwitchBuilderWrapper::wrapSwitchBuilder(sw));
+}
+
 NAN_METHOD(BuilderWrapper::Br)
 {
     BuilderWrapper *self = Nan::ObjectWrap::Unwrap<BuilderWrapper>(info.This());
@@ -561,6 +589,7 @@ NAN_MODULE_INIT(BuilderWrapper::Init)
     Nan::SetPrototypeMethod(tmpl, "value", Value);
 
     Nan::SetPrototypeMethod(tmpl, "br", Br);
+    Nan::SetPrototypeMethod(tmpl, "switch", Switch);
 
     Nan::SetPrototypeMethod(tmpl, "createBlock", CreateBlock);
     Nan::SetPrototypeMethod(tmpl, "splitBlock", SplitBlock);

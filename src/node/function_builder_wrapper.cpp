@@ -86,6 +86,7 @@ NAN_MODULE_INIT(FunctionBuilderWrapper::Init)
     Nan::SetPrototypeMethod(tmpl, "value", Value);
 
     Nan::SetPrototypeMethod(tmpl, "br", Br);
+    Nan::SetPrototypeMethod(tmpl, "switch", Switch);
 
     Nan::SetPrototypeMethod(tmpl, "createBlock", CreateBlock);
     Nan::SetPrototypeMethod(tmpl, "splitBlock", SplitBlock);

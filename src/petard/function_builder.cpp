@@ -36,6 +36,11 @@ void FunctionBuilder::CondBr(ValueHandle *condition, InstructionBuilder *ifTrue,
     builder->CondBr(condition, ifTrue, ifFalse);
 }
 
+SwitchBuilder *FunctionBuilder::Switch(ValueHandle *condition, InstructionBuilder *defaultDest)
+{
+    return builder->Switch(condition, defaultDest);
+}
+
 void FunctionBuilder::Return()
 {
     builder->Return();

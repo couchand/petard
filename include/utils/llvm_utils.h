@@ -7,7 +7,7 @@
 
 namespace llvm_utils
 {
-    void RemoveTerminator(llvm::BasicBlock *block);
+    void RemoveTerminator(llvm::BasicBlock *block, bool prune = true);
 }
 
 #endif

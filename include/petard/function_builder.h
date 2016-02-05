@@ -10,9 +10,9 @@
 
 #include "type.h"
 #include "value.h"
-
 #include "builder.h"
 #include "block_builder.h"
+#include "switch_builder.h"
 
 class FunctionBuilder : public InstructionBuilder
 {
@@ -56,6 +56,7 @@ public:
 
     void Br(InstructionBuilder *dest);
     void CondBr(ValueHandle *condition, InstructionBuilder *ifTrue, InstructionBuilder *ifFalse);
+    SwitchBuilder *Switch(ValueHandle *condition, InstructionBuilder *defaultDest);
 
     ValueHandle *LoadConstant(ValueHandle *value);
 

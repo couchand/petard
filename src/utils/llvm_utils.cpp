@@ -34,9 +34,9 @@ void pruneOrphanedSuccessors(llvm::BasicBlock *block, bool alreadyPruning)
 
 namespace llvm_utils
 {
-    void RemoveTerminator(llvm::BasicBlock *block)
+    void RemoveTerminator(llvm::BasicBlock *block, bool prune)
     {
-        pruneOrphanedSuccessors(block, false);
+        if (prune) pruneOrphanedSuccessors(block, false);
 
         llvm::Instruction *term = block->getTerminator();
         if (term) term->eraseFromParent();

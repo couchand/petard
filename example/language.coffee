@@ -22,19 +22,22 @@ llvm = require '../'
 
 class IntLiteral
   constructor: (@value) ->
-  compile: (builder, fns, vars) ->
+  compile: (builder, fns, params, vars) ->
     builder.value llvm.type.i32, @value
 
 class Variable
   constructor: (@name) ->
-  compile: (builder, fns, vars) ->
-    vars[@name]
+  compile: (builder, fns, params, vars) ->
+    if @name of vars
+      builder.load vars[@name]
+    else if @name of params
+      params[@name]
 
 class FunctionCall
   constructor: (@fn, @args) ->
-  compile: (builder, fns, vars) ->
+  compile: (builder, fns, params, vars) ->
     args = for arg in @args
-      arg.compile builder, fns, vars
+      arg.compile builder, fns, params, vars
 
     fn = fns[@fn]
 
@@ -44,40 +47,66 @@ class FunctionCall
 
 class BinaryExpression
   constructor: (@left, @op, @right) ->
-  compile: (builder, fns, vars) ->
-    l = @left.compile builder, fns, vars
-    r = @right.compile builder, fns, vars
+  compile: (builder, fns, params, vars) ->
+    l = @left.compile builder, fns, params, vars
+    r = @right.compile builder, fns, params, vars
     switch @op
       when '==' then builder.equal l, r
       when '+' then builder.add l, r
       when '-' then builder.sub l, r
+      when '<' then builder.sLessThan l, r
 
 class ReturnStatement
   constructor: (@expr) ->
-  compile: (builder, fns, vars) ->
-    builder.return @expr.compile builder, fns, vars
+  compile: (builder, fns, params, vars) ->
+    builder.return @expr.compile builder, fns, params, vars
+
+class AssignmentStatement
+  constructor: (@name, @expr) ->
+  compile: (builder, fns, params, vars) ->
+    location = if @name of vars
+      vars[@name]
+    else
+      builder.alloca llvm.type.i32
+
+    val = @expr.compile builder, fns, params, vars
+    builder.store val, location
+
+    unless @name of vars
+      vars[@name] = location
 
 class IfStatement
   constructor: (@condition, @then, @else) ->
-  compile: (builder, fns, vars) ->
-    ifTrue = builder.if @condition.compile builder, fns, vars
+  compile: (builder, fns, params, vars) ->
+    ifTrue = builder.if @condition.compile builder, fns, params, vars
 
     for statement in @then
-      statement.compile ifTrue.then, fns, vars
+      statement.compile ifTrue.then, fns, params, vars
 
     if @else
       for statement in @else
-        statement.compile ifTrue.else, fns, vars
+        statement.compile ifTrue.else, fns, params, vars
+
+class WhileStatement
+  constructor: (@condition, @body) ->
+  compile: (builder, fns, params, vars) ->
+    c = @condition
+    bod = builder.while (w) ->
+      c.compile w, fns, params, vars
+
+    for statement in @body
+      statement.compile bod, fns, params, vars
 
 class FunctionDefinition
   constructor: (@name, @parameters, @body) ->
   compile: (builder, fns) ->
-    vars = {}
+    params = {}
     for i, param of @parameters
-      vars[param] = builder.parameter +i
+      params[param] = builder.parameter +i
 
+    vars = {}
     for statement in @body
-      statement.compile builder, fns, vars
+      statement.compile builder, fns, params, vars
 
 class CodeUnit
   constructor: (@name, @fns) ->
@@ -147,9 +176,9 @@ parseBinaryExpression = (str) ->
   next = leftP[0]
   left = leftP[1]
 
-  return unless /^\s*(==|[+-])\s*/.test next
+  return unless /^\s*(==|[<+-])\s*/.test next
 
-  match = /^\s*(==|[+-])\s*/.exec next
+  match = /^\s*(==|[<+-])\s*/.exec next
   op = match[1]
   rest = next[match[0].length..]
 
@@ -190,6 +219,26 @@ parseReturnStatement = (str) ->
 
   [body[0][semi[0].length..], new ReturnStatement body[1]]
 
+parseAssignmentStatement = (str) ->
+  nameP = parseVariable str
+  return unless nameP
+  next = nameP[0]
+  name = nameP[1].name
+
+  assignM = /\s*=\s*/.exec next
+  return unless assignM
+  next = next[assignM[0].length..]
+
+  exprP = parseExpression next
+  return unless exprP
+
+  semi = /^\s*;\s*/.exec exprP[0]
+  return unless semi
+
+  rest = exprP[0][semi[0].length..]
+
+  [rest, new AssignmentStatement name, exprP[1]]
+
 parseIfStatement = (str) ->
   ifm = /^\s*if\s*\(\s*/.exec str
   return unless ifm
@@ -225,12 +274,42 @@ parseIfStatement = (str) ->
 
   [next2, new IfStatement cond, thenC, elseC]
 
+parseWhileStatement = (str) ->
+  whilem = /^\s*while\s*\(\s*/.exec str
+  return unless whilem
+  next = str[whilem[0].length..]
+
+  condP = parseExpression next
+  return unless condP
+  next = condP[0]
+  cond = condP[1]
+
+  openBrace = /^\s*\)\s*{\s*/.exec next
+  return unless openBrace
+
+  bodyM = parseBlock next[openBrace[0].length..]
+  return unless bodyM
+  body = bodyM[1]
+
+  closeBrace = /^\s*}\s*/.exec bodyM[0]
+  return unless closeBrace
+
+  next2 = bodyM[0][closeBrace[0].length..]
+
+  [next2, new WhileStatement cond, body]
+
 parseStatement = (str) ->
   ifS = parseIfStatement str
   return ifS if ifS
 
+  whileS = parseWhileStatement str
+  return whileS if whileS
+
   retS = parseReturnStatement str
   return retS if retS
+
+  assignS = parseAssignmentStatement str
+  return assignS if assignS
 
 parseBlock = (str) ->
   statements = []
@@ -320,7 +399,9 @@ if module isnt require.main
     parseBinaryExpression
     parseExpression
     parseReturnStatement
+    parseAssignmentStatement
     parseIfStatement
+    parseWhileStatement
     parseStatement
     parseBlock
     parseFunctionDefinition

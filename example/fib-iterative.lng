@@ -1,0 +1,16 @@
+def fib(x) {
+  a = 1;
+  b = 1;
+  n = 0;
+  while (n < x) {
+    tmp = a;
+    a = b;
+    b = tmp + b;
+    n = n + 1;
+  }
+  ret a;
+}
+
+def main() {
+  ret fib(10);
+}

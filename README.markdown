@@ -242,6 +242,19 @@ if the condition is true, and the ifFalse value if the condition is not true.
 
 Construct a new LLVM value of the given type for the given JavaScript value.
 
+##### {Builder then, Builder else} if(Value condition) *(js)*
+
+Builds the if conditional control structure for the given condition.  Returns an
+object with then and else properties, each builders for the then and else blocks.
+
+##### Builder while(BuilderCallback buildCondition) *(js)*
+
+    Value BuilderCallback(Builder condition)
+
+Builds the while loop control structure.  The callback should take a builder for
+the loop condition and should return the condition value.  Returns a builder for
+the body of the loop.
+
 ##### br(Builder target)
 
 Unconditional branch to the target.

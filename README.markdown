@@ -28,6 +28,18 @@ introduction
 ------------
 
 Frustrated with the state of JS support for LLVM, I built another library.
+Rather than trying to be generic bindings to libLLVM, **petard** tries to make
+the most common case easy: generating fresh IR.  You don't have total control
+over the LLVM machinery and there aren't really facilities for working with IR
+that already exists (so you can't write passes), but if those limitations aren't
+a problem **petard** makes dealing with LLVM much simpler.
+
+This software is under active development.  The README should reflect current
+functionality, but don't be surprised if something you think should work causes
+your computer to segfault.  **petard** aims to catch these things and throw
+JavaScript errors, but we don't have very good coverage yet.  Please do submit
+a ticket or pull request if there's a type of programmer error that could be
+caught earlier and an error thrown.
 
 dependencies
 ------------

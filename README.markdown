@@ -8,11 +8,11 @@ a js llvm library
 
                     - Hamlet, Shakespeare
 
-  * introduction
-  * dependencies
-  * getting started
-  * documentation
-  * more information
+  * [introduction][90]
+  * [dependencies][91]
+  * [getting started][92]
+  * [documentation][93]
+  * [more information][94]
 
 [![Build Status](https://travis-ci.org/couchand/petard.svg?branch=master)](https://travis-ci.org/couchand/petard)
 
@@ -121,7 +121,7 @@ Reference function parameter `index`.
 Load a constant value.  Currently the only usage is to load a string constant,
 see the first example.
 
-##### [Value][11] callFunction([FunctionBuilder][13]|FunctionValue fn, \[[Value][11] params...\])
+##### [Value][11] callFunction([FunctionBuilder][13]|[FunctionValue][20] fn, \[[Value][11] params...\])
 
 Call the given internal or external function, passing in the parameter values.
 
@@ -249,7 +249,7 @@ object with then and else properties, each builders for the then and else blocks
 
 ##### [Builder][12] while(BuilderCallback buildCondition) *(js)*
 
-    [Value][11] BuilderCallback([Builder][12] condition)
+with [Value][11] BuilderCallback([Builder][12] condition)
 
 Builds the while loop control structure.  The callback should take a builder for
 the loop condition and should return the condition value.  Returns a builder for
@@ -320,18 +320,19 @@ constant string.  See the first example for usage.
 
 Declare a function external to this code unit that will be linked in.  Takes the
 name of the function and optionally the return type and parameter types.
+Returns a special FunctionValue.
 
 ##### [FunctionBuilder][13] unit.makeFunction(String name, \[[Type][10] returns\], \[[Type][10] takes...\])
 
 Create a new function in this code unit with the given name and optionall the
 return type and parameter types.
 
-##### void unit.dump()
+##### unit.dump()
 
 Dump the code unit IR to the screen.  Useful for debugging, not so much for
 regular usage, since the underlying LLVM method always dumps to stderr.
 
-##### void unit.writeBitcodeToFile(String filename)
+##### unit.writeBitcodeToFile(String filename)
 
 Write the bitcode for this code unit to a file with the given filename.  The
 file must not exist, if it does this method will fail.
@@ -342,12 +343,12 @@ file must not exist, if it does this method will fail.
 
 This dict contains all the basic types for easy reference.
 
-  * `i1` A one bit integer (a boolean).
-  * `i8` A single byte.
-  * `i16` A small word.
-  * `i32` A medium word.
-  * `i64` A long word.
-  * `[Type][10] pointerTo([Type][10] pointee)` Takes a type and returns a pointer to that type.
+  * `i1` - A one bit integer (a boolean).
+  * `i8` - A single byte.
+  * `i16` - A small word.
+  * `i32` - A medium word.
+  * `i64` - A long word.
+  * [Type][10] pointerTo([Type][10] pointee) - Takes a type and returns a pointer to that type.
 
 more information
 ----------------
@@ -363,5 +364,13 @@ more information
 [12]: https://github.com/couchand/petard#builder
 [13]: https://github.com/couchand/petard#functionbuilder
 [14]: https://github.com/couchand/petard#codeunit
+
+[20]: https://github.com/couchand/petard#value-unitdeclarefunctionstring-name-type-returns-type-takes
+
+[90]: https://github.com/couchand/petard#introduction
+[91]: https://github.com/couchand/petard#dependencies
+[92]: https://github.com/couchand/petard#getting-started
+[93]: https://github.com/couchand/petard#documentation
+[94]: https://github.com/couchand/petard#more-information
 
 ##### ╭╮☲☲☲╭╮ #####

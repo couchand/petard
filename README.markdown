@@ -69,11 +69,11 @@ wrapper adds some higher-level functionality on top of that.  In the listing the
 methods in JavaScript are marked with a *(js)*.
 
   * petard types
-    * Type
-    * Value
-    * Builder
-    * FunctionBuilder
-    * CodeUnit
+    * [Type][10]
+    * [Value][11]
+    * [Builder][12]
+    * [FunctionBuilder][13]
+    * [CodeUnit][14]
   * helpers
     * `type` dict
 
@@ -95,7 +95,7 @@ Represents an LLVM value, or if you look at it another way, represents an
 abstract expression.  You'll get these and pass them in to many of the builder
 methods.  The only thing you can do to a value is get its type.
 
-##### Type value.type
+##### [Type][10] value.type
 
 A property containing the type of the value.
 
@@ -106,179 +106,179 @@ function (an LLVM block) as well as a cursor within that block where
 instructions will be placed.  Calls to builder methods construct LLVM IR and
 take and return values and other builders.
 
-##### return(\[Number|Value value\])
+##### return(\[Number|[Value][11] value\])
 
 Return from the function.  If a value is provided, it is the return value of the
 function.  You must ensure that the value passed is of the same type as the
 return type of the function.
 
-##### Value parameter(Number index)
+##### [Value][11] parameter(Number index)
 
 Reference function parameter `index`.
 
-##### Value loadConstant(Value constant)
+##### [Value][11] loadConstant([Value][11] constant)
 
 Load a constant value.  Currently the only usage is to load a string constant,
 see the first example.
 
-##### Value callFunction(FunctionBuilder|FunctionValue fn, \[Value params...\])
+##### [Value][11] callFunction([FunctionBuilder][13]|FunctionValue fn, \[[Value][11] params...\])
 
 Call the given internal or external function, passing in the parameter values.
 
-##### Value alloca(Type type, \[Number|Value arraySize\])
+##### [Value][11] alloca([Type][10] type, \[Number|[Value][11] arraySize\])
 
 Allocate space the size of type on the stack.  If an arraySize is provided,
 instead allocate that much space times the arraySize.  Returns a pointer value
 to the space.
 
-##### Value load(Value pointer)
+##### [Value][11] load([Value][11] pointer)
 
 Load a value from the memory pointed to by pointer.
 
-##### store(Value value, Value pointer)
+##### store([Value][11] value, [Value][11] pointer)
 
 Store the value in the memory pointed to by pointer.
 
-##### Value add(Value left, Value right)
+##### [Value][11] add([Value][11] left, [Value][11] right)
 
 Add the values.
 
-##### Value sub(Value left, Value right)
+##### [Value][11] sub([Value][11] left, [Value][11] right)
 
 Subtract the right value from the left.
 
-##### Value mul(Value left, Value right)
+##### [Value][11] mul([Value][11] left, [Value][11] right)
 
 Multiply the values.
 
-##### Value udiv(Value left, Value right)
+##### [Value][11] udiv([Value][11] left, [Value][11] right)
 
 Unsigned integer divide the left value by the right.
 
-##### Value sdiv(Value left, Value right)
+##### [Value][11] sdiv([Value][11] left, [Value][11] right)
 
 Signed integer divide the left value by the right.
 
-##### Value urem(Value left, Value right)
+##### [Value][11] urem([Value][11] left, [Value][11] right)
 
 The remainder when the left value is unsigned integer divided by the right.
 
-##### Value srem(Value left, Value right)
+##### [Value][11] srem([Value][11] left, [Value][11] right)
 
 The remainder when the left value is signed integer divided by the right.
 
-##### Value and(Value left, Value right)
+##### [Value][11] and([Value][11] left, [Value][11] right)
 
 Bitwise and the values.
 
-##### Value or(Value left, Value right)
+##### [Value][11] or([Value][11] left, [Value][11] right)
 
 Bitwise or the values.
 
-##### Value xor(Value left, Value right)
+##### [Value][11] xor([Value][11] left, [Value][11] right)
 
 Bitwise xor the values.
 
-##### Value shl(Value left, Value right)
+##### [Value][11] shl([Value][11] left, [Value][11] right)
 
 Shift the left value left by the right value number of bits.
 
-##### Value lshr(Value left, Value right)
+##### [Value][11] lshr([Value][11] left, [Value][11] right)
 
 Shift the left value right logically (sign-ignoring) by the right value number
 of bits.
 
-##### Value ashr(Value left, Value right)
+##### [Value][11] ashr([Value][11] left, [Value][11] right)
 
 Shift the left value right arithmetically (sign-preserving) by the right value
 number of bits.
 
-##### Value equal(Value left, Value right)
+##### [Value][11] equal([Value][11] left, [Value][11] right)
 
 Compare the values for equality.
 
-##### Value notEqual(Value left, Value right)
+##### [Value][11] notEqual([Value][11] left, [Value][11] right)
 
 Compare the values for inequality.
 
-##### Value uGreaterThan(Value left, Value right)
+##### [Value][11] uGreaterThan([Value][11] left, [Value][11] right)
 
 Unsigned greater than comparison.
 
-##### Value uAtLeast(Value left, Value right)
+##### [Value][11] uAtLeast([Value][11] left, [Value][11] right)
 
 Unsigned greater than or equal to comparison.
 
-##### Value uLessThan(Value left, Value right)
+##### [Value][11] uLessThan([Value][11] left, [Value][11] right)
 
 Unsigned less than comparison.
 
-##### Value uAtMost(Value left, Value right)
+##### [Value][11] uAtMost([Value][11] left, [Value][11] right)
 
 Unsigned less than or equal to comparison.
 
-##### Value sGreaterThan(Value left, Value right)
+##### [Value][11] sGreaterThan([Value][11] left, [Value][11] right)
 
 Signed greater than comparison.
 
-##### Value sAtLeast(Value left, Value right)
+##### [Value][11] sAtLeast([Value][11] left, [Value][11] right)
 
 Signed greater than or equal to comparison.
 
-##### Value sLessThan(Value left, Value right)
+##### [Value][11] sLessThan([Value][11] left, [Value][11] right)
 
 Signed less than comparison.
 
-##### Value sAtMost(Value left, Value right)
+##### [Value][11] sAtMost([Value][11] left, [Value][11] right)
 
 Signed less than or equal to comparison.
 
-##### Value select(Value condition, Value ifTrue, Value ifFalse)
+##### [Value][11] select([Value][11] condition, [Value][11] ifTrue, [Value][11] ifFalse)
 
 Non-branching value select.  Returns the value corresponding to the ifTrue value
 if the condition is true, and the ifFalse value if the condition is not true.
 
-##### Value value(Type type, Any value)
+##### [Value][11] value([Type][10] type, Any value)
 
 Construct a new LLVM value of the given type for the given JavaScript value.
 
-##### {Builder then, Builder else} if(Value condition) *(js)*
+##### {[Builder][12] then, [Builder][12] else} if([Value][11] condition) *(js)*
 
 Builds the if conditional control structure for the given condition.  Returns an
 object with then and else properties, each builders for the then and else blocks.
 
-##### Builder while(BuilderCallback buildCondition) *(js)*
+##### [Builder][12] while(BuilderCallback buildCondition) *(js)*
 
-    Value BuilderCallback(Builder condition)
+    [Value][11] BuilderCallback([Builder][12] condition)
 
 Builds the while loop control structure.  The callback should take a builder for
 the loop condition and should return the condition value.  Returns a builder for
 the body of the loop.
 
-##### br(Builder target)
+##### br([Builder][12] target)
 
 Unconditional branch to the target.
 
-##### br(Value condition, Builder ifTrue, Builder ifFalse)
+##### br([Value][11] condition, [Builder][12] ifTrue, [Builder][12] ifFalse)
 
 Conditional branch.  If the condition is true, branch to the ifTrue builder,
 otherwise branch to the ifFalse builder.
 
-##### Builder createBlock(String name)
+##### [Builder][12] createBlock(String name)
 
 Create another block in the same function.  Use with the branching instructions
 to create custom control structures.  See the node wrapper for examples on
 using `createBlock`, `splitBlock`, `useBlock`, `insertBefore`, `insertAfter`,
 and `br` to build control structures.
 
-##### Builder splitBlock(String name)
+##### [Builder][12] splitBlock(String name)
 
 Split the current block at the cursor.  The object itself retains the top half
 (all the instructions written _before_) and the returned builder takes the
 bottom half (all the instructions written _after_).  In practice this usually
 means the terminator of the block is the only instruction in the new block.
 
-##### useBlock(Builder target)
+##### useBlock([Builder][12] target)
 
 Set this builder to start building in the target block.  Make sure this builder
 already has a terminator or you'll get into trouble.
@@ -302,7 +302,7 @@ to the normal builder methods, it has a few special properties.
 
 A property containing the name of the function.
 
-##### Type fnBuilder.type
+##### [Type][10] fnBuilder.type
 
 A property containing the type of the function.
 
@@ -311,17 +311,17 @@ A property containing the type of the function.
 Represents an overall unit of code, such as a file.  Directly corresponds to an
 LLVM Module.  It has a few helpful methods.
 
-##### Value unit.constant(Value value)
+##### [Value][11] unit.constant([Value][11] value)
 
 Compile a constant value into the IR.  At the moment the only use is to load a
 constant string.  See the first example for usage.
 
-##### Value unit.declareFunction(String name, \[Type returns\], \[Type takes...\])
+##### [Value][11] unit.declareFunction(String name, \[[Type][10] returns\], \[[Type][10] takes...\])
 
 Declare a function external to this code unit that will be linked in.  Takes the
 name of the function and optionally the return type and parameter types.
 
-##### FunctionBuilder unit.makeFunction(String name, \[Type returns\], \[Type takes...\])
+##### [FunctionBuilder][13] unit.makeFunction(String name, \[[Type][10] returns\], \[[Type][10] takes...\])
 
 Create a new function in this code unit with the given name and optionall the
 return type and parameter types.
@@ -347,7 +347,7 @@ This dict contains all the basic types for easy reference.
   * `i16` A small word.
   * `i32` A medium word.
   * `i64` A long word.
-  * `Type pointerTo(Type pointee)` Takes a type and returns a pointer to that type.
+  * `[Type][10] pointerTo([Type][10] pointee)` Takes a type and returns a pointer to that type.
 
 more information
 ----------------
@@ -357,5 +357,11 @@ more information
 
 [0]: http://llvm.org/docs/LangRef.html
 [1]: http://llvm.org/docs/ProgrammersManual.html
+
+[10]: https://github.com/couchand/petard#type
+[11]: https://github.com/couchand/petard#value
+[12]: https://github.com/couchand/petard#builder
+[13]: https://github.com/couchand/petard#functionbuilder
+[14]: https://github.com/couchand/petard#codeunit
 
 ##### ╭╮☲☲☲╭╮ #####

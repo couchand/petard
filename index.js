@@ -31,12 +31,12 @@ var ifimpl = function If(cond) {
 
   var merge = this.splitBlock("merge");
 
-  ifTrue = this.createBlock("then");
+  var ifTrue = this.createBlock("then");
   ifTrue.insertAfter();
   ifTrue.br(merge);
   ifTrue.insertBefore();
 
-  ifFalse = this.createBlock("else");
+  var ifFalse = this.createBlock("else");
   ifFalse.insertAfter();
   ifFalse.br(merge);
   ifFalse.insertBefore();

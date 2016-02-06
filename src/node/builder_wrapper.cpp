@@ -388,6 +388,62 @@ NAN_METHOD(BuilderWrapper::LoadConstant)
     info.GetReturnValue().Set(ValueWrapper::wrapValue(result));
 }
 
+ValueHandle *getValueHandle(InstructionBuilder *builder, Local<v8::Value> thing)
+{
+    //if (thing->IsNumber())
+    //{
+    //    Local<Number> num = thing.As<Number>();
+    //    double val = num->Value();
+    //    return builder->MakeValue(new IntTypeHandle(32), val);
+    //}
+    if (Nan::New(ValueWrapper::prototype)->HasInstance(thing))
+    {
+        ValueWrapper *wrapper = Nan::ObjectWrap::Unwrap<ValueWrapper>(thing.As<Object>());
+        return wrapper->Val;
+    }
+    return 0;
+}
+
+NAN_METHOD(BuilderWrapper::GetElementPointer)
+{
+    BuilderWrapper *self = Nan::ObjectWrap::Unwrap<BuilderWrapper>(info.This());
+
+    if (info.Length() == 0)
+    {
+        return Nan::ThrowError("GetElementPointer expects a pointer base");
+    }
+
+    if (!Nan::New(ValueWrapper::prototype)->HasInstance(info[0]))
+    {
+        return Nan::ThrowError("GetElementPointer expects a pointer base");
+    }
+
+    ValueWrapper *base = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[0].As<Object>());
+
+    if (info.Length() == 1)
+    {
+        return Nan::ThrowError("GetElementPointer expects at least one index");
+    }
+
+    std::vector<ValueHandle *> idxs;
+
+    for (unsigned i = 1, e = info.Length(); i < e; i += 1)
+    {
+        ValueHandle *next = getValueHandle(self->Builder, info[i]);
+
+        if (!next)
+        {
+            return Nan::ThrowError("GetElementPointer expects index values to be values");
+        }
+
+        idxs.push_back(next);
+    }
+
+    ValueHandle *result = self->Builder->GetElementPointer(base->Val, idxs);
+
+    info.GetReturnValue().Set(ValueWrapper::wrapValue(result));
+}
+
 NAN_METHOD(BuilderWrapper::CallFunction)
 {
 
@@ -610,6 +666,7 @@ NAN_MODULE_INIT(BuilderWrapper::Init)
     Nan::SetPrototypeMethod(tmpl, "return", Return);
     Nan::SetPrototypeMethod(tmpl, "parameter", Parameter);
     Nan::SetPrototypeMethod(tmpl, "loadConstant", LoadConstant);
+    Nan::SetPrototypeMethod(tmpl, "getElementPointer", GetElementPointer);
     Nan::SetPrototypeMethod(tmpl, "callFunction", CallFunction);
     Nan::SetPrototypeMethod(tmpl, "alloca", Alloca);
     Nan::SetPrototypeMethod(tmpl, "load", Load);

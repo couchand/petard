@@ -60,6 +60,7 @@ public:
     SwitchBuilder *Switch(ValueHandle *condition, InstructionBuilder *defaultDest);
 
     ValueHandle *LoadConstant(ValueHandle *value);
+    ValueHandle *GetElementPointer(ValueHandle *ptr, std::vector<ValueHandle *> idxs);
 
     ValueHandle *CallFunction(ValueHandle *fn, std::vector<ValueHandle *> args);
     ValueHandle *CallFunction(FunctionBuilder *fn, std::vector<ValueHandle *> args);

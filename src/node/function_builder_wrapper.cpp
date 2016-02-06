@@ -52,6 +52,7 @@ NAN_MODULE_INIT(FunctionBuilderWrapper::Init)
     Nan::SetPrototypeMethod(tmpl, "return", Return);
     Nan::SetPrototypeMethod(tmpl, "parameter", Parameter);
     Nan::SetPrototypeMethod(tmpl, "loadConstant", LoadConstant);
+    Nan::SetPrototypeMethod(tmpl, "getElementPointer", GetElementPointer);
     Nan::SetPrototypeMethod(tmpl, "callFunction", CallFunction);
     Nan::SetPrototypeMethod(tmpl, "alloca", Alloca);
     Nan::SetPrototypeMethod(tmpl, "load", Load);

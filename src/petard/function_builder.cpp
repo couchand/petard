@@ -151,6 +151,11 @@ ValueHandle *FunctionBuilder::LoadConstant(ValueHandle *value)
     return builder->LoadConstant(value);
 }
 
+ValueHandle *FunctionBuilder::GetElementPointer(ValueHandle *ptr, std::vector<ValueHandle *> idxs)
+{
+    return builder->GetElementPointer(ptr, idxs);
+}
+
 ValueHandle *FunctionBuilder::CallFunction(ValueHandle *fn, std::vector<ValueHandle *> args)
 {
     return builder->CallFunction(fn, args);

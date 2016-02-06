@@ -1,5 +1,7 @@
 // block builder
 
+ #include <iostream>
+
 #include "block_builder.h"
 #include "function_builder.h"
 #include "switch_builder.h"
@@ -244,6 +246,57 @@ ValueHandle *BlockBuilder::LoadConstant(ValueHandle *value)
     llvm::Value *expression = builder.CreateConstGEP2_32(value->getLLVMValue(), 0, 0);
 
     return new PlainValueHandle(value->Type, expression);
+}
+
+ValueHandle *BlockBuilder::GetElementPointer(ValueHandle *ptr, std::vector<ValueHandle *> idxs)
+{
+    unsigned count = idxs.size();
+
+    if (!ptr->Type->isPointerType()) return 0;
+
+    PointerTypeHandle *ptrTy = static_cast<PointerTypeHandle *>(ptr->Type);
+    TypeHandle *elty = getElementType(ptrTy->pointee, count - 1);
+
+    if (!elty) return 0;
+    TypeHandle *newty = new PointerTypeHandle(elty);
+
+    std::vector<llvm::Value *> idxlist;
+    idxlist.reserve(count);
+
+    for (ValueHandle *idx : idxs)
+    {
+        llvm::Value *idxValue = idx->getLLVMValue();
+        idxlist.push_back(idxValue);
+    }
+
+    llvm::Value *ptrVal = ptr->getLLVMValue();
+
+    llvm::Value *elPtr = builder.CreateGEP(ptrVal, idxlist);
+
+    return new PlainValueHandle(newty, elPtr);
+}
+
+TypeHandle *BlockBuilder::getElementType(TypeHandle *ty, unsigned idxCount)
+{
+    if (idxCount == 0)
+    {
+        return ty;
+    }
+
+    if (ty->isPointerType())
+    {
+        PointerTypeHandle *ptrTy = static_cast<PointerTypeHandle *>(ty);
+        return getElementType(ptrTy->pointee, idxCount - 1);
+    }
+
+    if (ty->isArrayType())
+    {
+        ArrayTypeHandle *arrTy = static_cast<ArrayTypeHandle *>(ty);
+        return getElementType(arrTy->element, idxCount - 1);
+    }
+
+    // error, we can't dive any further in
+    return 0;
 }
 
 ValueHandle *BlockBuilder::callFunction(FunctionTypeHandle *fnTy, llvm::Value *fn, std::vector<ValueHandle *> args)

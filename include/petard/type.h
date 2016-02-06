@@ -16,6 +16,7 @@ public:
     virtual std::string toString() = 0;
 
     virtual bool isIntType() { return false; }
+    virtual bool isFloatType() { return false; }
     virtual bool isPointerType() { return false; }
     virtual bool isFunctionType() { return false; }
     virtual bool isArrayType() { return false; }
@@ -55,6 +56,20 @@ public:
     std::string toString();
 
     bool isIntType() { return true; }
+};
+
+class FloatTypeHandle : public TypeHandle
+{
+public:
+    unsigned const numBits;
+
+    FloatTypeHandle(unsigned bitWidth)
+    : numBits(bitWidth) {}
+
+    llvm::Type *getLLVMType(llvm::LLVMContext &context);
+    std::string toString();
+
+    bool isFloatType() { return true; }
 };
 
 class PointerTypeHandle : public TypeHandle

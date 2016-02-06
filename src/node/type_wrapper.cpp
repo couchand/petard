@@ -84,6 +84,26 @@ NAN_METHOD(TypeWrapper::GetIntTy)
     info.GetReturnValue().Set(wrapType(new IntTypeHandle(bits)));
 }
 
+NAN_METHOD(TypeWrapper::GetFloatTy)
+{
+
+    if (info.Length() == 0 || !info[0]->IsNumber()) {
+        return Nan::ThrowError("Must provide float bit width");
+    }
+
+    Local<Number> bitWidth = info[0].As<Number>();
+    double requestedBits = bitWidth->Value();
+
+    if (requestedBits != 16 && requestedBits != 32 && requestedBits != 64)
+    {
+        return Nan::ThrowError("Invalid float bit width");
+    }
+
+    unsigned bits = (unsigned)requestedBits;
+
+    info.GetReturnValue().Set(wrapType(new FloatTypeHandle(bits)));
+}
+
 NAN_METHOD(TypeWrapper::GetPointerTy)
 {
     if (info.Length() == 0)

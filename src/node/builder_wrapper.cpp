@@ -50,7 +50,8 @@ NAN_METHOD(BuilderWrapper::Alloca)
         Local<Number> num = info[1].As<Number>();
         double numVal = num->Value();
 
-        h = wrapper->Builder->Alloca(t->Type, (int)numVal);
+        ValueHandle *arraySize = wrapper->Builder->MakeValue(new IntTypeHandle(32), numVal);
+        h = wrapper->Builder->Alloca(t->Type, arraySize);
     }
     else if (Nan::New(ValueWrapper::prototype)->HasInstance(info[1]))
     {
@@ -122,7 +123,7 @@ NAN_METHOD(BuilderWrapper::Store)
 
     if (info[0]->IsNumber())
     {
-        if (!pt->pointee->isIntType())
+        if (!pt->pointee->isIntType() && !pt->pointee->isFloatType())
         {
             return Nan::ThrowError("Store type mismatch");
         }
@@ -130,7 +131,9 @@ NAN_METHOD(BuilderWrapper::Store)
         Local<Number> num = info[0].As<Number>();
         double numVal = num->Value();
 
-        wrapper->Builder->Store((int)numVal, ptr->Val);
+        ValueHandle *storageVal = wrapper->Builder->MakeValue(pt->pointee, numVal);
+
+        wrapper->Builder->Store(storageVal, ptr->Val);
     }
     else if (Nan::New(ValueWrapper::prototype)->HasInstance(info[0]))
     {
@@ -177,8 +180,10 @@ BINARY_METHOD(Sub)
 BINARY_METHOD(Mul)
 BINARY_METHOD(UDiv)
 BINARY_METHOD(SDiv)
+BINARY_METHOD(FDiv)
 BINARY_METHOD(URem)
 BINARY_METHOD(SRem)
+BINARY_METHOD(FRem)
 BINARY_METHOD(And)
 BINARY_METHOD(Or)
 BINARY_METHOD(Xor)
@@ -196,6 +201,53 @@ BINARY_METHOD(SGreaterThan)
 BINARY_METHOD(SAtLeast)
 BINARY_METHOD(SLessThan)
 BINARY_METHOD(SAtMost)
+BINARY_METHOD(FOEqual)
+BINARY_METHOD(FONotEqual)
+BINARY_METHOD(FOGreaterThan)
+BINARY_METHOD(FOAtLeast)
+BINARY_METHOD(FOLessThan)
+BINARY_METHOD(FOAtMost)
+BINARY_METHOD(FUEqual)
+BINARY_METHOD(FUNotEqual)
+BINARY_METHOD(FUGreaterThan)
+BINARY_METHOD(FUAtLeast)
+BINARY_METHOD(FULessThan)
+BINARY_METHOD(FUAtMost)
+
+#define CAST_METHOD(name) NAN_METHOD(BuilderWrapper::name)                            \
+{                                                                                     \
+    BuilderWrapper *wrapper = Nan::ObjectWrap::Unwrap<BuilderWrapper>(info.This());   \
+                                                                                      \
+    if (info.Length() < 2)                                                            \
+    {                                                                                 \
+        return Nan::ThrowError("A value and a type required");                        \
+    }                                                                                 \
+                                                                                      \
+    Local<FunctionTemplate> val = Nan::New(ValueWrapper::prototype);                  \
+    Local<FunctionTemplate> typ = Nan::New(TypeWrapper::prototype);                   \
+                                                                                      \
+    if (!val->HasInstance(info[0]) || !typ->HasInstance(info[1]))                     \
+    {                                                                                 \
+        return Nan::ThrowError("A value and a type required");                        \
+    }                                                                                 \
+                                                                                      \
+    ValueWrapper *v = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[0].As<Object>());    \
+    TypeWrapper *t = Nan::ObjectWrap::Unwrap<TypeWrapper>(info[1].As<Object>());      \
+                                                                                      \
+    ValueHandle *result = wrapper->Builder->name(v->Val, t->Type);                    \
+                                                                                      \
+    info.GetReturnValue().Set(ValueWrapper::wrapValue(result));                       \
+}
+
+CAST_METHOD(Trunc)
+CAST_METHOD(ZExt)
+CAST_METHOD(SExt)
+CAST_METHOD(FPToUI)
+CAST_METHOD(FPToSI)
+CAST_METHOD(UIToFP)
+CAST_METHOD(SIToFP)
+CAST_METHOD(FPTrunc)
+CAST_METHOD(FPExt)
 
 NAN_METHOD(BuilderWrapper::Select)
 {
@@ -269,7 +321,10 @@ NAN_METHOD(BuilderWrapper::Return)
         Local<Number> num = info[0].As<Number>();
         double numVal = num->Value();
 
-        wrapper->Builder->Return((int)numVal);
+        FunctionTypeHandle *parentType = wrapper->Builder->GetParent()->Type;
+        ValueHandle *returnVal = wrapper->Builder->MakeValue(parentType->returns, numVal);
+
+        wrapper->Builder->Return(returnVal);
     }
     else if (Nan::New(ValueWrapper::prototype)->HasInstance(info[0]))
     {
@@ -564,8 +619,10 @@ NAN_MODULE_INIT(BuilderWrapper::Init)
     Nan::SetPrototypeMethod(tmpl, "mul", Mul);
     Nan::SetPrototypeMethod(tmpl, "udiv", UDiv);
     Nan::SetPrototypeMethod(tmpl, "sdiv", SDiv);
+    Nan::SetPrototypeMethod(tmpl, "fdiv", FDiv);
     Nan::SetPrototypeMethod(tmpl, "urem", URem);
     Nan::SetPrototypeMethod(tmpl, "srem", SRem);
+    Nan::SetPrototypeMethod(tmpl, "frem", FRem);
     Nan::SetPrototypeMethod(tmpl, "and", And);
     Nan::SetPrototypeMethod(tmpl, "or", Or);
     Nan::SetPrototypeMethod(tmpl, "xor", Xor);
@@ -583,6 +640,29 @@ NAN_MODULE_INIT(BuilderWrapper::Init)
     Nan::SetPrototypeMethod(tmpl, "sAtLeast", UAtLeast);
     Nan::SetPrototypeMethod(tmpl, "sLessThan", ULessThan);
     Nan::SetPrototypeMethod(tmpl, "sAtMost", UAtMost);
+
+    Nan::SetPrototypeMethod(tmpl, "foEqual", FOEqual);
+    Nan::SetPrototypeMethod(tmpl, "foNotEqual", FONotEqual);
+    Nan::SetPrototypeMethod(tmpl, "foGreaterThan", FOGreaterThan);
+    Nan::SetPrototypeMethod(tmpl, "foAtLeast", FOAtLeast);
+    Nan::SetPrototypeMethod(tmpl, "foLessThan", FOLessThan);
+    Nan::SetPrototypeMethod(tmpl, "foAtMost", FOAtMost);
+    Nan::SetPrototypeMethod(tmpl, "fuEqual", FUEqual);
+    Nan::SetPrototypeMethod(tmpl, "fuNotEqual", FUNotEqual);
+    Nan::SetPrototypeMethod(tmpl, "fuGreaterThan", FUGreaterThan);
+    Nan::SetPrototypeMethod(tmpl, "fuAtLeast", FUAtLeast);
+    Nan::SetPrototypeMethod(tmpl, "fuLessThan", FULessThan);
+    Nan::SetPrototypeMethod(tmpl, "fuAtMost", FUAtMost);
+
+    Nan::SetPrototypeMethod(tmpl, "trunc", Trunc);
+    Nan::SetPrototypeMethod(tmpl, "zext", ZExt);
+    Nan::SetPrototypeMethod(tmpl, "sext", SExt);
+    Nan::SetPrototypeMethod(tmpl, "fpToUI", FPToUI);
+    Nan::SetPrototypeMethod(tmpl, "fpToSI", FPToSI);
+    Nan::SetPrototypeMethod(tmpl, "uiToFP", UIToFP);
+    Nan::SetPrototypeMethod(tmpl, "siToFP", SIToFP);
+    Nan::SetPrototypeMethod(tmpl, "fpTrunc", FPTrunc);
+    Nan::SetPrototypeMethod(tmpl, "fpext", FPExt);
 
     Nan::SetPrototypeMethod(tmpl, "select", Select);
 

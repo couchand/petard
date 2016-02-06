@@ -61,8 +61,10 @@ NAN_MODULE_INIT(FunctionBuilderWrapper::Init)
     Nan::SetPrototypeMethod(tmpl, "mul", Mul);
     Nan::SetPrototypeMethod(tmpl, "udiv", UDiv);
     Nan::SetPrototypeMethod(tmpl, "sdiv", SDiv);
+    Nan::SetPrototypeMethod(tmpl, "fdiv", FDiv);
     Nan::SetPrototypeMethod(tmpl, "urem", URem);
     Nan::SetPrototypeMethod(tmpl, "srem", SRem);
+    Nan::SetPrototypeMethod(tmpl, "frem", FRem);
     Nan::SetPrototypeMethod(tmpl, "and", And);
     Nan::SetPrototypeMethod(tmpl, "or", Or);
     Nan::SetPrototypeMethod(tmpl, "xor", Xor);
@@ -80,6 +82,29 @@ NAN_MODULE_INIT(FunctionBuilderWrapper::Init)
     Nan::SetPrototypeMethod(tmpl, "sAtLeast", UAtLeast);
     Nan::SetPrototypeMethod(tmpl, "sLessThan", ULessThan);
     Nan::SetPrototypeMethod(tmpl, "sAtMost", UAtMost);
+
+    Nan::SetPrototypeMethod(tmpl, "foEqual", FOEqual);
+    Nan::SetPrototypeMethod(tmpl, "foNotEqual", FONotEqual);
+    Nan::SetPrototypeMethod(tmpl, "foGreaterThan", FOGreaterThan);
+    Nan::SetPrototypeMethod(tmpl, "foAtLeast", FOAtLeast);
+    Nan::SetPrototypeMethod(tmpl, "foLessThan", FOLessThan);
+    Nan::SetPrototypeMethod(tmpl, "foAtMost", FOAtMost);
+    Nan::SetPrototypeMethod(tmpl, "fuEqual", FUEqual);
+    Nan::SetPrototypeMethod(tmpl, "fuNotEqual", FUNotEqual);
+    Nan::SetPrototypeMethod(tmpl, "fuGreaterThan", FUGreaterThan);
+    Nan::SetPrototypeMethod(tmpl, "fuAtLeast", FUAtLeast);
+    Nan::SetPrototypeMethod(tmpl, "fuLessThan", FULessThan);
+    Nan::SetPrototypeMethod(tmpl, "fuAtMost", FUAtMost);
+
+    Nan::SetPrototypeMethod(tmpl, "trunc", Trunc);
+    Nan::SetPrototypeMethod(tmpl, "zext", ZExt);
+    Nan::SetPrototypeMethod(tmpl, "sext", SExt);
+    Nan::SetPrototypeMethod(tmpl, "fpToUI", FPToUI);
+    Nan::SetPrototypeMethod(tmpl, "fpToSI", FPToSI);
+    Nan::SetPrototypeMethod(tmpl, "uiToFP", UIToFP);
+    Nan::SetPrototypeMethod(tmpl, "siToFP", SIToFP);
+    Nan::SetPrototypeMethod(tmpl, "fpTrunc", FPTrunc);
+    Nan::SetPrototypeMethod(tmpl, "fpext", FPExt);
 
     Nan::SetPrototypeMethod(tmpl, "select", Select);
 

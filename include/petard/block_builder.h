@@ -27,12 +27,13 @@ public:
         builder.SetInsertPoint(block);
     }
 
+    FunctionBuilder *GetParent() { return parent; }
     llvm::BasicBlock *GetBlock() { return block; }
 
     void InsertAfter() { insertAfter = true; }
     void InsertBefore() { insertAfter = false; }
 
-    ValueHandle *MakeValue(TypeHandle *t, int i);
+    ValueHandle *MakeValue(TypeHandle *t, double i);
 
     BlockBuilder *ChildBlock(const char *name);
     BlockBuilder *SplitBlock(const char *name);
@@ -49,16 +50,13 @@ public:
     ValueHandle *CallFunction(FunctionBuilder *fn, std::vector<ValueHandle *> args);
 
     void Return();
-    void Return(int value);
     void Return(ValueHandle *value);
 
     ValueHandle *Alloca(TypeHandle *type);
-    ValueHandle *Alloca(TypeHandle *type, int arraySize);
     ValueHandle *Alloca(TypeHandle *type, ValueHandle *arraySize);
 
     ValueHandle *Load(ValueHandle *ptr);
 
-    void Store(int value, ValueHandle *ptr);
     void Store(ValueHandle *value, ValueHandle *ptr);
 
 #define BINARY_HEADER(name) ValueHandle *name(ValueHandle *lhs, ValueHandle *rhs);
@@ -68,8 +66,10 @@ public:
     BINARY_HEADER(Mul)
     BINARY_HEADER(UDiv)
     BINARY_HEADER(SDiv)
+    BINARY_HEADER(FDiv)
     BINARY_HEADER(URem)
     BINARY_HEADER(SRem)
+    BINARY_HEADER(FRem)
     BINARY_HEADER(And)
     BINARY_HEADER(Or)
     BINARY_HEADER(Xor)
@@ -87,6 +87,31 @@ public:
     BINARY_HEADER(SAtLeast)
     BINARY_HEADER(SLessThan)
     BINARY_HEADER(SAtMost)
+
+    BINARY_HEADER(FOEqual)
+    BINARY_HEADER(FONotEqual)
+    BINARY_HEADER(FOGreaterThan)
+    BINARY_HEADER(FOAtLeast)
+    BINARY_HEADER(FOLessThan)
+    BINARY_HEADER(FOAtMost)
+    BINARY_HEADER(FUEqual)
+    BINARY_HEADER(FUNotEqual)
+    BINARY_HEADER(FUGreaterThan)
+    BINARY_HEADER(FUAtLeast)
+    BINARY_HEADER(FULessThan)
+    BINARY_HEADER(FUAtMost)
+
+#define CAST_HEADER(name) virtual ValueHandle *name(ValueHandle *value, TypeHandle *type);
+
+    CAST_HEADER(Trunc)
+    CAST_HEADER(ZExt)
+    CAST_HEADER(SExt)
+    CAST_HEADER(FPToUI)
+    CAST_HEADER(FPToSI)
+    CAST_HEADER(UIToFP)
+    CAST_HEADER(SIToFP)
+    CAST_HEADER(FPTrunc)
+    CAST_HEADER(FPExt)
 
     ValueHandle *Select(ValueHandle *cond, ValueHandle *ifTrue, ValueHandle *ifFalse);
 

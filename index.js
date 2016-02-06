@@ -14,6 +14,10 @@ petard.type = {
     i32: petard.getIntTy(32),
     i64: petard.getIntTy(64),
 
+    f16: petard.getFloatTy(16),
+    f32: petard.getFloatTy(32),
+    f64: petard.getFloatTy(64),
+
     pointerTo: petard.getPointerTy
 
 };

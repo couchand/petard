@@ -6,9 +6,23 @@
 
 #include "llvm_utils.h"
 
-ValueHandle *BlockBuilder::MakeValue(TypeHandle *t, int i)
+ValueHandle *BlockBuilder::MakeValue(TypeHandle *t, double i)
 {
-    llvm::Value *v = llvm::ConstantInt::get(t->getLLVMType(context), i);
+    llvm::Value *v;
+
+    if (t->isIntType())
+    {
+        v = llvm::ConstantInt::get(t->getLLVMType(context), i);
+    }
+    else if (t->isFloatType())
+    {
+        v = llvm::ConstantFP::get(t->getLLVMType(context), i);
+    }
+    else
+    {
+        return 0;
+    }
+
     return new PlainValueHandle(t, v);
 }
 
@@ -76,11 +90,6 @@ void BlockBuilder::Return()
     if (insertAfter) builder.SetInsertPoint(inst);
 }
 
-void BlockBuilder::Return(int value)
-{
-    Return(MakeValue(parent->Type->returns, value));
-}
-
 void BlockBuilder::Return(ValueHandle *value)
 {
     llvm::Value *returnValue = value->getLLVMValue();
@@ -99,12 +108,6 @@ ValueHandle *BlockBuilder::Alloca(TypeHandle *t)
     return new PlainValueHandle(new PointerTypeHandle(t), alloca);
 }
 
-ValueHandle *BlockBuilder::Alloca(TypeHandle *t, int size)
-{
-    ValueHandle *s = MakeValue(new IntTypeHandle(32), size);
-    return Alloca(t, s);
-}
-
 ValueHandle *BlockBuilder::Alloca(TypeHandle *t, ValueHandle *size)
 {
     llvm::AllocaInst *alloca = builder.CreateAlloca(t->getLLVMType(context), size->getLLVMValue());
@@ -121,12 +124,6 @@ ValueHandle *BlockBuilder::Load(ValueHandle *ptr)
     return new PlainValueHandle(pt->pointee, load);
 }
 
-void BlockBuilder::Store(int value, ValueHandle *ptr)
-{
-    PointerTypeHandle *pt = static_cast<PointerTypeHandle *>(ptr->Type);
-    Store(MakeValue(pt->pointee, value), ptr);
-}
-
 void BlockBuilder::Store(ValueHandle *value, ValueHandle *ptr)
 {
     llvm::StoreInst *store = builder.CreateStore(value->getLLVMValue(), ptr->getLLVMValue());
@@ -141,13 +138,35 @@ ValueHandle *BlockBuilder::name(ValueHandle *lhs, ValueHandle *rhs) \
     return new PlainValueHandle(t, val); \
 }
 
-BINARY_BUILDER(Add, CreateAdd)
-BINARY_BUILDER(Sub, CreateSub)
-BINARY_BUILDER(Mul, CreateMul)
+#define BINARY_BUILDER2(name, intfactory, floatfactory) \
+ValueHandle *BlockBuilder::name(ValueHandle *lhs, ValueHandle *rhs) \
+{ \
+    TypeHandle *t = lhs->Type; /* TODO: something better */ \
+    llvm::Value *val; \
+    if (t->isIntType()) \
+    { \
+        val = builder.intfactory(lhs->getLLVMValue(), rhs->getLLVMValue()); \
+    } \
+    else if (t->isFloatType()) \
+    { \
+        val = builder.floatfactory(lhs->getLLVMValue(), rhs->getLLVMValue()); \
+    } \
+    else \
+    { \
+        return 0; \
+    } \
+    return new PlainValueHandle(t, val); \
+}
+
+BINARY_BUILDER2(Add, CreateAdd, CreateFAdd)
+BINARY_BUILDER2(Sub, CreateSub, CreateFSub)
+BINARY_BUILDER2(Mul, CreateMul, CreateFMul)
 BINARY_BUILDER(UDiv, CreateUDiv)
 BINARY_BUILDER(SDiv, CreateSDiv)
+BINARY_BUILDER(FDiv, CreateFDiv)
 BINARY_BUILDER(URem, CreateURem)
 BINARY_BUILDER(SRem, CreateSRem)
+BINARY_BUILDER(FRem, CreateFRem)
 BINARY_BUILDER(And, CreateAnd)
 BINARY_BUILDER(Or, CreateOr)
 BINARY_BUILDER(Xor, CreateXor)
@@ -155,19 +174,10 @@ BINARY_BUILDER(Shl, CreateShl)
 BINARY_BUILDER(LShr, CreateLShr)
 BINARY_BUILDER(AShr, CreateAShr)
 
-#define BINARY_PREDICATE(name, intfactory) \
+#define BINARY_PREDICATE(name, factory) \
 ValueHandle *BlockBuilder::name(ValueHandle *lhs, ValueHandle *rhs) \
 { \
-    TypeHandle *t = lhs->Type; /* TODO: unify types */ \
-    llvm::Value *val; \
-    if (t->isIntType()) \
-    { \
-        val = builder.intfactory(lhs->getLLVMValue(), rhs->getLLVMValue()); \
-    } \
-    else \
-    { \
-        return 0; \
-    } \
+    llvm::Value *val = builder.factory(lhs->getLLVMValue(), rhs->getLLVMValue()); \
     return new PlainValueHandle(new IntTypeHandle(1), val); \
 }
 
@@ -181,6 +191,35 @@ BINARY_PREDICATE(SGreaterThan, CreateICmpSGT)
 BINARY_PREDICATE(SAtLeast, CreateICmpSGE)
 BINARY_PREDICATE(SLessThan, CreateICmpSLT)
 BINARY_PREDICATE(SAtMost, CreateICmpSLE)
+
+BINARY_PREDICATE(FOEqual, CreateFCmpOEQ)
+BINARY_PREDICATE(FONotEqual, CreateFCmpONE)
+BINARY_PREDICATE(FOGreaterThan, CreateFCmpOGT)
+BINARY_PREDICATE(FOAtLeast, CreateFCmpOGE)
+BINARY_PREDICATE(FOLessThan, CreateFCmpOLT)
+BINARY_PREDICATE(FOAtMost, CreateFCmpOLE)
+BINARY_PREDICATE(FUEqual, CreateFCmpUEQ)
+BINARY_PREDICATE(FUNotEqual, CreateFCmpUNE)
+BINARY_PREDICATE(FUGreaterThan, CreateFCmpUGT)
+BINARY_PREDICATE(FUAtLeast, CreateFCmpUGE)
+BINARY_PREDICATE(FULessThan, CreateFCmpULT)
+BINARY_PREDICATE(FUAtMost, CreateFCmpULE)
+
+#define CAST_BUILDER(name, factory) ValueHandle *BlockBuilder::name(ValueHandle *value, TypeHandle *type) \
+{ \
+    llvm::Value *val = builder.factory(value->getLLVMValue(), type->getLLVMType(context)); \
+    return new PlainValueHandle(type, val); \
+}
+
+CAST_BUILDER(Trunc, CreateTrunc)
+CAST_BUILDER(ZExt, CreateZExt)
+CAST_BUILDER(SExt, CreateSExt)
+CAST_BUILDER(FPToUI, CreateFPToUI)
+CAST_BUILDER(FPToSI, CreateFPToSI)
+CAST_BUILDER(UIToFP, CreateUIToFP)
+CAST_BUILDER(SIToFP, CreateSIToFP)
+CAST_BUILDER(FPTrunc, CreateFPTrunc)
+CAST_BUILDER(FPExt, CreateFPExt)
 
 ValueHandle *BlockBuilder::Select(ValueHandle *cond, ValueHandle *ifTrue, ValueHandle *ifFalse)
 {

@@ -60,6 +60,28 @@ std::string IntTypeHandle::toString()
     return ss.str();
 }
 
+llvm::Type *FloatTypeHandle::getLLVMType(llvm::LLVMContext &context)
+{
+    switch (numBits)
+    {
+        case 16: return llvm::Type::getHalfTy(context);
+        case 32: return llvm::Type::getFloatTy(context);
+        case 64: return llvm::Type::getDoubleTy(context);
+        default: return 0;
+    }
+}
+
+std::string FloatTypeHandle::toString()
+{
+    switch (numBits)
+    {
+        case 16: return "half";
+        case 32: return "float";
+        case 64: return "double";
+        default: return "**ERROR: invalid float width**";
+    }
+}
+
 llvm::Type *PointerTypeHandle::getLLVMType(llvm::LLVMContext &context)
 {
     return llvm::PointerType::getUnqual(pointee->getLLVMType(context));

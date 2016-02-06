@@ -15,11 +15,12 @@ class SwitchBuilder;
 class InstructionBuilder
 {
 public:
+    virtual FunctionBuilder *GetParent() = 0;
     virtual llvm::BasicBlock *GetBlock() = 0;
     virtual void InsertAfter() = 0;
     virtual void InsertBefore() = 0;
 
-    virtual ValueHandle *MakeValue(TypeHandle *t, int i) = 0;
+    virtual ValueHandle *MakeValue(TypeHandle *t, double i) = 0;
 
     virtual BlockBuilder *ChildBlock(const char *name) = 0;
     virtual BlockBuilder *SplitBlock(const char *name) = 0;
@@ -36,16 +37,13 @@ public:
     virtual ValueHandle *CallFunction(FunctionBuilder *fn, std::vector<ValueHandle *> args) = 0;
 
     virtual void Return() = 0;
-    virtual void Return(int value) = 0;
     virtual void Return(ValueHandle *value) = 0;
 
     virtual ValueHandle *Alloca(TypeHandle *type) = 0;
-    virtual ValueHandle *Alloca(TypeHandle *type, int arraySize) = 0;
     virtual ValueHandle *Alloca(TypeHandle *type, ValueHandle *arraySize) = 0;
 
     virtual ValueHandle *Load(ValueHandle *ptr) = 0;
 
-    virtual void Store(int value, ValueHandle *ptr) = 0;
     virtual void Store(ValueHandle *value, ValueHandle *ptr) = 0;
 
 #define BINARY_INTERFACE(name) virtual ValueHandle *name(ValueHandle *lhs, ValueHandle *rhs) = 0;
@@ -55,8 +53,10 @@ public:
     BINARY_INTERFACE(Mul)
     BINARY_INTERFACE(UDiv)
     BINARY_INTERFACE(SDiv)
+    BINARY_INTERFACE(FDiv)
     BINARY_INTERFACE(URem)
     BINARY_INTERFACE(SRem)
+    BINARY_INTERFACE(FRem)
     BINARY_INTERFACE(And)
     BINARY_INTERFACE(Or)
     BINARY_INTERFACE(Xor)
@@ -74,6 +74,31 @@ public:
     BINARY_INTERFACE(SAtLeast)
     BINARY_INTERFACE(SLessThan)
     BINARY_INTERFACE(SAtMost)
+
+    BINARY_INTERFACE(FOEqual)
+    BINARY_INTERFACE(FONotEqual)
+    BINARY_INTERFACE(FOGreaterThan)
+    BINARY_INTERFACE(FOAtLeast)
+    BINARY_INTERFACE(FOLessThan)
+    BINARY_INTERFACE(FOAtMost)
+    BINARY_INTERFACE(FUEqual)
+    BINARY_INTERFACE(FUNotEqual)
+    BINARY_INTERFACE(FUGreaterThan)
+    BINARY_INTERFACE(FUAtLeast)
+    BINARY_INTERFACE(FULessThan)
+    BINARY_INTERFACE(FUAtMost)
+
+#define CAST_INTERFACE(name) virtual ValueHandle *name(ValueHandle *value, TypeHandle *type) = 0;
+
+    CAST_INTERFACE(Trunc)
+    CAST_INTERFACE(ZExt)
+    CAST_INTERFACE(SExt)
+    CAST_INTERFACE(FPToUI)
+    CAST_INTERFACE(FPToSI)
+    CAST_INTERFACE(UIToFP)
+    CAST_INTERFACE(SIToFP)
+    CAST_INTERFACE(FPTrunc)
+    CAST_INTERFACE(FPExt)
 
     virtual ValueHandle *Select(ValueHandle *cond, ValueHandle *ifTrue, ValueHandle *ifFalse) = 0;
 

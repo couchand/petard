@@ -26,8 +26,10 @@ protected:
     static NAN_METHOD(Mul);
     static NAN_METHOD(UDiv);
     static NAN_METHOD(SDiv);
+    static NAN_METHOD(FDiv);
     static NAN_METHOD(URem);
     static NAN_METHOD(SRem);
+    static NAN_METHOD(FRem);
     static NAN_METHOD(And);
     static NAN_METHOD(Or);
     static NAN_METHOD(Xor);
@@ -45,6 +47,28 @@ protected:
     static NAN_METHOD(SAtLeast);
     static NAN_METHOD(SLessThan);
     static NAN_METHOD(SAtMost);
+    static NAN_METHOD(FOEqual);
+    static NAN_METHOD(FONotEqual);
+    static NAN_METHOD(FOGreaterThan);
+    static NAN_METHOD(FOAtLeast);
+    static NAN_METHOD(FOLessThan);
+    static NAN_METHOD(FOAtMost);
+    static NAN_METHOD(FUEqual);
+    static NAN_METHOD(FUNotEqual);
+    static NAN_METHOD(FUGreaterThan);
+    static NAN_METHOD(FUAtLeast);
+    static NAN_METHOD(FULessThan);
+    static NAN_METHOD(FUAtMost);
+
+    static NAN_METHOD(Trunc);
+    static NAN_METHOD(ZExt);
+    static NAN_METHOD(SExt);
+    static NAN_METHOD(FPToUI);
+    static NAN_METHOD(FPToSI);
+    static NAN_METHOD(UIToFP);
+    static NAN_METHOD(SIToFP);
+    static NAN_METHOD(FPTrunc);
+    static NAN_METHOD(FPExt);
 
     static NAN_METHOD(Select);
 

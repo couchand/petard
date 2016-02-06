@@ -434,7 +434,7 @@ more information
 [16]: https://github.com/couchand/petard#helpers
 [17]: https://github.com/couchand/petard#type-dict
 [18]: https://github.com/couchand/petard#switchbuilder
-[18]: https://github.com/couchand/petard#selectbuilder-js
+[19]: https://github.com/couchand/petard#selectbuilder-js
 
 [20]: https://github.com/couchand/petard#value-unitdeclarefunctionstring-name-type-returns-type-takes
 [21]: https://github.com/couchand/petard/tree/master/example

@@ -446,7 +446,7 @@ A property containing the type of the function.
 #### SwitchBuilder
 
 A special tool for working with switch statements.  It is returned from the
-`switch` method of a builder.
+[switch][22] method of a builder.
 
 ##### addCase(Number onVal, [Builder][12] target)
 
@@ -454,7 +454,7 @@ Adds a case for the value `onVal`, branching to target.
 
 #### SelectBuilder *(js)*
 
-The same thing as the switch builder, but for select statements.
+The same thing as the switch builder, but for [select][23] statements.
 
 ##### [Builder][12] defaultCase
 
@@ -533,6 +533,8 @@ more information
 
 [20]: https://github.com/couchand/petard#value-unitdeclarefunctionstring-name-type-returns-type-takes
 [21]: https://github.com/couchand/petard/tree/master/example
+[22]: https://github.com/couchand/petard#switchbuilder-switchvalue-condition-builder-defaultdest
+[23]: https://github.com/couchand/petard#selectbuilder-selectvalue-condition-js
 
 [90]: https://github.com/couchand/petard#introduction
 [91]: https://github.com/couchand/petard#dependencies

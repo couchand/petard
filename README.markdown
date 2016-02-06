@@ -506,6 +506,9 @@ This dict contains all the basic types for easy reference.
   * `i16` - A small word.
   * `i32` - A medium word.
   * `i64` - A long word.
+  * `f16` - A half-size floating point value. (LLVM's `half`)
+  * `f32` - A regular floating point value. (LLVM's `float`)
+  * `f64` - A double-size floating point value. (LLVM's `double`)
   * [Type][10] pointerTo([Type][10] pointee) - Takes a type and returns a pointer to that type.
 
 more information

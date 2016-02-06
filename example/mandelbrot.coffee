@@ -17,7 +17,7 @@ putn.return()
 converger = (->
 
   c = module.makeFunction "converger", f32, f32, f32, f32, f32, f32
-  
+
   one = c.value f32, 1
   two = c.value f32, 2
 
@@ -26,12 +26,12 @@ converger = (->
   it = c.parameter 2
   cr = c.parameter 3
   ci = c.parameter 4
-  
+
   rsq = c.mul r, r
   isq = c.mul i, i
 
   squares = c.add rsq, isq
-  
+
   max = c.value f32, 255
 
   itAboveMax = c.foGreaterThan it, max
@@ -39,7 +39,7 @@ converger = (->
   squaresAboveFour = c.foGreaterThan squares, c.value f32, 4
 
   cond = c.or itAboveMax, squaresAboveFour
-  
+
   ifDone = c.if cond
 
   e = ifDone.else

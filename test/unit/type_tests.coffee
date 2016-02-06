@@ -26,6 +26,17 @@ describe 'getters', ->
     it 'expects a valid bit width', ->
       (-> llvm.getIntTy 'foobar').should.throw /bit width/i
 
+  describe 'getFloatTy', ->
+    it 'returns a type', ->
+      me = llvm.getFloatTy 32
+      me.constructor.name.should.equal 'Type'
+
+    it 'expects a bit width', ->
+      (-> llvm.getFloatTy()).should.throw /bit width/i
+
+    it 'expects a valid bit width', ->
+      (-> llvm.getFloatTy 33).should.throw /bit width/i
+
   describe 'getPointerTy', ->
     it 'returns a type', ->
       me = llvm.getPointerTy llvm.getIntTy 32
@@ -79,6 +90,7 @@ describe 'IntType', ->
       me = llvm.getIntTy 32
       me.toString().should.equal 'i32'
 
+  describe 'constructor', ->
     it 'errors on zero bit width', ->
       (-> llvm.getIntTy 0).should.throw /bit width/i
 
@@ -90,6 +102,46 @@ describe 'IntType', ->
 
     it 'errors on gargantuan bit width', ->
       (-> llvm.getIntTy 99999999).should.throw /bit width/i
+
+describe 'FloatType', ->
+  describe 'toString', ->
+    it 'returns float type', ->
+      me = llvm.getFloatTy 32
+      me.toString().should.equal 'float'
+
+    it 'returns double type', ->
+      me = llvm.getFloatTy 64
+      me.toString().should.equal 'double'
+
+    it 'returns half type', ->
+      me = llvm.getFloatTy 16
+      me.toString().should.equal 'half'
+
+  describe 'constructor', ->
+    it 'errors on zero bit width', ->
+      (-> llvm.getFloatTy 0).should.throw /bit width/i
+
+    it 'errors on partial bit width', ->
+      (-> llvm.getFloatTy 1.5).should.throw /bit width/i
+
+    it 'errors on negative bit width', ->
+      (-> llvm.getFloatTy -32).should.throw /bit width/i
+
+    it 'errors on gargantuan bit width', ->
+      (-> llvm.getFloatTy 99999999).should.throw /bit width/i
+
+    it 'errors on non-standard bit width', ->
+      (-> llvm.getFloatTy 15).should.throw /bit width/i
+      (-> llvm.getFloatTy 17).should.throw /bit width/i
+      (-> llvm.getFloatTy 31).should.throw /bit width/i
+      (-> llvm.getFloatTy 33).should.throw /bit width/i
+      (-> llvm.getFloatTy 63).should.throw /bit width/i
+      (-> llvm.getFloatTy 65).should.throw /bit width/i
+
+    it 'creates halfs, floats, and doubles', ->
+      (-> llvm.getFloatTy 16).should.not.throw /bit width/i
+      (-> llvm.getFloatTy 32).should.not.throw /bit width/i
+      (-> llvm.getFloatTy 64).should.not.throw /bit width/i
 
 describe 'PointerType', ->
   describe 'toString', ->

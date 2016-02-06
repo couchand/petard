@@ -175,15 +175,15 @@ Store the value in the memory pointed to by pointer.
 
 ##### [Value][11] add([Value][11] left, [Value][11] right)
 
-Add the values.
+Add the values.  Works on integer and float values.
 
 ##### [Value][11] sub([Value][11] left, [Value][11] right)
 
-Subtract the right value from the left.
+Subtract the right value from the left.  For integers and floats.
 
 ##### [Value][11] mul([Value][11] left, [Value][11] right)
 
-Multiply the values.
+Multiply the values.  They can be integers or floats.
 
 ##### [Value][11] udiv([Value][11] left, [Value][11] right)
 
@@ -193,6 +193,10 @@ Unsigned integer divide the left value by the right.
 
 Signed integer divide the left value by the right.
 
+##### [Value][11] fdiv([Value][11] left, [Value][11] right)
+
+Floating point divide the left value by the right.
+
 ##### [Value][11] urem([Value][11] left, [Value][11] right)
 
 The remainder when the left value is unsigned integer divided by the right.
@@ -200,6 +204,10 @@ The remainder when the left value is unsigned integer divided by the right.
 ##### [Value][11] srem([Value][11] left, [Value][11] right)
 
 The remainder when the left value is signed integer divided by the right.
+
+##### [Value][11] frem([Value][11] left, [Value][11] right)
+
+The remainder when the left value is floating point divided by the right.
 
 ##### [Value][11] and([Value][11] left, [Value][11] right)
 
@@ -266,6 +274,90 @@ Signed less than comparison.
 ##### [Value][11] sAtMost([Value][11] left, [Value][11] right)
 
 Signed less than or equal to comparison.
+
+##### [Value][11] foEqual([Value][11] left, [Value][11] right)
+
+Float value ordered equality comparison.
+
+##### [Value][11] foNotEqual([Value][11] left, [Value][11] right)
+
+Float value ordered inequality comparison.
+
+##### [Value][11] foGreaterThan([Value][11] left, [Value][11] right)
+
+Float value ordered greater than comparison.
+
+##### [Value][11] foAtLeast([Value][11] left, [Value][11] right)
+
+Float value ordered greater than or equal to comparison.
+
+##### [Value][11] foLessThan([Value][11] left, [Value][11] right)
+
+Float value ordered less than comparison.
+
+##### [Value][11] foAtMost([Value][11] left, [Value][11] right)
+
+Float value ordered less than or equal to comparison.
+
+##### [Value][11] fuEqual([Value][11] left, [Value][11] right)
+
+Float value unordered equality comparison.
+
+##### [Value][11] fuNotEqual([Value][11] left, [Value][11] right)
+
+Float value unordered inequality comparison.
+
+##### [Value][11] fuGreaterThan([Value][11] left, [Value][11] right)
+
+Float value unordered greater than comparison.
+
+##### [Value][11] fuAtLeast([Value][11] left, [Value][11] right)
+
+Float value unordered greater than or equal to comparison.
+
+##### [Value][11] fuLessThan([Value][11] left, [Value][11] right)
+
+Float value unordered less than comparison.
+
+##### [Value][11] fuAtMost([Value][11] left, [Value][11] right)
+
+Float value unordered less than or equal to  comparison.
+
+##### [Value][11] trunc([Value][11] value, [Type][10] type)
+
+Truncate the integer value to a smaller type.
+
+##### [Value][11] zext([Value][11] value, [Type][10] type)
+
+Zero extend the integer value to a larger type.
+
+##### [Value][11] sext([Value][11] value, [Type][10] type)
+
+Sign extend the integer value to a larger type.
+
+##### [Value][11] fpToUI([Value][11] value, [Type][10] type)
+
+Convert the floating point value to an unsigned integer.
+
+##### [Value][11] fpToSI([Value][11] value, [Type][10] type)
+
+Convert the floating point value to a signed integer.
+
+##### [Value][11] uiToFP([Value][11] value, [Type][10] type)
+
+Convert the unsigned integer value to a floating point.
+
+##### [Value][11] siToFP([Value][11] value, [Type][10] type)
+
+Convert the signed integer value to a floating point.
+
+##### [Value][11] fpTrunc([Value][11] value, [Type][10] type)
+
+Truncate the floating point value to a smaller type.
+
+##### [Value][11] fpext([Value][11] value, [Type][10] type)
+
+Extend the floating point value to a larger type.
 
 ##### [Value][11] select([Value][11] condition, [Value][11] ifTrue, [Value][11] ifFalse)
 

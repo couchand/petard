@@ -59,7 +59,11 @@ b.store nextch, nextspot
 nextsz = b.add size, one
 b.store nextsz, sizeP
 
-terminatorP = main.getElementPointer nameP, main.load sizeP
+lastspot = main.load sizeP
+didnewline = main.equal crlf, main.load charP
+nullidx = main.select didnewline, main.sub(lastspot, one), lastspot
+
+terminatorP = main.getElementPointer nameP, nullidx
 main.store 0, terminatorP
 
 prefix = main.loadConstant prefixC

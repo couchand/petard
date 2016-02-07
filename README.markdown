@@ -150,6 +150,11 @@ return type of the function.
 
 Reference function parameter `index`.
 
+##### [Value][11] getElementPointer([Value][11] base, \[Number|[Value][11]\] indexList)
+
+Perform pointer math on the aggregate type pointer to produce a new pointer
+to the given structure member.  For details, see the [GetElementPointer FAQ][2].
+
 ##### [Value][11] loadConstant([Value][11] constant)
 
 Load a constant value.  Currently the only usage is to load a string constant,
@@ -359,6 +364,18 @@ Truncate the floating point value to a smaller type.
 
 Extend the floating point value to a larger type.
 
+##### [Value][11] ptrToInt([Value][11] value, [Type][10] type)
+
+Convert the pointer to an integer type.
+
+##### [Value][11] intToPtr([Value][11] value, [Type][10] type)
+
+Convert the integer to a pointer type.
+
+##### [Value][11] bitcast([Value][11] value, [Type][10] type)
+
+Cast the value to another type without changing the bits.
+
 ##### [Value][11] select([Value][11] condition, [Value][11] ifTrue, [Value][11] ifFalse)
 
 Non-branching value select.  Returns the value corresponding to the ifTrue value
@@ -509,7 +526,12 @@ This dict contains all the basic types for easy reference.
   * `f16` - A half-precision floating point value. (LLVM's `half`)
   * `f32` - A single-precision floating point value. (LLVM's `float`)
   * `f64` - A double-precision floating point value. (LLVM's `double`)
-  * [Type][10] pointerTo([Type][10] pointee) - Takes a type and returns a pointer to that type.
+  * [Type][10] arrayOf(Number size, [Type][10] element) - Takes a size and type
+    and returns an array of that size and type.
+  * [Type][10] structOf(\[[Type][10]\] elements) - Takes an array of types and
+    returns a struct composed of those types.
+  * [Type][10] pointerTo([Type][10] pointee) - Takes a type and returns a
+    pointer to that type.
 
 more information
 ----------------
@@ -519,6 +541,7 @@ more information
 
 [0]: http://llvm.org/docs/LangRef.html
 [1]: http://llvm.org/docs/ProgrammersManual.html
+[2]: http://llvm.org/docs/GetElementPtr.html
 
 [10]: https://github.com/couchand/petard#type
 [11]: https://github.com/couchand/petard#value

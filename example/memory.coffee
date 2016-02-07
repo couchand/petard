@@ -3,11 +3,24 @@
 llvm = require '../'
 
 {i8, i32, pointerTo} = llvm.type
+vd = llvm.type.void
 
 hello = llvm.CodeUnit "memory"
 
 getchar = hello.declareFunction "getchar", i32
-puts = hello.declareFunction "puts", i32, pointerTo i8
+putchar = hello.declareFunction "putchar", i32, i8
+
+puts = hello.makeFunction "puts", vd, pointerTo i8
+indexP = puts.alloca i8
+puts.store 0, indexP
+nextchar = index = no
+loops = puts.while (c) ->
+  index = c.load indexP
+  nextchar = c.load c.getElementPointer c.parameter(0), index
+  c.notEqual nextchar, c.value i8, 0
+loops.callFunction putchar, nextchar
+loops.store loops.add(index, loops.value i8, 1), indexP
+puts.return()
 
 prefixC = hello.constant "Hello, "
 suffixC = hello.constant "!\n"

@@ -27,6 +27,21 @@ NAN_METHOD(TypeWrapper::ToString)
     info.GetReturnValue().Set(Nan::New(name).ToLocalChecked());
 }
 
+NAN_METHOD(TypeWrapper::IsCompatibleWith)
+{
+    TypeWrapper *self = Nan::ObjectWrap::Unwrap<TypeWrapper>(info.This());
+
+    if (info.Length() == 0 || !Nan::New(prototype)->HasInstance(info[0]))
+    {
+        return Nan::ThrowError("Compatibility check requires a type handle");
+    }
+
+    TypeWrapper *other = Nan::ObjectWrap::Unwrap<TypeWrapper>(info[0].As<Object>());
+
+    bool isCompatible = self->Type->isCompatibleWith(other->Type);
+    info.GetReturnValue().Set(isCompatible);//v8::Boolean::New(isCompatible));
+}
+
 Handle<Value> TypeWrapper::wrapType(TypeHandle *type)
 {
     Nan::EscapableHandleScope scope;
@@ -45,6 +60,7 @@ NAN_MODULE_INIT(TypeWrapper::Init)
     tmpl->SetClassName(Nan::New("Type").ToLocalChecked());
     tmpl->InstanceTemplate()->SetInternalFieldCount(1);
     Nan::SetPrototypeMethod(tmpl, "toString", TypeWrapper::ToString);
+    Nan::SetPrototypeMethod(tmpl, "isCompatibleWith", TypeWrapper::IsCompatibleWith);
 
     constructor().Reset(Nan::GetFunction(tmpl).ToLocalChecked());
     Nan::Set(target, Nan::New("Type").ToLocalChecked(),

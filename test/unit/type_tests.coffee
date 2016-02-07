@@ -74,13 +74,40 @@ describe 'VoidType', ->
       me = llvm.getVoidTy()
       me.toString().should.equal 'void'
 
+  describe 'isCompatibleWith', ->
+    it 'returns true for void type', ->
+      me = llvm.getVoidTy()
+      other = llvm.getVoidTy()
+      me.isCompatibleWith(other).should.be.true
+
+    it 'returns false for non-void types', ->
+      me = llvm.getVoidTy()
+
+      intTy = llvm.getIntTy 32
+      me.isCompatibleWith(intTy).should.be.false
+
+      floatTy = llvm.getFloatTy 32
+      me.isCompatibleWith(floatTy).should.be.false
+
+      ptrTy = llvm.getPointerTy llvm.getIntTy 32
+      me.isCompatibleWith(ptrTy).should.be.false
+
+      arrTy = llvm.getArrayTy 3, llvm.getIntTy 32
+      me.isCompatibleWith(arrTy).should.be.false
+
+      structTy = llvm.getStructTy [llvm.getFloatTy 32]
+      me.isCompatibleWith(structTy).should.be.false
+
+      fnTy = llvm.getFunctionTy llvm.getVoidTy(), llvm.getFloatTy 32
+      me.isCompatibleWith(fnTy).should.be.false
+
 describe 'FunctionType', ->
   describe 'toString', ->
     it 'returns void and parens for thunk', ->
       me = llvm.getFunctionTy()
       me.toString().should.equal 'void ()'
 
-    it 'shows return value before the parens', ->
+    it 'shows returns value before the parens', ->
       me = llvm.getFunctionTy llvm.getIntTy 32
       me.toString().should.equal 'i32 ()'
 
@@ -95,6 +122,46 @@ describe 'FunctionType', ->
       sink = llvm.getFunctionTy llvm.getVoidTy(), llvm.getIntTy 64
       me = llvm.getFunctionTy llvm.getFunctionTy(), source, sink
       me.toString().should.equal 'void () (i64 (), void (i64))'
+
+  describe 'isCompatibleWith', ->
+    it 'returns true for identical type', ->
+      me = llvm.getFunctionTy llvm.getVoidTy(), llvm.getIntTy 32
+      other = llvm.getFunctionTy llvm.getVoidTy(), llvm.getIntTy 32
+      me.isCompatibleWith(other).should.be.true
+
+    it 'returns false for non-function types', ->
+      me = llvm.getFunctionTy llvm.getVoidTy(), llvm.getIntTy 32
+
+      voidTy = llvm.getVoidTy()
+      me.isCompatibleWith(voidTy).should.be.false
+
+      intTy = llvm.getIntTy 32
+      me.isCompatibleWith(intTy).should.be.false
+
+      floatTy = llvm.getFloatTy 32
+      me.isCompatibleWith(floatTy).should.be.false
+
+      ptrTy = llvm.getPointerTy llvm.getIntTy 32
+      me.isCompatibleWith(ptrTy).should.be.false
+
+      arrTy = llvm.getArrayTy 3, llvm.getFloatTy 32
+      me.isCompatibleWith(arrTy).should.be.false
+
+      structTy = llvm.getStructTy [llvm.getFloatTy 32]
+      me.isCompatibleWith(structTy).should.be.false
+
+    it 'returns false for other return types', ->
+      me = llvm.getFunctionTy llvm.getVoidTy(), llvm.getIntTy 32
+      other = llvm.getFunctionTy llvm.getIntTy(32), llvm.getIntTy 32
+      me.isCompatibleWith(other).should.be.false
+
+    it 'returns false for other parameter types', ->
+      me = llvm.getFunctionTy llvm.getVoidTy(), llvm.getIntTy 32
+      bigger = llvm.getFunctionTy llvm.getVoidTy(), llvm.getIntTy 64
+      me.isCompatibleWith(bigger).should.be.false
+
+      additional = llvm.getFunctionTy llvm.getVoidTy(), llvm.getIntTy(32), llvm.getIntTy(32)
+      me.isCompatibleWith(additional).should.be.false
 
 describe 'IntType', ->
   describe 'toString', ->
@@ -114,6 +181,42 @@ describe 'IntType', ->
 
     it 'errors on gargantuan bit width', ->
       (-> llvm.getIntTy 99999999).should.throw /bit width/i
+
+  describe 'isCompatibleWith', ->
+    it 'returns true for identical type', ->
+      me = llvm.getIntTy 32
+      other = llvm.getIntTy 32
+      me.isCompatibleWith(other).should.be.true
+
+    it 'returns false for non-integer types', ->
+      me = llvm.getIntTy 32
+
+      voidTy = llvm.getVoidTy()
+      me.isCompatibleWith(voidTy).should.be.false
+
+      floatTy = llvm.getFloatTy 32
+      me.isCompatibleWith(floatTy).should.be.false
+
+      ptrTy = llvm.getPointerTy llvm.getIntTy 32
+      me.isCompatibleWith(ptrTy).should.be.false
+
+      arrTy = llvm.getArrayTy 3, llvm.getIntTy 32
+      me.isCompatibleWith(arrTy).should.be.false
+
+      structTy = llvm.getStructTy [llvm.getFloatTy 32]
+      me.isCompatibleWith(structTy).should.be.false
+
+      fnTy = llvm.getFunctionTy llvm.getVoidTy(), llvm.getFloatTy 32
+      me.isCompatibleWith(fnTy).should.be.false
+
+    it 'returns false for other bitwidth types', ->
+      me = llvm.getIntTy 32
+
+      smaller = llvm.getIntTy 16
+      me.isCompatibleWith(smaller).should.be.false
+
+      larger = llvm.getIntTy 64
+      me.isCompatibleWith(larger).should.be.false
 
 describe 'FloatType', ->
   describe 'toString', ->
@@ -155,6 +258,42 @@ describe 'FloatType', ->
       (-> llvm.getFloatTy 32).should.not.throw /bit width/i
       (-> llvm.getFloatTy 64).should.not.throw /bit width/i
 
+  describe 'isCompatibleWith', ->
+    it 'returns true for identical type', ->
+      me = llvm.getFloatTy 32
+      other = llvm.getFloatTy 32
+      me.isCompatibleWith(other).should.be.true
+
+    it 'returns false for non-float types', ->
+      me = llvm.getFloatTy 32
+
+      voidTy = llvm.getVoidTy()
+      me.isCompatibleWith(voidTy).should.be.false
+
+      intTy = llvm.getIntTy 32
+      me.isCompatibleWith(intTy).should.be.false
+
+      ptrTy = llvm.getPointerTy llvm.getIntTy 32
+      me.isCompatibleWith(ptrTy).should.be.false
+
+      arrTy = llvm.getArrayTy 3, llvm.getIntTy 32
+      me.isCompatibleWith(arrTy).should.be.false
+
+      structTy = llvm.getStructTy [llvm.getFloatTy 32]
+      me.isCompatibleWith(structTy).should.be.false
+
+      fnTy = llvm.getFunctionTy llvm.getVoidTy(), llvm.getFloatTy 32
+      me.isCompatibleWith(fnTy).should.be.false
+
+    it 'returns false for other bitwidth types', ->
+      me = llvm.getFloatTy 32
+
+      smaller = llvm.getFloatTy 16
+      me.isCompatibleWith(smaller).should.be.false
+
+      larger = llvm.getFloatTy 64
+      me.isCompatibleWith(larger).should.be.false
+
 describe 'PointerType', ->
   describe 'toString', ->
     it 'returns the pointee type and an asterisk', ->
@@ -162,11 +301,92 @@ describe 'PointerType', ->
       me = llvm.getPointerTy pointee
       me.toString().should.equal 'i32*'
 
+  describe 'isCompatibleWith', ->
+    it 'returns true for identical type', ->
+      me = llvm.getPointerTy llvm.getIntTy 32
+      other = llvm.getPointerTy llvm.getIntTy 32
+      me.isCompatibleWith(other).should.be.true
+
+    it 'returns false for non-pointer types', ->
+      me = llvm.getPointerTy llvm.getIntTy 32
+
+      voidTy = llvm.getVoidTy()
+      me.isCompatibleWith(voidTy).should.be.false
+
+      intTy = llvm.getIntTy 32
+      me.isCompatibleWith(intTy).should.be.false
+
+      floatTy = llvm.getFloatTy 32
+      me.isCompatibleWith(floatTy).should.be.false
+
+      arrTy = llvm.getArrayTy 3, llvm.getIntTy 32
+      me.isCompatibleWith(arrTy).should.be.false
+
+      structTy = llvm.getStructTy [llvm.getFloatTy 32]
+      me.isCompatibleWith(structTy).should.be.false
+
+      fnTy = llvm.getFunctionTy llvm.getVoidTy(), llvm.getFloatTy 32
+      me.isCompatibleWith(fnTy).should.be.false
+
+    it 'returns false for other pointee types', ->
+      me = llvm.getPointerTy llvm.getIntTy 32
+
+      smaller = llvm.getPointerTy llvm.getIntTy 16
+      me.isCompatibleWith(smaller).should.be.false
+
+      larger = llvm.getPointerTy llvm.getIntTy 64
+      me.isCompatibleWith(larger).should.be.false
+
 describe 'ArrayType', ->
   describe 'toString', ->
     it 'returns the count and element', ->
       me = llvm.getArrayTy 42, llvm.getIntTy 64
       me.toString().should.equal '[42 x i64]'
+
+  describe 'isCompatibleWith', ->
+    it 'returns true for identical type', ->
+      me = llvm.getArrayTy 3, llvm.getIntTy 32
+      other = llvm.getArrayTy 3, llvm.getIntTy 32
+      me.isCompatibleWith(other).should.be.true
+
+    it 'returns false for non-array types', ->
+      me = llvm.getArrayTy 3, llvm.getIntTy 32
+
+      voidTy = llvm.getVoidTy()
+      me.isCompatibleWith(voidTy).should.be.false
+
+      intTy = llvm.getIntTy 32
+      me.isCompatibleWith(intTy).should.be.false
+
+      floatTy = llvm.getFloatTy 32
+      me.isCompatibleWith(floatTy).should.be.false
+
+      ptrTy = llvm.getPointerTy llvm.getIntTy 32
+      me.isCompatibleWith(ptrTy).should.be.false
+
+      structTy = llvm.getStructTy [llvm.getFloatTy 32]
+      me.isCompatibleWith(structTy).should.be.false
+
+      fnTy = llvm.getFunctionTy llvm.getVoidTy(), llvm.getFloatTy 32
+      me.isCompatibleWith(fnTy).should.be.false
+
+    it 'returns false for other element types', ->
+      me = llvm.getArrayTy 3, llvm.getIntTy 32
+
+      smaller = llvm.getArrayTy 3, llvm.getIntTy 16
+      me.isCompatibleWith(smaller).should.be.false
+
+      larger = llvm.getArrayTy 3, llvm.getIntTy 64
+      me.isCompatibleWith(larger).should.be.false
+
+    it 'returns false for other sizes', ->
+      me = llvm.getArrayTy 3, llvm.getIntTy 32
+
+      smaller = llvm.getArrayTy 2, llvm.getIntTy 32
+      me.isCompatibleWith(smaller).should.be.false
+
+      larger = llvm.getArrayTy 4, llvm.getIntTy 32
+      me.isCompatibleWith(larger).should.be.false
 
 describe 'StructType', ->
   describe 'toString', ->
@@ -178,3 +398,42 @@ describe 'StructType', ->
     it 'returns the elements types', ->
       me = llvm.getStructTy [i1, i8, i16, i32]
       me.toString().should.equal '{i1, i8, i16, i32}'
+
+  describe 'isCompatibleWith', ->
+    it 'returns true for identical type', ->
+      me = llvm.getStructTy [llvm.getIntTy 32]
+      other = llvm.getStructTy [llvm.getIntTy 32]
+      me.isCompatibleWith(other).should.be.true
+
+    it 'returns false for non-struct types', ->
+      me = llvm.getStructTy [llvm.getIntTy 32]
+
+      voidTy = llvm.getVoidTy()
+      me.isCompatibleWith(voidTy).should.be.false
+
+      intTy = llvm.getIntTy 32
+      me.isCompatibleWith(intTy).should.be.false
+
+      floatTy = llvm.getFloatTy 32
+      me.isCompatibleWith(floatTy).should.be.false
+
+      ptrTy = llvm.getPointerTy llvm.getIntTy 32
+      me.isCompatibleWith(ptrTy).should.be.false
+
+      arrTy = llvm.getArrayTy 3, llvm.getFloatTy 32
+      me.isCompatibleWith(arrTy).should.be.false
+
+      fnTy = llvm.getFunctionTy llvm.getVoidTy(), llvm.getFloatTy 32
+      me.isCompatibleWith(fnTy).should.be.false
+
+    it 'returns false for other element types', ->
+      me = llvm.getStructTy [llvm.getIntTy 32]
+
+      smaller = llvm.getStructTy [llvm.getIntTy 16]
+      me.isCompatibleWith(smaller).should.be.false
+
+      larger = llvm.getStructTy [llvm.getIntTy 64]
+      me.isCompatibleWith(larger).should.be.false
+
+      additional = llvm.getStructTy [llvm.getIntTy(32), llvm.getIntTy(32)]
+      me.isCompatibleWith(additional).should.be.false

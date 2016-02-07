@@ -48,6 +48,7 @@ class TypeWrapper : public Nan::ObjectWrap
 
     static NAN_METHOD(New);
     static NAN_METHOD(ToString);
+    static NAN_METHOD(IsCompatibleWith);
 
 public:
     static Handle<Value> wrapType(TypeHandle *type);

@@ -35,7 +35,7 @@ describe 'switch', ->
     fiveS = sayNum.loadConstant fiveP
     sixS = sayNum.loadConstant sixP
     
-    sayIt = sayNum.select sayNum.parameter(0)
+    sayIt = sayNum.choose sayNum.parameter(0)
     oneB = sayIt.addCase 1
     twoB = sayIt.addCase 2
     threeB = sayIt.addCase 3

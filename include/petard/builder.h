@@ -100,6 +100,9 @@ public:
     CAST_INTERFACE(SIToFP)
     CAST_INTERFACE(FPTrunc)
     CAST_INTERFACE(FPExt)
+    CAST_INTERFACE(PtrToInt)
+    CAST_INTERFACE(IntToPtr)
+    CAST_INTERFACE(Bitcast)
 
     virtual ValueHandle *Select(ValueHandle *cond, ValueHandle *ifTrue, ValueHandle *ifFalse) = 0;
 

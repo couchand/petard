@@ -128,6 +128,9 @@ public:
     CAST_HEADER(SIToFP)
     CAST_HEADER(FPTrunc)
     CAST_HEADER(FPExt)
+    CAST_HEADER(PtrToInt)
+    CAST_HEADER(IntToPtr)
+    CAST_HEADER(Bitcast)
 
     ValueHandle *Select(ValueHandle *cond, ValueHandle *ifTrue, ValueHandle *ifFalse);
 

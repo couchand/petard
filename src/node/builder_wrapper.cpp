@@ -248,6 +248,9 @@ CAST_METHOD(UIToFP)
 CAST_METHOD(SIToFP)
 CAST_METHOD(FPTrunc)
 CAST_METHOD(FPExt)
+CAST_METHOD(PtrToInt)
+CAST_METHOD(IntToPtr)
+CAST_METHOD(Bitcast)
 
 NAN_METHOD(BuilderWrapper::Select)
 {
@@ -720,6 +723,9 @@ NAN_MODULE_INIT(BuilderWrapper::Init)
     Nan::SetPrototypeMethod(tmpl, "siToFP", SIToFP);
     Nan::SetPrototypeMethod(tmpl, "fpTrunc", FPTrunc);
     Nan::SetPrototypeMethod(tmpl, "fpext", FPExt);
+    Nan::SetPrototypeMethod(tmpl, "ptrToInt", PtrToInt);
+    Nan::SetPrototypeMethod(tmpl, "intToPtr", IntToPtr);
+    Nan::SetPrototypeMethod(tmpl, "bitcast", Bitcast);
 
     Nan::SetPrototypeMethod(tmpl, "select", Select);
 

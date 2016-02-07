@@ -69,6 +69,9 @@ protected:
     static NAN_METHOD(SIToFP);
     static NAN_METHOD(FPTrunc);
     static NAN_METHOD(FPExt);
+    static NAN_METHOD(PtrToInt);
+    static NAN_METHOD(IntToPtr);
+    static NAN_METHOD(Bitcast);
 
     static NAN_METHOD(Select);
 

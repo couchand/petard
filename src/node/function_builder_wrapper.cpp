@@ -106,6 +106,9 @@ NAN_MODULE_INIT(FunctionBuilderWrapper::Init)
     Nan::SetPrototypeMethod(tmpl, "siToFP", SIToFP);
     Nan::SetPrototypeMethod(tmpl, "fpTrunc", FPTrunc);
     Nan::SetPrototypeMethod(tmpl, "fpext", FPExt);
+    Nan::SetPrototypeMethod(tmpl, "ptrToInt", PtrToInt);
+    Nan::SetPrototypeMethod(tmpl, "intToPtr", IntToPtr);
+    Nan::SetPrototypeMethod(tmpl, "bitcast", Bitcast);
 
     Nan::SetPrototypeMethod(tmpl, "select", Select);
 

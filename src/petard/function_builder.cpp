@@ -130,6 +130,9 @@ CAST_BUILDER(UIToFP)
 CAST_BUILDER(SIToFP)
 CAST_BUILDER(FPTrunc)
 CAST_BUILDER(FPExt)
+CAST_BUILDER(PtrToInt)
+CAST_BUILDER(IntToPtr)
+CAST_BUILDER(Bitcast)
 
 ValueHandle *FunctionBuilder::Select(ValueHandle *cond, ValueHandle *ifTrue, ValueHandle *ifFalse)
 {

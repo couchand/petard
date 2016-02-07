@@ -222,6 +222,9 @@ CAST_BUILDER(UIToFP, CreateUIToFP)
 CAST_BUILDER(SIToFP, CreateSIToFP)
 CAST_BUILDER(FPTrunc, CreateFPTrunc)
 CAST_BUILDER(FPExt, CreateFPExt)
+CAST_BUILDER(PtrToInt, CreatePtrToInt)
+CAST_BUILDER(IntToPtr, CreateIntToPtr)
+CAST_BUILDER(Bitcast, CreateBitCast)
 
 ValueHandle *BlockBuilder::Select(ValueHandle *cond, ValueHandle *ifTrue, ValueHandle *ifFalse)
 {

@@ -82,7 +82,7 @@ var whileimpl = function While(condFn) {
 attach("while", whileimpl);
 
 // structured switch statement helper
-var switchimpl = function Switch(cond) {
+var chooseimpl = function Choose(cond) {
 
   var that = this;
 
@@ -116,7 +116,7 @@ var switchimpl = function Switch(cond) {
 
 };
 
-attach("select", switchimpl);
+attach("choose", chooseimpl);
 
 // export everything
 module.exports = petard;

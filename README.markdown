@@ -18,7 +18,7 @@ a js llvm library
       * [Builder][12]
       * [FunctionBuilder][13]
       * [SwitchBuilder][18]
-      * [SelectBuilder][19]
+      * [ChooseBuilder][19]
       * [CodeUnit][14]
     * [helpers][16]
       * [`type` dict][17]
@@ -395,7 +395,7 @@ otherwise branch to the ifFalse builder.
 Multi-way branch.  If none of the cases added to the returned switch builder
 match the value of the condition, control follows the defaultDest.
 
-##### [SelectBuilder][19] select([Value][11] condition) *(js)*
+##### [ChooseBuilder][19] choose([Value][11] condition) *(js)*
 
 Builds the switch control structure.  While the `switch` method simply produces
 a multi-way branch, this provides the high-level control you're expecting
@@ -452,9 +452,9 @@ A special tool for working with switch statements.  It is returned from the
 
 Adds a case for the value `onVal`, branching to target.
 
-#### SelectBuilder *(js)*
+#### ChooseBuilder *(js)*
 
-The same thing as the switch builder, but for [select][23] statements.
+The same thing as the switch builder, but for [choose][23] statements.
 
 ##### [Builder][12] defaultCase
 
@@ -529,12 +529,12 @@ more information
 [16]: https://github.com/couchand/petard#helpers
 [17]: https://github.com/couchand/petard#type-dict
 [18]: https://github.com/couchand/petard#switchbuilder
-[19]: https://github.com/couchand/petard#selectbuilder-js
+[19]: https://github.com/couchand/petard#choosebuilder-js
 
 [20]: https://github.com/couchand/petard#value-unitdeclarefunctionstring-name-type-returns-type-takes
 [21]: https://github.com/couchand/petard/tree/master/example
 [22]: https://github.com/couchand/petard#switchbuilder-switchvalue-condition-builder-defaultdest
-[23]: https://github.com/couchand/petard#selectbuilder-selectvalue-condition-js
+[23]: https://github.com/couchand/petard#choosebuilder-choosevalue-condition-js
 
 [90]: https://github.com/couchand/petard#introduction
 [91]: https://github.com/couchand/petard#dependencies

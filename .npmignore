@@ -1,5 +1,6 @@
-build
-*.bc
 node_modules
+build
 example
 test
+*.bc
+*.ll

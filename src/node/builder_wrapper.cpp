@@ -390,12 +390,12 @@ NAN_METHOD(BuilderWrapper::LoadConstant)
 
 ValueHandle *getValueHandle(InstructionBuilder *builder, Local<v8::Value> thing)
 {
-    //if (thing->IsNumber())
-    //{
-    //    Local<Number> num = thing.As<Number>();
-    //    double val = num->Value();
-    //    return builder->MakeValue(new IntTypeHandle(32), val);
-    //}
+    if (thing->IsNumber())
+    {
+        Local<Number> num = thing.As<Number>();
+        double val = num->Value();
+        return builder->MakeValue(new IntTypeHandle(32), val);
+    }
     if (Nan::New(ValueWrapper::prototype)->HasInstance(thing))
     {
         ValueWrapper *wrapper = Nan::ObjectWrap::Unwrap<ValueWrapper>(thing.As<Object>());

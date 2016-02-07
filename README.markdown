@@ -150,7 +150,7 @@ return type of the function.
 
 Reference function parameter `index`.
 
-##### [Value][11] getElementPointer([Value][11] base, \[Number|[Value][11]\] indexList)
+##### [Value][11] getElementPointer([Value][11] base, Number|[Value][11] indexList...)
 
 Perform pointer math on the aggregate type pointer to produce a new pointer
 to the given structure member.  For details, see the [GetElementPointer FAQ][2].

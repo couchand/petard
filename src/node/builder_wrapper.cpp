@@ -139,7 +139,10 @@ NAN_METHOD(BuilderWrapper::Store)
     {
         ValueWrapper *value = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[0].As<Object>());
 
-        // TODO: unify types
+        if (!value->Val->Type->isCompatibleWith(pt->pointee))
+        {
+            return Nan::ThrowError("Store type mismatch");
+        }
 
         wrapper->Builder->Store(value->Val, ptr->Val);
     }

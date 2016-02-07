@@ -5,6 +5,7 @@ llvm = require '../../'
 vd = llvm.getVoidTy()
 i8 = llvm.getIntTy 8
 i32 = llvm.getIntTy 32
+i64 = llvm.getIntTy 64
 
 describe 'FunctionBuilder', ->
   unit = beforeEach -> unit = new llvm.CodeUnit 'foobar.baz'
@@ -87,3 +88,38 @@ describe 'FunctionBuilder', ->
       me = unit.makeFunction 'something', vd, llvm.getPointerTy i32
       ptr = me.parameter 0
       (-> me.alloca i32, ptr).should.throw /size/i
+
+  describe 'load', ->
+    it 'expects a pointer', ->
+      me = unit.makeFunction 'something', vd, i32
+      (-> me.load()).should.throw /pointer/i
+      (-> me.load 42).should.throw /pointer/i
+      (-> me.load me.parameter 0).should.throw /pointer/i
+
+    it 'produces a load', ->
+      me = unit.makeFunction 'nothing'
+      spot = me.alloca i32
+      ld = me.load spot
+      ld.type.toString().should.equal 'i32'
+
+  describe 'store', ->
+    it 'expects a value to store', ->
+      me = unit.makeFunction 'something', vd, i32
+      (-> me.store()).should.throw /value/i
+      (-> me.store "foobar").should.throw /value/i
+
+    it 'expects a pointer', ->
+      me = unit.makeFunction 'something', vd, i32
+      (-> me.store 42).should.throw /pointer/i
+      (-> me.store 42, 42).should.throw /pointer/i
+      (-> me.store 42, me.parameter 0).should.throw /pointer/i
+
+    it 'expects pointer type to match value type', ->
+      me = unit.makeFunction 'nothing'
+      intSpot = me.alloca i32
+      bigVal = me.value i64, 42
+      (-> me.store bigVal, intSpot).should.throw /type/i
+      smallVal = me.value i8, 10
+      (-> me.store smallVal, intSpot).should.throw /type/i
+      floatVal = me.value llvm.getFloatTy(32), 3.141
+      (-> me.store floatVal, intSpot).should.throw /type/i

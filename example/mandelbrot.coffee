@@ -92,13 +92,19 @@ printd = (->
   isHigher = p.if p.foGreaterThan d, higher.limit
   isHigher.then.callFunction putn, higher.char
 
-  isHigh = isHigher.else.if p.foGreaterThan d, high.limit
+  e1 = isHigher.else
+
+  isHigh = e1.if e1.foGreaterThan d, high.limit
   isHigh.then.callFunction putn, high.char
 
-  isLow = isHigh.else.if p.foGreaterThan d, low.limit
+  e2 = isHigh.else
+
+  isLow = e2.if e2.foGreaterThan d, low.limit
   isLow.then.callFunction putn, low.char
 
-  isLower = isLow.else.if p.foGreaterThan d, lower.limit
+  e3 = isLow.else
+
+  isLower = e3.if e3.foGreaterThan d, lower.limit
   isLower.then.callFunction putn, lower.char
 
   isLower.else.callFunction putn, def

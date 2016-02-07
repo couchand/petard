@@ -1,7 +1,5 @@
 // block builder
 
- #include <iostream>
-
 #include "block_builder.h"
 #include "function_builder.h"
 #include "switch_builder.h"
@@ -251,6 +249,19 @@ ValueHandle *BlockBuilder::LoadConstant(ValueHandle *value)
     return new PlainValueHandle(value->Type, expression);
 }
 
+std::vector<ValueHandle *> getRest(std::vector<ValueHandle *> vec)
+{
+    std::vector<ValueHandle *> rest;
+    rest.reserve(vec.size() - 1);
+
+    for (unsigned i = 1, e = vec.size(); i < e; i += 1)
+    {
+        rest[i-1] = vec[i];
+    }
+
+    return rest;
+}
+
 ValueHandle *BlockBuilder::GetElementPointer(ValueHandle *ptr, std::vector<ValueHandle *> idxs)
 {
     unsigned count = idxs.size();
@@ -258,7 +269,7 @@ ValueHandle *BlockBuilder::GetElementPointer(ValueHandle *ptr, std::vector<Value
     if (!ptr->Type->isPointerType()) return 0;
 
     PointerTypeHandle *ptrTy = static_cast<PointerTypeHandle *>(ptr->Type);
-    TypeHandle *elty = getElementType(ptrTy->pointee, count - 1);
+    TypeHandle *elty = getElementType(ptrTy->pointee, getRest(idxs));
 
     if (!elty) return 0;
     TypeHandle *newty = new PointerTypeHandle(elty);
@@ -269,33 +280,51 @@ ValueHandle *BlockBuilder::GetElementPointer(ValueHandle *ptr, std::vector<Value
     for (ValueHandle *idx : idxs)
     {
         llvm::Value *idxValue = idx->getLLVMValue();
+        idxValue->dump();
         idxlist.push_back(idxValue);
     }
 
     llvm::Value *ptrVal = ptr->getLLVMValue();
 
+    ptrVal->dump();
+
     llvm::Value *elPtr = builder.CreateGEP(ptrVal, idxlist);
+    elPtr->dump();
 
     return new PlainValueHandle(newty, elPtr);
 }
 
-TypeHandle *BlockBuilder::getElementType(TypeHandle *ty, unsigned idxCount)
+TypeHandle *BlockBuilder::getElementType(TypeHandle *ty, std::vector<ValueHandle *> idxs)
 {
-    if (idxCount == 0)
+    if (idxs.size() == 0)
     {
         return ty;
     }
 
+    ValueHandle *first = idxs[0];
+    std::vector<ValueHandle *> rest = getRest(idxs);
+
     if (ty->isPointerType())
     {
         PointerTypeHandle *ptrTy = static_cast<PointerTypeHandle *>(ty);
-        return getElementType(ptrTy->pointee, idxCount - 1);
+        return getElementType(ptrTy->pointee, rest);
     }
 
     if (ty->isArrayType())
     {
         ArrayTypeHandle *arrTy = static_cast<ArrayTypeHandle *>(ty);
-        return getElementType(arrTy->element, idxCount - 1);
+        return getElementType(arrTy->element, rest);
+    }
+
+    if (ty->isStructType())
+    {
+        // TODO: check that value is constant
+        StructTypeHandle *strucTy = static_cast<StructTypeHandle *>(ty);
+        llvm::ConstantInt *idx = static_cast<llvm::ConstantInt *>(first->getLLVMValue());
+
+        // TODO: check that value is in range
+        unsigned idxVal = (unsigned)idx->getLimitedValue();
+        return getElementType(strucTy->elements[idxVal], rest);
     }
 
     // error, we can't dive any further in

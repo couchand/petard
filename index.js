@@ -19,6 +19,7 @@ petard.type = {
     f64: petard.getFloatTy(64),
 
     arrayOf: petard.getArrayTy,
+    structOf: petard.getStructTy,
     pointerTo: petard.getPointerTy
 
 };

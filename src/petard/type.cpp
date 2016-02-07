@@ -110,12 +110,12 @@ llvm::Type *StructTypeHandle::getLLVMType(llvm::LLVMContext &context)
     std::vector<llvm::Type *> elementTypes;
     elementTypes.reserve(elements.size());
 
-    for (unsigned i, e = elements.size(); i < e; i += 1)
+    for (unsigned i = 0, e = elements.size(); i < e; i += 1)
     {
         elementTypes.push_back(elements[i]->getLLVMType(context));
     }
 
-    return llvm::StructType::create(elementTypes);
+    return llvm::StructType::get(context, elementTypes);
 }
 
 std::string StructTypeHandle::toString()

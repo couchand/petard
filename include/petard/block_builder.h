@@ -46,7 +46,7 @@ public:
 
     ValueHandle *LoadConstant(ValueHandle *value);
     ValueHandle *GetElementPointer(ValueHandle *ptr, std::vector<ValueHandle *> idxs);
-    TypeHandle *getElementType(TypeHandle *ty, unsigned idxCount);
+    TypeHandle *getElementType(TypeHandle *ty, std::vector<ValueHandle *> idxs);
 
     ValueHandle *CallFunction(ValueHandle *fn, std::vector<ValueHandle *> args);
     ValueHandle *CallFunction(FunctionBuilder *fn, std::vector<ValueHandle *> args);

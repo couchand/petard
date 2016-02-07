@@ -68,6 +68,7 @@ public:
     static NAN_METHOD(GetFloatTy);
     static NAN_METHOD(GetPointerTy);
     static NAN_METHOD(GetArrayTy);
+    static NAN_METHOD(GetStructTy);
     static NAN_METHOD(GetFunctionTy);
 };
 

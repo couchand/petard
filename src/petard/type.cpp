@@ -104,3 +104,35 @@ std::string ArrayTypeHandle::toString()
     ss << "[" << size << " x " << element->toString() << "]";
     return ss.str();
 }
+
+llvm::Type *StructTypeHandle::getLLVMType(llvm::LLVMContext &context)
+{
+    std::vector<llvm::Type *> elementTypes;
+    elementTypes.reserve(elements.size());
+
+    for (unsigned i, e = elements.size(); i < e; i += 1)
+    {
+        elementTypes.push_back(elements[i]->getLLVMType(context));
+    }
+
+    return llvm::StructType::create(elementTypes);
+}
+
+std::string StructTypeHandle::toString()
+{
+    std::stringstream ss;
+    ss << "{";
+
+    if (elements.size())
+    {
+        ss << elements[0]->toString();
+
+        for (unsigned i = 1, e = elements.size(); i < e; i += 1)
+        {
+            ss << ", " << elements[i]->toString();
+        }
+    }
+
+    ss << "}";
+    return ss.str();
+}

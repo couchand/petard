@@ -156,6 +156,41 @@ NAN_METHOD(TypeWrapper::GetArrayTy)
     info.GetReturnValue().Set(wrapType(new ArrayTypeHandle(size, element)));
 }
 
+NAN_METHOD(TypeWrapper::GetStructTy)
+{
+    if (info.Length() == 0)
+    {
+        return Nan::ThrowError("Struct type expects a list of element types");
+    }
+
+    if (!info[0]->IsArray())
+    {
+        return Nan::ThrowError("Struct type expects a list of element types");
+    }
+
+    Local<Array> types = info[0].As<Array>();
+
+    std::vector<TypeHandle *> elementTypes;
+
+    unsigned e = types->Length();
+    elementTypes.reserve(e);
+
+    Local<FunctionTemplate> proto = Nan::New(prototype);
+
+    for (unsigned i = 0; i < e; i += 1)
+    {
+        Local<Value> type = types->Get(i);
+        if (!proto->HasInstance(type))
+        {
+            return Nan::ThrowError("Struct type expects a list of element types");
+        }
+        TypeWrapper *el = Nan::ObjectWrap::Unwrap<TypeWrapper>(type.As<Object>());
+        elementTypes.push_back(el->Type);
+    }
+
+    info.GetReturnValue().Set(wrapType(new StructTypeHandle(elementTypes)));
+}
+
 NAN_METHOD(TypeWrapper::GetFunctionTy)
 {
     EXTRACT_FUNCTION_PARAMS(0)

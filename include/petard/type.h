@@ -20,6 +20,7 @@ public:
     virtual bool isPointerType() { return false; }
     virtual bool isFunctionType() { return false; }
     virtual bool isArrayType() { return false; }
+    virtual bool isStructType() { return false; }
 };
 
 class VoidTypeHandle : public TypeHandle
@@ -99,6 +100,20 @@ public:
     std::string toString();
 
     bool isArrayType() { return true; }
+};
+
+class StructTypeHandle : public TypeHandle
+{
+public:
+    std::vector<TypeHandle *> elements;
+
+    StructTypeHandle(std::vector<TypeHandle *> e)
+    : elements(e) {}
+
+    llvm::Type *getLLVMType(llvm::LLVMContext &context);
+    std::string toString();
+
+    bool isStructType() { return true; }
 };
 
 #endif

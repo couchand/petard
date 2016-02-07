@@ -56,6 +56,18 @@ describe 'getters', ->
     it 'expects an element type', ->
       (-> llvm.getArrayTy 3).should.throw /element/i
 
+  describe 'getStructTy', ->
+    it 'returns a type', ->
+      i32 = llvm.getIntTy 32
+      me = llvm.getStructTy [i32, i32, i32]
+      me.constructor.name.should.equal 'Type'
+
+    it 'expects an array of element types', ->
+      (-> llvm.getStructTy()).should.throw /element/i
+      (-> llvm.getStructTy 42).should.throw /element/i
+      (-> llvm.getStructTy llvm.getIntTy 32).should.throw /element/i
+      (-> llvm.getStructTy [42]).should.throw /element/i
+
 describe 'VoidType', ->
   describe 'toString', ->
     it 'returns void', ->
@@ -155,3 +167,14 @@ describe 'ArrayType', ->
     it 'returns the count and element', ->
       me = llvm.getArrayTy 42, llvm.getIntTy 64
       me.toString().should.equal '[42 x i64]'
+
+describe 'StructType', ->
+  describe 'toString', ->
+    i1 = llvm.getIntTy 1
+    i8 = llvm.getIntTy 8
+    i16 = llvm.getIntTy 16
+    i32 = llvm.getIntTy 32
+
+    it 'returns the elements types', ->
+      me = llvm.getStructTy [i1, i8, i16, i32]
+      me.toString().should.equal '{i1, i8, i16, i32}'

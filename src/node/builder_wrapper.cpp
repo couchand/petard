@@ -312,28 +312,43 @@ NAN_METHOD(BuilderWrapper::Value)
 
 NAN_METHOD(BuilderWrapper::Return)
 {
-
     BuilderWrapper *wrapper = Nan::ObjectWrap::Unwrap<BuilderWrapper>(info.This());
 
-    if (info.Length() == 0)
+    FunctionTypeHandle *parentType = wrapper->Builder->GetParent()->Type;
+    TypeHandle *returnType = parentType->returns;
+
+    if (returnType->isVoidType())
     {
-        wrapper->Builder->Return();
+        if (info.Length() == 0)
+        {
+            wrapper->Builder->Return();
+        }
+        else
+        {
+            return Nan::ThrowError("Invalid return type from void function");
+        }
     }
     else if (info[0]->IsNumber())
     {
+        if (!returnType->isIntType() && !returnType->isFloatType())
+        {
+            return Nan::ThrowError("Function return type is not numeric");
+        }
+
         Local<Number> num = info[0].As<Number>();
         double numVal = num->Value();
 
-        FunctionTypeHandle *parentType = wrapper->Builder->GetParent()->Type;
-        ValueHandle *returnVal = wrapper->Builder->MakeValue(parentType->returns, numVal);
-
+        ValueHandle *returnVal = wrapper->Builder->MakeValue(returnType, numVal);
         wrapper->Builder->Return(returnVal);
     }
     else if (Nan::New(ValueWrapper::prototype)->HasInstance(info[0]))
     {
         ValueWrapper *value = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[0].As<Object>());
 
-        // TODO: unify types
+        if (!value->Val->Type->isCompatibleWith(returnType))
+        {
+            return Nan::ThrowError("Return type mismatch");
+        }
 
         wrapper->Builder->Return(value->Val);
     }

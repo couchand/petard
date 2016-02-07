@@ -2,6 +2,7 @@
 
 llvm = require '../../'
 
+vd = llvm.getVoidTy()
 i8 = llvm.getIntTy 8
 i32 = llvm.getIntTy 32
 
@@ -52,10 +53,37 @@ describe 'FunctionBuilder', ->
       (-> me.parameter 'foobar').should.throw /index/i
 
     it 'expects a valid parameter index', ->
-      me = unit.makeFunction 'onething', llvm.getVoidTy(), i32
+      me = unit.makeFunction 'onething', vd, i32
       (-> me.parameter 1).should.throw /index/i
 
     it 'produces a parameter value', ->
-      me = unit.makeFunction 'it', llvm.getVoidTy(), i32
+      me = unit.makeFunction 'it', vd, i32
       param = me.parameter 0
       param.type.toString().should.equal 'i32'
+
+  describe 'alloca', ->
+    it 'expects a type', ->
+      me = unit.makeFunction 'nothing'
+      (-> me.alloca()).should.throw /type/i
+      (-> me.alloca 42).should.throw /type/i
+
+    it 'produces a single alloca', ->
+      me = unit.makeFunction 'something'
+      spot = me.alloca i32
+      spot.type.toString().should.equal 'i32*'
+
+    it 'produces a range alloca from a number', ->
+      me = unit.makeFunction 'something'
+      spot = me.alloca i32, 5
+      spot.type.toString().should.equal 'i32*'
+
+    it 'produces a range alloca from a value', ->
+      me = unit.makeFunction 'something', vd, i32
+      param = me.parameter 0
+      spot = me.alloca i32, param
+      spot.type.toString().should.equal 'i32*'
+
+    it 'expects a numeric type for the range', ->
+      me = unit.makeFunction 'something', vd, llvm.getPointerTy i32
+      ptr = me.parameter 0
+      (-> me.alloca i32, ptr).should.throw /size/i

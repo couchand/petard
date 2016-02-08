@@ -3,9 +3,11 @@
 llvm = require '../../'
 
 vd = llvm.getVoidTy()
+i1 = llvm.getIntTy 1
 i8 = llvm.getIntTy 8
 i32 = llvm.getIntTy 32
 i64 = llvm.getIntTy 64
+f32 = llvm.getFloatTy 32
 
 describe 'FunctionBuilder', ->
   unit = beforeEach -> unit = new llvm.CodeUnit 'foobar.baz'
@@ -197,3 +199,31 @@ describe 'FunctionBuilder', ->
       (-> me.callFunction f, me.value i8, 0).should.throw /parameter/i
       (-> me.callFunction g).should.throw /parameter/i
       (-> me.callFunction g, me.value i8, 0).should.throw /parameter/i
+
+  describe 'select', ->
+    me = truth = beforeEach ->
+      me = unit.makeFunction 'main', i32
+      truth = me.value i1, 1
+
+    it 'expects a condition', ->
+      (-> me.select()).should.throw /condition/i
+      (-> me.select 42).should.throw /condition/i
+      (-> me.select me.value i32, 0).should.throw /condition/i
+
+    it 'expects an if true value', ->
+      (-> me.select truth).should.throw /value/i
+
+    it 'expects an if false value', ->
+      one = me.value i32, 1
+      (-> me.select truth, one).should.throw /value/i
+
+    it 'expects the two values to have the same type', ->
+      one = me.value i32, 1
+      two = me.value f32, 2
+      (-> me.select truth, one, two).should.throw /value/i
+
+    it 'produces a select instruction', ->
+      one = me.value i32, 1
+      two = me.value i32, 2
+      sel = me.select truth, one, two
+      sel.type.toString().should.equal 'i32'

@@ -261,19 +261,24 @@ NAN_METHOD(BuilderWrapper::Select)
 
     if (info.Length() < 3)
     {
-        return Nan::ThrowError("Select requires three values");
+        return Nan::ThrowError("Select requires a condition and two values");
     }
 
     Local<FunctionTemplate> val = Nan::New(ValueWrapper::prototype);
 
     if (!val->HasInstance(info[0]) || !val->HasInstance(info[1]) || !val->HasInstance(info[2]))
     {
-        return Nan::ThrowError("Select requires three values");
+        return Nan::ThrowError("Select requires a condition and two values");
     }
 
     ValueWrapper *cond = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[0].As<Object>());
     ValueWrapper *ifTrue = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[1].As<Object>());
     ValueWrapper *ifFalse = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[2].As<Object>());
+
+    if (!ifTrue->Val->Type->isCompatibleWith(ifFalse->Val->Type))
+    {
+        return Nan::ThrowError("Select values must be the same type");
+    }
 
     ValueHandle *result = wrapper->Builder->Select(cond->Val, ifTrue->Val, ifFalse->Val);
 

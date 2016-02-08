@@ -406,6 +406,11 @@ NAN_METHOD(BuilderWrapper::LoadConstant)
 
     ValueHandle *result = self->Builder->LoadConstant(wrapper->Val);
 
+    if (!result)
+    {
+        return Nan::ThrowError("Load constant error");
+    }
+
     info.GetReturnValue().Set(ValueWrapper::wrapValue(result));
 }
 
@@ -481,6 +486,7 @@ NAN_METHOD(BuilderWrapper::CallFunction)
     }
 
     std::vector<ValueHandle *> argVals;
+    std::vector<TypeHandle *> argTypes;
 
     for (unsigned i = 1, e = info.Length(); i < e; i += 1)
     {
@@ -493,6 +499,7 @@ NAN_METHOD(BuilderWrapper::CallFunction)
 
         ValueWrapper *arg = Nan::ObjectWrap::Unwrap<ValueWrapper>(handle);
         argVals.push_back(arg->Val);
+        argTypes.push_back(arg->Val->Type);
     }
 
     Local<Object> handle = info[0]->ToObject();
@@ -509,12 +516,42 @@ NAN_METHOD(BuilderWrapper::CallFunction)
             return Nan::ThrowError("Only function values are callable");
         }
 
+        FunctionTypeHandle *fnty = static_cast<FunctionTypeHandle *>(callee->Type);
+
+        if (fnty->params.size() != argTypes.size())
+        {
+            return Nan::ThrowError("Incorrect number of parameters for function call");
+        }
+
+        for (unsigned i = 0, e = argTypes.size(); i < e; i += 1)
+        {
+            if (!argTypes[i]->isCompatibleWith(fnty->params[i]))
+            {
+                return Nan::ThrowError("Type mismatch in parameters for function call");
+            }
+        }
+
         result = self->Builder->CallFunction(callee, argVals);
     }
     else if (Nan::New(FunctionBuilderWrapper::prototype)->HasInstance(handle))
     {
         FunctionBuilderWrapper *wrapper = Nan::ObjectWrap::Unwrap<FunctionBuilderWrapper>(handle);
         FunctionBuilder *callee = wrapper->getFunctionBuilder();
+
+        FunctionTypeHandle *fnty = static_cast<FunctionTypeHandle *>(callee->Type);
+
+        if (fnty->params.size() != argTypes.size())
+        {
+            return Nan::ThrowError("Incorrect number of parameters for function call");
+        }
+
+        for (unsigned i = 0, e = argTypes.size(); i < e; i += 1)
+        {
+            if (!argTypes[i]->isCompatibleWith(fnty->params[i]))
+            {
+                return Nan::ThrowError("Type mismatch in parameters for function call");
+            }
+        }
 
         result = self->Builder->CallFunction(callee, argVals);
     }

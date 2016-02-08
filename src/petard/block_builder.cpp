@@ -244,9 +244,20 @@ ValueHandle *BlockBuilder::Parameter(size_t index)
 
 ValueHandle *BlockBuilder::LoadConstant(ValueHandle *value)
 {
+    if (!value->Type->isPointerType())
+    {
+        return 0;
+    }
+
+    PointerTypeHandle *ptrty = static_cast<PointerTypeHandle *>(value->Type);
+
+    std::vector<ValueHandle *> idxs;
+    idxs.push_back(MakeValue(new IntTypeHandle(32), 0));
+    TypeHandle *elty = getElementType(ptrty->pointee, idxs);
+
     llvm::Value *expression = builder.CreateConstGEP2_32(value->getLLVMValue(), 0, 0);
 
-    return new PlainValueHandle(value->Type, expression);
+    return new PlainValueHandle(new PointerTypeHandle(elty), expression);
 }
 
 std::vector<ValueHandle *> getRest(std::vector<ValueHandle *> vec)

@@ -72,5 +72,7 @@ ConstantValueHandle *CodeUnit::ConstantString(const std::string &value)
       llvm::ConstantDataArray::getString(Context, value)
     );
 
-    return new ConstantValueHandle(type, gv);
+    TypeHandle *ptrtype = new PointerTypeHandle(type);
+
+    return new ConstantValueHandle(ptrtype, gv);
 }

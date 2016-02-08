@@ -123,3 +123,41 @@ describe 'FunctionBuilder', ->
       (-> me.store smallVal, intSpot).should.throw /type/i
       floatVal = me.value llvm.getFloatTy(32), 3.141
       (-> me.store floatVal, intSpot).should.throw /type/i
+
+  describe 'getElementPointer', ->
+    me = beforeEach -> me = unit.makeFunction 'nothing'
+    it 'expects a base pointer', ->
+      (-> me.getElementPointer()).should.throw /pointer/i
+      (-> me.getElementPointer 42).should.throw /pointer/i
+      intVal = me.value i32, 42
+      (-> me.getElementPointer intVal).should.throw /pointer/i
+
+    it 'expects at least one index', ->
+      spot = me.alloca i32
+      (-> me.getElementPointer spot).should.throw /index/i
+      (-> me.getElementPointer spot, []).should.throw /index/i
+
+    it 'accepts a number for an index', ->
+      spot = me.alloca i32
+      ptr = me.getElementPointer spot, 0
+      ptr.type.toString().should.equal 'i32*'
+
+      arrSpot = me.alloca llvm.getArrayTy 3, i32
+      arrPtr = me.getElementPointer arrSpot, 0, 0
+      arrPtr.type.toString().should.equal 'i32*'
+
+    it 'expects index list to not exceed type depth', ->
+      return
+      intSpot = me.alloca i32
+      (-> me.getElementPointer intSpot, 0, 0).should.throw /type/i
+
+      arrSpot = me.alloca llvm.getArrayTy 3, i32
+      (-> me.getElementPointer arrSpot, 0, 0, 0).should.throw /type/i
+
+    it 'accepts a value for an index', ->
+      me = unit.makeFunction 'something', vd, i32
+      p = me.parameter 0
+
+      spot = me.alloca i32
+      ptr = me.getElementPointer spot, p
+      ptr.type.toString().should.equal 'i32*'

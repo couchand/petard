@@ -256,7 +256,7 @@ std::vector<ValueHandle *> getRest(std::vector<ValueHandle *> vec)
 
     for (unsigned i = 1, e = vec.size(); i < e; i += 1)
     {
-        rest[i-1] = vec[i];
+        rest.push_back(vec[i]);
     }
 
     return rest;
@@ -280,16 +280,12 @@ ValueHandle *BlockBuilder::GetElementPointer(ValueHandle *ptr, std::vector<Value
     for (ValueHandle *idx : idxs)
     {
         llvm::Value *idxValue = idx->getLLVMValue();
-        idxValue->dump();
         idxlist.push_back(idxValue);
     }
 
     llvm::Value *ptrVal = ptr->getLLVMValue();
 
-    ptrVal->dump();
-
     llvm::Value *elPtr = builder.CreateGEP(ptrVal, idxlist);
-    elPtr->dump();
 
     return new PlainValueHandle(newty, elPtr);
 }

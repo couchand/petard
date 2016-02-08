@@ -7,6 +7,12 @@
 #include "function_builder_wrapper.h"
 #include "switch_builder_wrapper.h"
 
+#define EXPECT_PARAM(functionName, paramIdx, paramType, paramName) \
+if (info.Length() <= paramIdx || !Nan::New(paramType::prototype)->HasInstance(info[paramIdx])) \
+{ \
+    return Nan::ThrowError(functionName " expects " paramName); \
+}
+
 NAN_METHOD(BuilderWrapper::New)
 {
     if (!info.IsConstructCall() || info.Length() == 0 || !info[0]->IsExternal())
@@ -27,16 +33,7 @@ NAN_METHOD(BuilderWrapper::Alloca)
 {
     BuilderWrapper *wrapper = Nan::ObjectWrap::Unwrap<BuilderWrapper>(info.This());
 
-    if (info.Length() == 0)
-    {
-        return Nan::ThrowError("Alloca type required");
-    }
-
-    if (!Nan::New(TypeWrapper::prototype)->HasInstance(info[0]))
-    {
-        return Nan::ThrowError("Alloca type required");
-    }
-
+    EXPECT_PARAM("Alloca", 0, TypeWrapper, "type")
     TypeWrapper *t = Nan::ObjectWrap::Unwrap<TypeWrapper>(info[0].As<Object>());
 
     ValueHandle *h = 0;
@@ -76,16 +73,7 @@ NAN_METHOD(BuilderWrapper::Load)
 {
     BuilderWrapper *wrapper = Nan::ObjectWrap::Unwrap<BuilderWrapper>(info.This());
     
-    if (info.Length() < 1)
-    {
-        return Nan::ThrowError("Load requires a pointer to load from");
-    }
-
-    if (!Nan::New(ValueWrapper::prototype)->HasInstance(info[0]))
-    {
-        return Nan::ThrowError("Load requires a pointer to load from");
-    }
-
+    EXPECT_PARAM("Load", 0, ValueWrapper, "pointer to load from")
     ValueWrapper *ptr = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[0].As<Object>());
 
     if (!ptr->Val->Type->isPointerType())
@@ -107,11 +95,7 @@ NAN_METHOD(BuilderWrapper::Store)
         return Nan::ThrowError("Store requires a value and a pointer to store");
     }
 
-    if (!Nan::New(ValueWrapper::prototype)->HasInstance(info[1]))
-    {
-        return Nan::ThrowError("Store requires a pointer to store to");
-    }
-
+    EXPECT_PARAM("Store", 1, ValueWrapper, "pointer to store to")
     ValueWrapper *ptr = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[1].As<Object>());
 
     if (!ptr->Val->Type->isPointerType())
@@ -259,20 +243,18 @@ NAN_METHOD(BuilderWrapper::Select)
 {
     BuilderWrapper *wrapper = Nan::ObjectWrap::Unwrap<BuilderWrapper>(info.This());
 
-    if (info.Length() < 3)
-    {
-        return Nan::ThrowError("Select requires a condition and two values");
-    }
-
-    Local<FunctionTemplate> val = Nan::New(ValueWrapper::prototype);
-
-    if (!val->HasInstance(info[0]) || !val->HasInstance(info[1]) || !val->HasInstance(info[2]))
-    {
-        return Nan::ThrowError("Select requires a condition and two values");
-    }
-
+    EXPECT_PARAM("Select", 0, ValueWrapper, "condition")
     ValueWrapper *cond = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[0].As<Object>());
+
+    if (!cond->Val->Type->isCompatibleWith(new IntTypeHandle(1)))
+    {
+        return Nan::ThrowError("Select condition must be an i1"); // or a vector...
+    }
+
+    EXPECT_PARAM("Select", 1, ValueWrapper, "ifTrue")
     ValueWrapper *ifTrue = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[1].As<Object>());
+
+    EXPECT_PARAM("Select", 2, ValueWrapper, "ifFalse")
     ValueWrapper *ifFalse = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[2].As<Object>());
 
     if (!ifTrue->Val->Type->isCompatibleWith(ifFalse->Val->Type))
@@ -289,17 +271,13 @@ NAN_METHOD(BuilderWrapper::Value)
 {
     BuilderWrapper *wrapper = Nan::ObjectWrap::Unwrap<BuilderWrapper>(info.This());
 
+    EXPECT_PARAM("Value", 0, TypeWrapper, "type")
+    TypeWrapper *type = Nan::ObjectWrap::Unwrap<TypeWrapper>(info[0].As<Object>());
+
     if (info.Length() < 2)
     {
-        return Nan::ThrowError("Value type and value required");
+        return Nan::ThrowError("Value requires a constant value");
     }
-
-    if (!Nan::New(TypeWrapper::prototype)->HasInstance(info[0]))
-    {
-        return Nan::ThrowError("Value requires a type");
-    }
-
-    TypeWrapper *type = Nan::ObjectWrap::Unwrap<TypeWrapper>(info[0].As<Object>());
 
     ValueHandle *result;
 
@@ -395,19 +373,8 @@ NAN_METHOD(BuilderWrapper::LoadConstant)
 
     BuilderWrapper *self = Nan::ObjectWrap::Unwrap<BuilderWrapper>(info.This());
 
-    if (info.Length() == 0)
-    {
-        return Nan::ThrowError("Must provide constant value");
-    }
-
-    Local<Object> handle = info[0]->ToObject();
-
-    if (!Nan::New(ValueWrapper::prototype)->HasInstance(handle))
-    {
-        return Nan::ThrowError("Must provide constant value");
-    }
-
-    ValueWrapper *wrapper = Nan::ObjectWrap::Unwrap<ValueWrapper>(handle);
+    EXPECT_PARAM("LoadConstant", 0, ValueWrapper, "constant value")
+    ValueWrapper *wrapper = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[0]->ToObject());
 
     ValueHandle *result = self->Builder->LoadConstant(wrapper->Val);
 
@@ -439,15 +406,7 @@ NAN_METHOD(BuilderWrapper::GetElementPointer)
 {
     BuilderWrapper *self = Nan::ObjectWrap::Unwrap<BuilderWrapper>(info.This());
 
-    if (info.Length() == 0)
-    {
-        return Nan::ThrowError("GetElementPointer expects a pointer base");
-    }
-
-    if (!Nan::New(ValueWrapper::prototype)->HasInstance(info[0]))
-    {
-        return Nan::ThrowError("GetElementPointer expects a pointer base");
-    }
+    EXPECT_PARAM("GetElementPointer", 0, ValueWrapper, "pointer base")
 
     ValueWrapper *base = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[0].As<Object>());
 
@@ -572,23 +531,10 @@ NAN_METHOD(BuilderWrapper::Switch)
 {
     BuilderWrapper *self = Nan::ObjectWrap::Unwrap<BuilderWrapper>(info.This());
 
-    if (info.Length() == 0)
-    {
-        return Nan::ThrowError("Switch requires a condition");
-    }
-
-    if (!Nan::New(ValueWrapper::prototype)->HasInstance(info[0]))
-    {
-        return Nan::ThrowError("Switch condition must be a value");
-    }
-
+    EXPECT_PARAM("Switch", 0, ValueWrapper, "condition")
     ValueWrapper *cond = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[0].As<Object>());
 
-    if (!Nan::New(BuilderWrapper::prototype)->HasInstance(info[1]))
-    {
-        return Nan::ThrowError("Switch requires default target");
-    }
-
+    EXPECT_PARAM("Switch", 1, BuilderWrapper, "default target")
     BuilderWrapper *def = Nan::ObjectWrap::Unwrap<BuilderWrapper>(info[1].As<Object>());
 
     SwitchBuilder *sw = self->Builder->Switch(cond->Val, def->Builder);

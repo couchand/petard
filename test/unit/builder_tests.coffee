@@ -211,16 +211,16 @@ describe 'FunctionBuilder', ->
       (-> me.select me.value i32, 0).should.throw /condition/i
 
     it 'expects an if true value', ->
-      (-> me.select truth).should.throw /value/i
+      (-> me.select truth).should.throw /ifTrue/i
 
     it 'expects an if false value', ->
       one = me.value i32, 1
-      (-> me.select truth, one).should.throw /value/i
+      (-> me.select truth, one).should.throw /ifFalse/i
 
     it 'expects the two values to have the same type', ->
       one = me.value i32, 1
       two = me.value f32, 2
-      (-> me.select truth, one, two).should.throw /value/i
+      (-> me.select truth, one, two).should.throw /type/i
 
     it 'produces a select instruction', ->
       one = me.value i32, 1

@@ -227,3 +227,23 @@ describe 'FunctionBuilder', ->
       two = me.value i32, 2
       sel = me.select truth, one, two
       sel.type.toString().should.equal 'i32'
+
+  describe 'value', ->
+    me = beforeEach -> me = unit.makeFunction 'main', i32, i32
+
+    it 'expects a type', ->
+      (-> me.value()).should.throw /type/i
+      (-> me.value 42).should.throw /type/i
+      (-> me.value me.parameter 0).should.throw /type/i
+
+    it 'expects a constant value', ->
+      (-> me.value i32).should.throw /value/i
+      (-> me.value i32, me.parameter 0).should.throw /value/i
+
+    it 'produces integer values', ->
+      val = me.value i32, 42
+      val.type.toString().should.equal 'i32'
+
+    it 'produces floating point values', ->
+      val = me.value f32, 3.141
+      val.type.toString().should.equal 'float'

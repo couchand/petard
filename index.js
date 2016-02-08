@@ -133,11 +133,31 @@ petard.CodeUnit.prototype.makeFunction = function() {
   return fn;
 };
 
-var jitimpl = function JITFunction(r, ps) {
+function convertToRefType(ty) {
+
+  if (ty.isVoidType()) return 'void';
+  if (ty.isIntType()) return 'int';
+  if (ty.isFloatType()) return 'float';
+  if (ty.isArrayType() && ty.element.isIntType() && ty.element.bitwidth == 8) return 'string';
+  if (ty.isFunctionType()) {
+    var ret = convertToRefType(ty.returns);
+    var params = ty.parameters.map(function (p) { return convertToRefType(p); });
+
+    if (!ret) return;
+    if (!params.every(function (p) { return !!p; })) return;
+
+    return [ret, params];
+  }
+}
+
+var jitimpl = function JITFunction() {
+
+  fnty = convertToRefType(this.type);
+  if (!fnty) return;
 
   fn = this.codeUnit.jitFunction(this);
 
-  return ffi.ForeignFunction(fn, r, ps);
+  return ffi.ForeignFunction(fn, fnty[0], fnty[1]);
 };
 
 attach("jitCompile", jitimpl);

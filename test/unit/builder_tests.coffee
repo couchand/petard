@@ -172,3 +172,28 @@ describe 'FunctionBuilder', ->
       spot = me.alloca llvm.getStructTy [i32]
       ptr = me.getElementPointer spot, 0, 0
       ptr.type.toString().should.equal 'i32*'
+
+  describe 'callFunction', ->
+    f = g = me = beforeEach ->
+      f = unit.makeFunction 'f', i32, i32
+      g = unit.declareFunction 'g', i32, i32
+      me = unit.makeFunction 'main', i32
+
+    it 'expects a function to call', ->
+      (-> me.callFunction()).should.throw /function/i
+      (-> me.callFunction 42).should.throw /function/i
+      (-> me.callFunction me.value i32, 0).should.throw /function/i
+
+    it 'can call a functionbuilder', ->
+      call = me.callFunction f, me.value i32, 0
+      call.type.toString().should.equal 'i32'
+
+    it 'can call a functionvalue', ->
+      call = me.callFunction g, me.value i32, 0
+      call.type.toString().should.equal 'i32'
+
+    it 'expects the parameters for the function type', ->
+      (-> me.callFunction f).should.throw /parameter/i
+      (-> me.callFunction f, me.value i8, 0).should.throw /parameter/i
+      (-> me.callFunction g).should.throw /parameter/i
+      (-> me.callFunction g, me.value i8, 0).should.throw /parameter/i

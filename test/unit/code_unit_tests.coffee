@@ -54,4 +54,4 @@ describe 'CodeUnit', ->
 
       foobar = unit.constant 'foobar'
 
-      foobar.type.toString().should.equal '[7 x i8]'
+      foobar.type.toString().should.equal '[7 x i8]*'

@@ -251,7 +251,7 @@ parseParameters = (str) ->
   while comma = /\s*,\s*/.exec next
     next = next[comma[0].length..]
 
-    following = parseExpression next
+    following = parseVariable next
     return [next, parameters] unless following
 
     parameters.push following[1].name

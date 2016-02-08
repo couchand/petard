@@ -1,5 +1,7 @@
 // petard, an llvm library
 
+ffi = require('ffi');
+
 // load the native module
 var petard = require('bindings')('petard');
 
@@ -119,6 +121,26 @@ var chooseimpl = function Choose(cond) {
 };
 
 attach("choose", chooseimpl);
+
+// helper to load a jitted function
+
+var origMakeFn = petard.CodeUnit.prototype.makeFunction;
+
+petard.CodeUnit.prototype.makeFunction = function() {
+
+  var fn = origMakeFn.apply(this, arguments);
+  fn.codeUnit = this;
+  return fn;
+};
+
+var jitimpl = function JITFunction(r, ps) {
+
+  fn = this.codeUnit.jitFunction(this);
+
+  return ffi.ForeignFunction(fn, r, ps);
+};
+
+attach("jitCompile", jitimpl);
 
 // export everything
 module.exports = petard;

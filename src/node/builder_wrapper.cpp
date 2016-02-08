@@ -7,11 +7,7 @@
 #include "function_builder_wrapper.h"
 #include "switch_builder_wrapper.h"
 
-#define EXPECT_PARAM(functionName, paramIdx, paramType, paramName) \
-if (info.Length() <= paramIdx || !Nan::New(paramType::prototype)->HasInstance(info[paramIdx])) \
-{ \
-    return Nan::ThrowError(functionName " expects " paramName); \
-}
+#include "nan_macros.h"
 
 NAN_METHOD(BuilderWrapper::New)
 {

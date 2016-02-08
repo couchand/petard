@@ -31,7 +31,7 @@
       ],
       "libraries": [
         "<!@($LLVM_CONFIG --ldflags)",
-        "<!@($LLVM_CONFIG --libs core native support bitwriter)"
+        "<!@($LLVM_CONFIG --libs core native support bitwriter mcjit)"
       ]
     }
   ]

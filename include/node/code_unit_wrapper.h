@@ -18,6 +18,7 @@ class CodeUnitWrapper : public Nan::ObjectWrap
     static NAN_METHOD(New);
 
     static NAN_METHOD(Dump);
+    static NAN_METHOD(JITFunction);
     static NAN_METHOD(WriteToFile);
     static NAN_METHOD(MakeFunction);
     static NAN_METHOD(DeclareFunction);

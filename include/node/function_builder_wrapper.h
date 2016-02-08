@@ -21,6 +21,8 @@ class FunctionBuilderWrapper : public BuilderWrapper
     static NAN_GETTER(GetName);
     static NAN_GETTER(GetType);
 
+    static NAN_METHOD(JITFunction);
+
 public:
     static Nan::Persistent<FunctionTemplate> prototype;
 

@@ -14,6 +14,8 @@
 #include "block_builder.h"
 #include "switch_builder.h"
 
+class CodeUnit;
+
 class FunctionBuilder : public InstructionBuilder
 {
     llvm::LLVMContext &context;

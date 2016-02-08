@@ -7,6 +7,8 @@
 #include "value_wrapper.h"
 #include "function_builder_wrapper.h"
 
+#include "nan_macros.h"
+
 NAN_METHOD(CodeUnitWrapper::New)
 {
     if (!info.IsConstructCall())
@@ -42,6 +44,21 @@ NAN_METHOD(CodeUnitWrapper::Dump)
     self->Unit->dumpModule();
 
     return;
+}
+
+void doNotFree(char *data, void *hint) {}
+
+NAN_METHOD(CodeUnitWrapper::JITFunction)
+{
+    CodeUnitWrapper *self = Nan::ObjectWrap::Unwrap<CodeUnitWrapper>(info.This());
+
+    EXPECT_PARAM("JITFunction", 0, FunctionBuilderWrapper, "function to jit")
+    FunctionBuilderWrapper *wrapper = Nan::ObjectWrap::Unwrap<FunctionBuilderWrapper>(info[0].As<Object>());
+    FunctionBuilder *fn = wrapper->getFunctionBuilder();
+
+    void *jitted = self->Unit->JITFunction(fn);
+
+    info.GetReturnValue().Set(Nan::NewBuffer((char *)jitted, sizeof(void (*)()), &doNotFree, 0).ToLocalChecked());
 }
 
 NAN_METHOD(CodeUnitWrapper::WriteToFile)
@@ -154,6 +171,7 @@ NAN_MODULE_INIT(CodeUnitWrapper::Init)
     tmpl->InstanceTemplate()->SetInternalFieldCount(1);
 
     Nan::SetPrototypeMethod(tmpl, "dump", Dump);
+    Nan::SetPrototypeMethod(tmpl, "jitFunction", JITFunction);
     Nan::SetPrototypeMethod(tmpl, "writeBitcodeToFile", WriteToFile);
     Nan::SetPrototypeMethod(tmpl, "makeFunction", MakeFunction);
     Nan::SetPrototypeMethod(tmpl, "declareFunction", DeclareFunction);

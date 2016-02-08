@@ -1,5 +1,6 @@
 // codeunit
 
+#include <string>
 #include <iostream>
 
 #include "code_unit.h"
@@ -7,6 +8,53 @@
 #include "llvm/Support/raw_ostream.h"
 #include "llvm/Bitcode/BitstreamWriter.h"
 #include "llvm/Bitcode/ReaderWriter.h"
+
+#include "llvm/ExecutionEngine/MCJIT.h"
+#include "llvm/ExecutionEngine/SectionMemoryManager.h"
+
+#include "llvm/Support/TargetSelect.h"
+#include "llvm/Analysis/Passes.h"
+#include "llvm/Transforms/Scalar.h"
+
+CodeUnit::CodeUnit(const char *filename) : Context(llvm::getGlobalContext())
+{
+    llvm::InitializeNativeTarget();
+    llvm::InitializeNativeTargetAsmPrinter();
+    llvm::InitializeNativeTargetAsmParser();
+
+    std::unique_ptr<llvm::Module> owner = llvm::make_unique<llvm::Module>(filename, Context);
+    TheModule = owner.get();
+
+    std::string err;
+    TheEngine = llvm::EngineBuilder(std::move(owner))
+        .setErrorStr(&err)
+        .setMCJITMemoryManager(llvm::make_unique<llvm::SectionMemoryManager>())
+        .create();
+
+    if (!TheEngine)
+    {
+        std::cerr << "ERROR: could not create ExecutionEngine: " << err << std::endl;
+        // TODO: not this
+        exit(1);
+    }
+
+    TheModule->setDataLayout(TheEngine->getDataLayout());
+
+    TheManager = new llvm::FunctionPassManager(TheModule);
+    TheManager->add(new llvm::DataLayoutPass());
+    TheManager->add(llvm::createBasicAliasAnalysisPass());
+    TheManager->add(llvm::createInstructionCombiningPass());
+    TheManager->add(llvm::createReassociatePass());
+    TheManager->add(llvm::createGVNPass());
+    TheManager->add(llvm::createCFGSimplificationPass());
+    TheManager->doInitialization();
+}
+
+void *CodeUnit::JITFunction(FunctionBuilder *fn)
+{
+    TheEngine->finalizeObject();
+    return TheEngine->getPointerToFunction(fn->F);
+}
 
 llvm::Function *CodeUnit::buildFunctionHeader(const char *name, FunctionTypeHandle *type)
 {

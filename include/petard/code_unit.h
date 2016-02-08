@@ -7,21 +7,22 @@
 #include "value.h"
 #include "function_builder.h"
 
+#include "llvm/PassManager.h"
+#include "llvm/ExecutionEngine/ExecutionEngine.h"
+
 class CodeUnit
 {
     llvm::Function *buildFunctionHeader(const char *name, FunctionTypeHandle *type);
 
 public:
-    CodeUnit(const char *filename)
-    : Context(llvm::getGlobalContext())
-    {
-        TheModule = new llvm::Module(filename, Context);
-    }
+    CodeUnit(const char *filename);
 
     void dumpModule()
     {
         TheModule->dump();
     }
+
+    void *JITFunction(FunctionBuilder *fn);
 
     bool WriteToFile(const char *filename);
 
@@ -32,6 +33,8 @@ public:
 
     llvm::LLVMContext &Context;
     llvm::Module *TheModule;
+    llvm::FunctionPassManager *TheManager;
+    llvm::ExecutionEngine *TheEngine;
 };
 
 #endif

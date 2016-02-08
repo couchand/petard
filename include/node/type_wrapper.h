@@ -50,6 +50,22 @@ class TypeWrapper : public Nan::ObjectWrap
     static NAN_METHOD(ToString);
     static NAN_METHOD(IsCompatibleWith);
 
+    static NAN_METHOD(IsVoidType);
+    static NAN_METHOD(IsIntType);
+    static NAN_METHOD(IsFloatType);
+    static NAN_METHOD(IsArrayType);
+    static NAN_METHOD(IsStructType);
+    static NAN_METHOD(IsPointerType);
+    static NAN_METHOD(IsFunctionType);
+
+    static NAN_GETTER(GetBitwidth);
+    static NAN_GETTER(GetSize);
+    static NAN_GETTER(GetElement);
+    static NAN_GETTER(GetElements);
+    static NAN_GETTER(GetPointee);
+    static NAN_GETTER(GetReturns);
+    static NAN_GETTER(GetParameters);
+
 public:
     static Handle<Value> wrapType(TypeHandle *type);
 

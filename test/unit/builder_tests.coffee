@@ -147,12 +147,11 @@ describe 'FunctionBuilder', ->
       arrPtr.type.toString().should.equal 'i32*'
 
     it 'expects index list to not exceed type depth', ->
-      return
       intSpot = me.alloca i32
-      (-> me.getElementPointer intSpot, 0, 0).should.throw /type/i
+      (-> me.getElementPointer intSpot, 0, 0).should.throw /index/i
 
       arrSpot = me.alloca llvm.getArrayTy 3, i32
-      (-> me.getElementPointer arrSpot, 0, 0, 0).should.throw /type/i
+      (-> me.getElementPointer arrSpot, 0, 0, 0).should.throw /index/i
 
     it 'accepts a value for an index', ->
       me = unit.makeFunction 'something', vd, i32

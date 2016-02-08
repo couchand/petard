@@ -462,6 +462,11 @@ NAN_METHOD(BuilderWrapper::GetElementPointer)
 
     ValueHandle *result = self->Builder->GetElementPointer(base->Val, idxs);
 
+    if (!result)
+    {
+        return Nan::ThrowError("GetElementPointer index error");
+    }
+
     info.GetReturnValue().Set(ValueWrapper::wrapValue(result));
 }
 

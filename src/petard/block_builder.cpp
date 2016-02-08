@@ -23,7 +23,7 @@ ValueHandle *BlockBuilder::MakeValue(TypeHandle *t, double i)
         return 0;
     }
 
-    return new PlainValueHandle(t, v);
+    return new PlainValueHandle(t, v, true);
 }
 
 BlockBuilder *BlockBuilder::ChildBlock(const char *name)
@@ -314,7 +314,8 @@ TypeHandle *BlockBuilder::getElementType(TypeHandle *ty, std::vector<ValueHandle
 
     if (ty->isStructType())
     {
-        // TODO: check that value is constant
+        if (!first->isConstant()) return 0;
+
         StructTypeHandle *strucTy = static_cast<StructTypeHandle *>(ty);
         llvm::ConstantInt *idx = static_cast<llvm::ConstantInt *>(first->getLLVMValue());
 

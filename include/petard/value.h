@@ -16,19 +16,24 @@ public:
     TypeHandle *Type;
 
     virtual llvm::Value *getLLVMValue() = 0;
+    virtual bool isConstant() { return false; }
 };
 
 class PlainValueHandle : public ValueHandle
 {
+    bool isC;
 public:
-    PlainValueHandle(TypeHandle *t, llvm::Value* v)
-    : ValueHandle(t), Value(v) {}
+    PlainValueHandle(TypeHandle *t, llvm::Value* v, bool c = false)
+    : ValueHandle(t), isC(c), Value(v) {}
 
     llvm::Value *Value;
 
     llvm::Value *getLLVMValue();
+
+    bool isConstant() { return isC; }
 };
 
+// TODO: rename GlobalValueHandle
 class ConstantValueHandle : public ValueHandle
 {
 public:
@@ -38,6 +43,8 @@ public:
     llvm::GlobalVariable *Storage;
 
     llvm::Value *getLLVMValue();
+
+    bool isConstant() { return true; }
 };
 
 class FunctionValueHandle : public ValueHandle
@@ -49,6 +56,8 @@ public:
     llvm::Function *Function;
 
     llvm::Value *getLLVMValue();
+
+    bool isConstant() { return true; }
 };
 
 #endif

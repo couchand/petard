@@ -1,6 +1,7 @@
 # fib test
 
 TARGET_INDEX = 10
+EXPECTED_VALUE = 89
 
 fs = require 'fs'
 tmp = require 'tmp'
@@ -39,14 +40,8 @@ describe 'conditionals', ->
     
     main.return main.callFunction fib, main.value i32, TARGET_INDEX
     
-    filename = tmp.tmpNameSync()
+    mainf = main.jitCompile()
 
-    mod.writeBitcodeToFile filename
+    fibval = mainf()
 
-    fs.statSync filename
-      .should.not.be.null
-
-    fs.readFileSync filename
-      .should.have.length.greaterThan 0
-
-    fs.unlink filename
+    fibval.should.equal EXPECTED_VALUE

@@ -21,7 +21,7 @@ y = 4
 
 console.log "munging", x, "and", y
 
-f = munge.jitCompile 'int', ['int', 'int']
+f = munge.jitCompile()
 
 console.log "=", f x, y
 

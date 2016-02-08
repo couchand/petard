@@ -161,3 +161,16 @@ describe 'FunctionBuilder', ->
       spot = me.alloca i32
       ptr = me.getElementPointer spot, p
       ptr.type.toString().should.equal 'i32*'
+
+    it 'expects a constant for a struct', ->
+      return
+      me = unit.makeFunction 'something', vd, i32
+      p = me.parameter 0
+
+      spot = me.alloca llvm.getStructTy [i32]
+      (-> me.getElementPointer spot, 0, p).should.throw /constant/i
+
+    it 'indexed into a struct', ->
+      spot = me.alloca llvm.getStructTy [i32]
+      ptr = me.getElementPointer spot, 0, 0
+      ptr.type.toString().should.equal 'i32*'

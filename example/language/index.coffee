@@ -31,6 +31,7 @@
 
 compile = (name, code) ->
   unit = parseCodeUnit name, code
+  unit.typecheck()
   unit.compile()
 
 if module isnt require.main

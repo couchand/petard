@@ -76,9 +76,9 @@ llvm = require 'petard'
 
 {i8, i32, pointerTo} = llvm.type
 
-hello = llvm.createModule "hello"
+hello = llvm.CodeUnit "hello"
 
-main = hello.createFunction "main", i32
+main = hello.makeFunction "main", i32
 puts = hello.declareFunction "puts", i32, pointerTo i8
 
 text = hello.constant "Hello, world!\n"
@@ -93,6 +93,25 @@ hello.writeBitcodeToFile "hello.bc"
 
 Then use opt and clang as usual with the LLVM IR bitcode file.  Look at the
 [example][21] folder for more examples.
+
+Alternatively, you can JIT compile and call the function from JavaScript.
+
+```coffeescript
+hi = hello.makeFunction "hi", i32, pointerTo i8
+
+prefix = hello.constant "Hello, "
+
+hi.callFunction puts, hi.loadConstant prefix
+hi.callFunction puts, hi.parameter 0
+
+hi.return 0
+
+greet = hi.jitCompile()
+
+greet "Bill"
+greet "Janice"
+greet "Bart"
+```
 
 documentation
 -------------

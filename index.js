@@ -139,6 +139,7 @@ function convertToRefType(ty) {
   if (ty.isIntType()) return 'int';
   if (ty.isFloatType()) return 'float';
   if (ty.isArrayType() && ty.element.isIntType() && ty.element.bitwidth == 8) return 'string';
+  if (ty.isPointerType() && ty.pointee.isIntType() && ty.pointee.bitwidth == 8) return 'string';
   if (ty.isFunctionType()) {
     var ret = convertToRefType(ty.returns);
     var params = ty.parameters.map(function (p) { return convertToRefType(p); });

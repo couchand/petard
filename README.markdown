@@ -460,6 +460,12 @@ A property containing the name of the function.
 
 A property containing the type of the function.
 
+##### Function jitCompile() *(js)*
+
+JIT compile the function, the set up a foreign-function interface to make the
+function callable from JavaScript.  Uses the [ffi][70] library to dynamically
+bind the functino pointer.
+
 #### SwitchBuilder
 
 A special tool for working with switch statements.  It is returned from the
@@ -512,6 +518,12 @@ regular usage, since the underlying LLVM method always dumps to stderr.
 Write the bitcode for this code unit to a file with the given filename.  The
 file must not exist, if it does this method will fail.
 
+##### Buffer unit.jitFunction([FunctionBuilder][13] fn)
+
+JIT compile the function.  Returns the raw pointer to the function as a Buffer.
+You may find the corresponding helper method on [FunctionBuilder][13] to be more
+useful since you can call the result of that method from JavaScript.
+
 ### helpers
 
 #### `type` dict
@@ -542,6 +554,8 @@ more information
 [0]: http://llvm.org/docs/LangRef.html
 [1]: http://llvm.org/docs/ProgrammersManual.html
 [2]: http://llvm.org/docs/GetElementPtr.html
+
+[70]: https://www.npmjs.com/package/ffi
 
 [10]: https://github.com/couchand/petard#type
 [11]: https://github.com/couchand/petard#value

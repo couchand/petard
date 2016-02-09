@@ -54,6 +54,7 @@ class TypeWrapper : public Nan::ObjectWrap
     static NAN_METHOD(IsIntType);
     static NAN_METHOD(IsFloatType);
     static NAN_METHOD(IsArrayType);
+    static NAN_METHOD(IsVectorType);
     static NAN_METHOD(IsStructType);
     static NAN_METHOD(IsPointerType);
     static NAN_METHOD(IsFunctionType);
@@ -83,9 +84,10 @@ public:
     static NAN_METHOD(GetVoidTy);
     static NAN_METHOD(GetIntTy);
     static NAN_METHOD(GetFloatTy);
-    static NAN_METHOD(GetPointerTy);
     static NAN_METHOD(GetArrayTy);
+    static NAN_METHOD(GetVectorTy);
     static NAN_METHOD(GetStructTy);
+    static NAN_METHOD(GetPointerTy);
     static NAN_METHOD(GetFunctionTy);
 };
 

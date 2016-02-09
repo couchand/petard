@@ -36,6 +36,9 @@ static NAN_MODULE_INIT(Init)
     Local<FunctionTemplate> getPointerTy = Nan::New<FunctionTemplate>(TypeWrapper::GetPointerTy);
     Nan::Set(target, Nan::New("getPointerTy").ToLocalChecked(), Nan::GetFunction(getPointerTy).ToLocalChecked());
 
+    Local<FunctionTemplate> getVectorTy = Nan::New<FunctionTemplate>(TypeWrapper::GetVectorTy);
+    Nan::Set(target, Nan::New("getVectorTy").ToLocalChecked(), Nan::GetFunction(getVectorTy).ToLocalChecked());
+
     Local<FunctionTemplate> getArrayTy = Nan::New<FunctionTemplate>(TypeWrapper::GetArrayTy);
     Nan::Set(target, Nan::New("getArrayTy").ToLocalChecked(), Nan::GetFunction(getArrayTy).ToLocalChecked());
 

@@ -20,6 +20,7 @@ public:
     virtual bool isFloatType() { return false; }
     virtual bool isPointerType() { return false; }
     virtual bool isFunctionType() { return false; }
+    virtual bool isVectorType() { return false; }
     virtual bool isArrayType() { return false; }
     virtual bool isStructType() { return false; }
 
@@ -133,6 +134,29 @@ public:
 
         PointerTypeHandle *otherPtr = static_cast<PointerTypeHandle *>(other);
         return pointee->isCompatibleWith(otherPtr->pointee);
+    }
+};
+
+class VectorTypeHandle : public TypeHandle
+{
+public:
+    unsigned size;
+    TypeHandle *element;
+
+    VectorTypeHandle(unsigned s, TypeHandle *e)
+    : size(s), element(e) {}
+
+    llvm::Type *getLLVMType(llvm::LLVMContext &context);
+    std::string toString();
+
+    bool isVectorType() { return true; }
+
+    bool isCompatibleWith(TypeHandle *other)
+    {
+        if (!other->isVectorType()) return false;
+
+        VectorTypeHandle *otherVec = static_cast<VectorTypeHandle *>(other);
+        return size == otherVec->size && element->isCompatibleWith(otherVec->element);
     }
 };
 

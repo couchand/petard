@@ -1,6 +1,7 @@
 // type wrapper
 
 #include "type_wrapper.h"
+#include "nan_macros.h"
 
 NAN_METHOD(TypeWrapper::New)
 {
@@ -53,6 +54,7 @@ TYPE_PREDICATE(IsVoidType, isVoidType);
 TYPE_PREDICATE(IsIntType, isIntType);
 TYPE_PREDICATE(IsFloatType, isFloatType);
 TYPE_PREDICATE(IsArrayType, isArrayType);
+TYPE_PREDICATE(IsVectorType, isVectorType);
 TYPE_PREDICATE(IsStructType, isStructType);
 TYPE_PREDICATE(IsPointerType, isPointerType);
 TYPE_PREDICATE(IsFunctionType, isFunctionType);
@@ -100,6 +102,7 @@ NAN_GETTER(TypeWrapper::GetSize)
     TypeWrapper *self = Nan::ObjectWrap::Unwrap<TypeWrapper>(info.This());
 
     RETURN_IF_TYPE(ArrayTypeHandle, isArrayType, size)
+    RETURN_IF_TYPE(VectorTypeHandle, isVectorType, size)
 }
 
 NAN_GETTER(TypeWrapper::GetElement)
@@ -107,6 +110,7 @@ NAN_GETTER(TypeWrapper::GetElement)
     TypeWrapper *self = Nan::ObjectWrap::Unwrap<TypeWrapper>(info.This());
 
     RETURN_IF_TYPE_W(ArrayTypeHandle, isArrayType, element)
+    RETURN_IF_TYPE_W(VectorTypeHandle, isVectorType, element)
 }
 
 NAN_GETTER(TypeWrapper::GetElements)
@@ -165,6 +169,7 @@ NAN_MODULE_INIT(TypeWrapper::Init)
     Nan::SetPrototypeMethod(tmpl, "isIntType", TypeWrapper::IsIntType);
     Nan::SetPrototypeMethod(tmpl, "isFloatType", TypeWrapper::IsFloatType);
     Nan::SetPrototypeMethod(tmpl, "isArrayType", TypeWrapper::IsArrayType);
+    Nan::SetPrototypeMethod(tmpl, "isVectorType", TypeWrapper::IsVectorType);
     Nan::SetPrototypeMethod(tmpl, "isStructType", TypeWrapper::IsStructType);
     Nan::SetPrototypeMethod(tmpl, "isPointerType", TypeWrapper::IsPointerType);
     Nan::SetPrototypeMethod(tmpl, "isFunctionType", TypeWrapper::IsFunctionType);
@@ -253,6 +258,27 @@ NAN_METHOD(TypeWrapper::GetPointerTy)
     TypeHandle *pointee = wrapper->Type;
 
     info.GetReturnValue().Set(wrapType(new PointerTypeHandle(pointee)));
+}
+
+NAN_METHOD(TypeWrapper::GetVectorTy)
+{
+    unsigned size;
+    TypeHandle *element;
+
+    if (info.Length() == 0 || !info[0]->IsNumber())
+    {
+        return Nan::ThrowError("Must provide vector size");
+    }
+
+    Local<Number> sizeNumber = info[0].As<Number>();
+    double sizeDouble = sizeNumber->Value();
+    size = (unsigned)sizeDouble;
+
+    EXPECT_PARAM("GetVectorTy", 1, TypeWrapper, "element type")
+    TypeWrapper *wrapper = Nan::ObjectWrap::Unwrap<TypeWrapper>(info[1]->ToObject());
+    element = wrapper->Type;
+
+    info.GetReturnValue().Set(wrapType(new VectorTypeHandle(size, element)));
 }
 
 NAN_METHOD(TypeWrapper::GetArrayTy)

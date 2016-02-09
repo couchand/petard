@@ -45,6 +45,17 @@ describe 'getters', ->
     it 'expects a pointee type', ->
       (-> llvm.getPointerTy()).should.throw /pointee/i
 
+  describe 'getVectorTy', ->
+    it 'returns a type', ->
+      me = llvm.getVectorTy 3, llvm.getIntTy 1
+      me.constructor.name.should.equal 'Type'
+
+    it 'expects an element count', ->
+      (-> llvm.getVectorTy()).should.throw /size/i
+
+    it 'expects an element type', ->
+      (-> llvm.getVectorTy 3).should.throw /element/i
+
   describe 'getArrayTy', ->
     it 'returns a type', ->
       me = llvm.getArrayTy 3, llvm.getIntTy 1
@@ -91,6 +102,9 @@ describe 'VoidType', ->
 
       ptrTy = llvm.getPointerTy llvm.getIntTy 32
       me.isCompatibleWith(ptrTy).should.be.false
+
+      vecTy = llvm.getVectorTy 3, llvm.getIntTy 32
+      me.isCompatibleWith(vecTy).should.be.false
 
       arrTy = llvm.getArrayTy 3, llvm.getIntTy 32
       me.isCompatibleWith(arrTy).should.be.false
@@ -143,6 +157,9 @@ describe 'FunctionType', ->
 
       ptrTy = llvm.getPointerTy llvm.getIntTy 32
       me.isCompatibleWith(ptrTy).should.be.false
+
+      vecTy = llvm.getVectorTy 3, llvm.getIntTy 32
+      me.isCompatibleWith(vecTy).should.be.false
 
       arrTy = llvm.getArrayTy 3, llvm.getFloatTy 32
       me.isCompatibleWith(arrTy).should.be.false
@@ -199,6 +216,9 @@ describe 'IntType', ->
 
       ptrTy = llvm.getPointerTy llvm.getIntTy 32
       me.isCompatibleWith(ptrTy).should.be.false
+
+      vecTy = llvm.getVectorTy 3, llvm.getIntTy 32
+      me.isCompatibleWith(vecTy).should.be.false
 
       arrTy = llvm.getArrayTy 3, llvm.getIntTy 32
       me.isCompatibleWith(arrTy).should.be.false
@@ -276,6 +296,9 @@ describe 'FloatType', ->
       ptrTy = llvm.getPointerTy llvm.getIntTy 32
       me.isCompatibleWith(ptrTy).should.be.false
 
+      vecTy = llvm.getVectorTy 3, llvm.getIntTy 32
+      me.isCompatibleWith(vecTy).should.be.false
+
       arrTy = llvm.getArrayTy 3, llvm.getIntTy 32
       me.isCompatibleWith(arrTy).should.be.false
 
@@ -319,6 +342,9 @@ describe 'PointerType', ->
       floatTy = llvm.getFloatTy 32
       me.isCompatibleWith(floatTy).should.be.false
 
+      vecTy = llvm.getVectorTy 3, llvm.getIntTy 32
+      me.isCompatibleWith(vecTy).should.be.false
+
       arrTy = llvm.getArrayTy 3, llvm.getIntTy 32
       me.isCompatibleWith(arrTy).should.be.false
 
@@ -335,6 +361,60 @@ describe 'PointerType', ->
       me.isCompatibleWith(smaller).should.be.false
 
       larger = llvm.getPointerTy llvm.getIntTy 64
+      me.isCompatibleWith(larger).should.be.false
+
+describe 'VectorType', ->
+  describe 'toString', ->
+    it 'returns the count and element', ->
+      me = llvm.getVectorTy 42, llvm.getIntTy 64
+      me.toString().should.equal '<42 x i64>'
+
+  describe 'isCompatibleWith', ->
+    it 'returns true for identical type', ->
+      me = llvm.getVectorTy 3, llvm.getIntTy 32
+      other = llvm.getVectorTy 3, llvm.getIntTy 32
+      me.isCompatibleWith(other).should.be.true
+
+    it 'returns false for non-vector types', ->
+      me = llvm.getVectorTy 3, llvm.getIntTy 32
+
+      voidTy = llvm.getVoidTy()
+      me.isCompatibleWith(voidTy).should.be.false
+
+      intTy = llvm.getIntTy 32
+      me.isCompatibleWith(intTy).should.be.false
+
+      floatTy = llvm.getFloatTy 32
+      me.isCompatibleWith(floatTy).should.be.false
+
+      ptrTy = llvm.getPointerTy llvm.getIntTy 32
+      me.isCompatibleWith(ptrTy).should.be.false
+
+      arrTy = llvm.getArrayTy 3, llvm.getIntTy 32
+      me.isCompatibleWith(arrTy).should.be.false
+
+      structTy = llvm.getStructTy [llvm.getFloatTy 32]
+      me.isCompatibleWith(structTy).should.be.false
+
+      fnTy = llvm.getFunctionTy llvm.getVoidTy(), llvm.getFloatTy 32
+      me.isCompatibleWith(fnTy).should.be.false
+
+    it 'returns false for other element types', ->
+      me = llvm.getVectorTy 3, llvm.getIntTy 32
+
+      smaller = llvm.getVectorTy 3, llvm.getIntTy 16
+      me.isCompatibleWith(smaller).should.be.false
+
+      larger = llvm.getVectorTy 3, llvm.getIntTy 64
+      me.isCompatibleWith(larger).should.be.false
+
+    it 'returns false for other sizes', ->
+      me = llvm.getVectorTy 3, llvm.getIntTy 32
+
+      smaller = llvm.getVectorTy 2, llvm.getIntTy 32
+      me.isCompatibleWith(smaller).should.be.false
+
+      larger = llvm.getVectorTy 4, llvm.getIntTy 32
       me.isCompatibleWith(larger).should.be.false
 
 describe 'ArrayType', ->
@@ -363,6 +443,9 @@ describe 'ArrayType', ->
 
       ptrTy = llvm.getPointerTy llvm.getIntTy 32
       me.isCompatibleWith(ptrTy).should.be.false
+
+      vecTy = llvm.getVectorTy 3, llvm.getIntTy 32
+      me.isCompatibleWith(vecTy).should.be.false
 
       structTy = llvm.getStructTy [llvm.getFloatTy 32]
       me.isCompatibleWith(structTy).should.be.false
@@ -419,6 +502,9 @@ describe 'StructType', ->
 
       ptrTy = llvm.getPointerTy llvm.getIntTy 32
       me.isCompatibleWith(ptrTy).should.be.false
+
+      vecTy = llvm.getVectorTy 3, llvm.getIntTy 32
+      me.isCompatibleWith(vecTy).should.be.false
 
       arrTy = llvm.getArrayTy 3, llvm.getFloatTy 32
       me.isCompatibleWith(arrTy).should.be.false

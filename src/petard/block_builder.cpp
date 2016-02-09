@@ -141,13 +141,25 @@ ValueHandle *BlockBuilder::name(ValueHandle *lhs, ValueHandle *rhs) \
 #define BINARY_BUILDER2(name, intfactory, floatfactory) \
 ValueHandle *BlockBuilder::name(ValueHandle *lhs, ValueHandle *rhs) \
 { \
-    TypeHandle *t = lhs->Type; /* TODO: something better */ \
+    TypeHandle *lt = lhs->Type; \
+    TypeHandle *rt = rhs->Type; \
+    if (!lt->isCompatibleWith(rt)) \
+    { \
+        return 0; \
+    } \
+    TypeHandle *t = lt; \
+    TypeHandle *et = t; \
+    if (t->isVectorType()) \
+    { \
+        VectorTypeHandle *vt = static_cast<VectorTypeHandle *>(t); \
+        et = vt->element; \
+    } \
     llvm::Value *val; \
-    if (t->isIntType()) \
+    if (et->isIntType()) \
     { \
         val = builder.intfactory(lhs->getLLVMValue(), rhs->getLLVMValue()); \
     } \
-    else if (t->isFloatType()) \
+    else if (et->isFloatType()) \
     { \
         val = builder.floatfactory(lhs->getLLVMValue(), rhs->getLLVMValue()); \
     } \

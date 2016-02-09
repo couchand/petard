@@ -93,6 +93,18 @@ std::string PointerTypeHandle::toString()
     return pointeeStr + "*";
 }
 
+llvm::Type *VectorTypeHandle::getLLVMType(llvm::LLVMContext &context)
+{
+    return llvm::VectorType::get(element->getLLVMType(context), size);
+}
+
+std::string VectorTypeHandle::toString()
+{
+    std::stringstream ss;
+    ss << "<" << size << " x " << element->toString() << ">";
+    return ss.str();
+}
+
 llvm::Type *ArrayTypeHandle::getLLVMType(llvm::LLVMContext &context)
 {
     return llvm::ArrayType::get(element->getLLVMType(context), size);

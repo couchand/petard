@@ -328,7 +328,7 @@ NAN_METHOD(BuilderWrapper::Value)
         Local<Number> num = info[1].As<Number>();
         double numVal = num->Value();
 
-        result = wrapper->Builder->MakeValue(type->Type, (int)numVal);
+        result = wrapper->Builder->MakeValue(type->Type, numVal);
     }
     else
     {

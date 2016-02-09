@@ -116,6 +116,7 @@ NAN_MODULE_INIT(FunctionBuilderWrapper::Init)
     Nan::SetPrototypeMethod(tmpl, "select", Select);
 
     Nan::SetPrototypeMethod(tmpl, "value", Value);
+    Nan::SetPrototypeMethod(tmpl, "undefined", Undefined);
 
     Nan::SetPrototypeMethod(tmpl, "br", Br);
     Nan::SetPrototypeMethod(tmpl, "switch", Switch);

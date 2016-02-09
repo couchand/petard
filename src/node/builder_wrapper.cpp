@@ -343,6 +343,23 @@ NAN_METHOD(BuilderWrapper::Value)
     info.GetReturnValue().Set(ValueWrapper::wrapValue(result));
 }
 
+NAN_METHOD(BuilderWrapper::Undefined)
+{
+    BuilderWrapper *self = Nan::ObjectWrap::Unwrap<BuilderWrapper>(info.This());
+
+    EXPECT_PARAM("Undefined", 0, TypeWrapper, "type")
+    TypeWrapper *type = Nan::ObjectWrap::Unwrap<TypeWrapper>(info[0].As<Object>());
+
+    ValueHandle *result = self->Builder->MakeUndefined(type->Type);
+
+    if (!result)
+    {
+        return Nan::ThrowError("Uncaught error in Undefined!");
+    }
+
+    info.GetReturnValue().Set(ValueWrapper::wrapValue(result));
+}
+
 NAN_METHOD(BuilderWrapper::Return)
 {
     BuilderWrapper *wrapper = Nan::ObjectWrap::Unwrap<BuilderWrapper>(info.This());
@@ -890,6 +907,7 @@ NAN_MODULE_INIT(BuilderWrapper::Init)
     Nan::SetPrototypeMethod(tmpl, "select", Select);
 
     Nan::SetPrototypeMethod(tmpl, "value", Value);
+    Nan::SetPrototypeMethod(tmpl, "undefined", Undefined);
 
     Nan::SetPrototypeMethod(tmpl, "br", Br);
     Nan::SetPrototypeMethod(tmpl, "switch", Switch);

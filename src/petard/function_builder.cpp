@@ -7,6 +7,11 @@ ValueHandle *FunctionBuilder::MakeValue(TypeHandle *t, double i)
     return builder->MakeValue(t, i);
 }
 
+ValueHandle *FunctionBuilder::MakeUndefined(TypeHandle *t)
+{
+    return builder->MakeUndefined(t);
+}
+
 BlockBuilder *FunctionBuilder::ChildBlock(const char *name)
 {
     return builder->ChildBlock(name);

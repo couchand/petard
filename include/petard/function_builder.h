@@ -51,6 +51,7 @@ public:
     void InsertBefore() { builder->InsertBefore(); }
 
     ValueHandle *MakeValue(TypeHandle *t, double i);
+    ValueHandle *MakeUndefined(TypeHandle *t);
 
     BlockBuilder *ChildBlock(const char *name);
     BlockBuilder *SplitBlock(const char *name);

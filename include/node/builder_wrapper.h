@@ -76,6 +76,7 @@ protected:
     static NAN_METHOD(Select);
 
     static NAN_METHOD(Value);
+    static NAN_METHOD(Undefined);
 
     static NAN_METHOD(Return);
     static NAN_METHOD(Parameter);

@@ -26,6 +26,14 @@ ValueHandle *BlockBuilder::MakeValue(TypeHandle *t, double i)
     return new PlainValueHandle(t, v, true);
 }
 
+ValueHandle *BlockBuilder::MakeUndefined(TypeHandle *t)
+{
+    llvm::Value *v = llvm::UndefValue::get(t->getLLVMType(context));
+    if (!v) return 0;
+
+    return new PlainValueHandle(t, v, true);
+}
+
 BlockBuilder *BlockBuilder::ChildBlock(const char *name)
 {
     llvm::BasicBlock *child = llvm::BasicBlock::Create(context, name, parent->F);

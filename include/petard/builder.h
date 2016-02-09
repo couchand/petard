@@ -21,6 +21,7 @@ public:
     virtual void InsertBefore() = 0;
 
     virtual ValueHandle *MakeValue(TypeHandle *t, double i) = 0;
+    virtual ValueHandle *MakeUndefined(TypeHandle *t) = 0;
 
     virtual BlockBuilder *ChildBlock(const char *name) = 0;
     virtual BlockBuilder *SplitBlock(const char *name) = 0;

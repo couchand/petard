@@ -228,6 +228,16 @@ describe 'FunctionBuilder', ->
       sel = me.select truth, one, two
       sel.type.toString().should.equal 'i32'
 
+    it 'operates on vectors', ->
+      vty = llvm.getVectorTy 3, f32
+      chty = llvm.getVectorTy 3, i1
+      vecsel = unit.makeFunction 'vecsel', vty, vty, vty, chty
+      l = vecsel.parameter 0
+      r = vecsel.parameter 1
+      ch = vecsel.parameter 2
+      selected = vecsel.select ch, l, r
+      selected.type.toString().should.equal vty.toString()
+
   describe 'value', ->
     me = beforeEach -> me = unit.makeFunction 'main', i32, i32
 

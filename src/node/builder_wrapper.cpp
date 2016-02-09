@@ -262,9 +262,11 @@ NAN_METHOD(BuilderWrapper::Select)
     EXPECT_PARAM("Select", 0, ValueWrapper, "condition")
     ValueWrapper *cond = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[0].As<Object>());
 
-    if (!cond->Val->Type->isCompatibleWith(new IntTypeHandle(1)))
+    TypeHandle *condTy = cond->Val->Type;
+
+    if (!condTy->isVectorType() && !condTy->isCompatibleWith(new IntTypeHandle(1)))
     {
-        return Nan::ThrowError("Select condition must be an i1"); // or a vector...
+        return Nan::ThrowError("Select condition must be an i1");
     }
 
     EXPECT_PARAM("Select", 1, ValueWrapper, "ifTrue")
@@ -272,6 +274,25 @@ NAN_METHOD(BuilderWrapper::Select)
 
     EXPECT_PARAM("Select", 2, ValueWrapper, "ifFalse")
     ValueWrapper *ifFalse = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[2].As<Object>());
+
+    if (condTy->isVectorType())
+    {
+        TypeHandle *tTy = ifTrue->Val->Type;
+        TypeHandle *fTy = ifFalse->Val->Type;
+
+        if (!tTy->isVectorType() || !fTy->isVectorType())
+        {
+            return Nan::ThrowError("Select with vector condition requires vector values");
+        }
+
+        VectorTypeHandle *cv = static_cast<VectorTypeHandle *>(condTy);
+        VectorTypeHandle *tv = static_cast<VectorTypeHandle *>(tTy);
+        VectorTypeHandle *fv = static_cast<VectorTypeHandle *>(fTy);
+        if (cv->size != tv->size || cv->size != fv->size)
+        {
+            return Nan::ThrowError("Select with vectors requires them to be the same size");
+        }
+    }
 
     if (!ifTrue->Val->Type->isCompatibleWith(ifFalse->Val->Type))
     {

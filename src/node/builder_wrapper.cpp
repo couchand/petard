@@ -464,6 +464,91 @@ NAN_METHOD(BuilderWrapper::GetElementPointer)
     info.GetReturnValue().Set(ValueWrapper::wrapValue(result));
 }
 
+NAN_METHOD(BuilderWrapper::ExtractElement)
+{
+    BuilderWrapper *self = Nan::ObjectWrap::Unwrap<BuilderWrapper>(info.This());
+
+    EXPECT_PARAM("ExtractElement", 0, ValueWrapper, "vector")
+    ValueWrapper *value = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[0]->ToObject());
+
+    if (!value->Val->Type->isVectorType())
+    {
+        return Nan::ThrowError("ExtractElement vector must be a vector type");
+    }
+
+    if (info.Length() <= 1)
+    {
+        return Nan::ThrowError("ExtractElement requires an index");
+    }
+
+    ValueHandle *index = getValueHandle(self->Builder, info[1]);
+    if (!index)
+    {
+        return Nan::ThrowError("ExtractElement requires an index");
+    }
+
+    if (!index->Type->isIntType())
+    {
+        return Nan::ThrowError("ExtractElement index must be an integer type");
+    }
+
+    ValueHandle *result = self->Builder->ExtractElement(value->Val, index);
+
+    if (!result)
+    {
+        return Nan::ThrowError("Uncaught error in ExtractElement!");
+    }
+
+    info.GetReturnValue().Set(ValueWrapper::wrapValue(result));
+}
+
+NAN_METHOD(BuilderWrapper::InsertElement)
+{
+    BuilderWrapper *self = Nan::ObjectWrap::Unwrap<BuilderWrapper>(info.This());
+
+    EXPECT_PARAM("InsertElement", 0, ValueWrapper, "vector")
+    ValueWrapper *vec = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[0]->ToObject());
+
+    if (!vec->Val->Type->isVectorType())
+    {
+        return Nan::ThrowError("InsertElement vector must be a vector type");
+    }
+
+    EXPECT_PARAM("InsertElement", 1, ValueWrapper, "value")
+    ValueWrapper *value = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[1]->ToObject());
+
+    VectorTypeHandle *vecTy = static_cast<VectorTypeHandle *>(vec->Val->Type);
+    if (!value->Val->Type->isCompatibleWith(vecTy->element))
+    {
+        return Nan::ThrowError("Incompatible types in InsertElement");
+    }
+
+    if (info.Length() <= 2)
+    {
+        return Nan::ThrowError("InsertElement requires an index");
+    }
+
+    ValueHandle *index = getValueHandle(self->Builder, info[2]);
+    if (!index)
+    {
+        return Nan::ThrowError("InsertElement requires an index");
+    }
+
+    if (!index->Type->isIntType())
+    {
+        return Nan::ThrowError("InsertElement index must be an integer type");
+    }
+
+    ValueHandle *result = self->Builder->InsertElement(vec->Val, value->Val, index);
+
+    if (!result)
+    {
+        return Nan::ThrowError("Uncaught error in InsertElement!");
+    }
+
+    info.GetReturnValue().Set(ValueWrapper::wrapValue(result));
+}
+
 NAN_METHOD(BuilderWrapper::CallFunction)
 {
     BuilderWrapper *self = Nan::ObjectWrap::Unwrap<BuilderWrapper>(info.This());
@@ -722,6 +807,9 @@ NAN_MODULE_INIT(BuilderWrapper::Init)
     Nan::SetPrototypeMethod(tmpl, "parameter", Parameter);
     Nan::SetPrototypeMethod(tmpl, "loadConstant", LoadConstant);
     Nan::SetPrototypeMethod(tmpl, "getElementPointer", GetElementPointer);
+    Nan::SetPrototypeMethod(tmpl, "extractElement", ExtractElement);
+    Nan::SetPrototypeMethod(tmpl, "insertElement", InsertElement);
+
     Nan::SetPrototypeMethod(tmpl, "callFunction", CallFunction);
     Nan::SetPrototypeMethod(tmpl, "alloca", Alloca);
     Nan::SetPrototypeMethod(tmpl, "load", Load);

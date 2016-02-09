@@ -63,6 +63,8 @@ public:
 
     ValueHandle *LoadConstant(ValueHandle *value);
     ValueHandle *GetElementPointer(ValueHandle *ptr, std::vector<ValueHandle *> idxs);
+    ValueHandle *ExtractElement(ValueHandle *vec, ValueHandle *idx);
+    ValueHandle *InsertElement(ValueHandle *vec, ValueHandle *val, ValueHandle *idx);
 
     ValueHandle *CallFunction(ValueHandle *fn, std::vector<ValueHandle *> args);
     ValueHandle *CallFunction(FunctionBuilder *fn, std::vector<ValueHandle *> args);

@@ -82,6 +82,8 @@ protected:
 
     static NAN_METHOD(LoadConstant);
     static NAN_METHOD(GetElementPointer);
+    static NAN_METHOD(ExtractElement);
+    static NAN_METHOD(InsertElement);
 
     static NAN_METHOD(CallFunction);
 

@@ -351,6 +351,41 @@ TypeHandle *BlockBuilder::getElementType(TypeHandle *ty, std::vector<ValueHandle
     return 0;
 }
 
+ValueHandle *BlockBuilder::ExtractElement(ValueHandle *vec, ValueHandle *idx)
+{
+    if (!idx->Type->isIntType() || !vec->Type->isVectorType())
+    {
+        return 0;
+    }
+
+    VectorTypeHandle *vecTy = static_cast<VectorTypeHandle *>(vec->Type);
+
+    llvm::Value *res = builder.CreateExtractElement(vec->getLLVMValue(), idx->getLLVMValue());
+    if (!res) return 0;
+
+    return new PlainValueHandle(vecTy->element, res);
+}
+
+ValueHandle *BlockBuilder::InsertElement(ValueHandle *vec, ValueHandle *val, ValueHandle *idx)
+{
+    if (!idx->Type->isIntType() || !vec->Type->isVectorType())
+    {
+        return 0;
+    }
+
+    VectorTypeHandle *vecTy = static_cast<VectorTypeHandle *>(vec->Type);
+
+    if (!val->Type->isCompatibleWith(vecTy->element))
+    {
+        return 0;
+    }
+
+    llvm::Value *res = builder.CreateInsertElement(vec->getLLVMValue(), val->getLLVMValue(), idx->getLLVMValue());
+    if (!res) return 0;
+
+    return new PlainValueHandle(vecTy, res);
+}
+
 ValueHandle *BlockBuilder::callFunction(FunctionTypeHandle *fnTy, llvm::Value *fn, std::vector<ValueHandle *> args)
 {
     std::vector<llvm::Value *> argVals;

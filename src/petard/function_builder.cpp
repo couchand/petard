@@ -159,6 +159,16 @@ ValueHandle *FunctionBuilder::GetElementPointer(ValueHandle *ptr, std::vector<Va
     return builder->GetElementPointer(ptr, idxs);
 }
 
+ValueHandle *FunctionBuilder::ExtractElement(ValueHandle *vec, ValueHandle *idx)
+{
+    return builder->ExtractElement(vec, idx);
+}
+
+ValueHandle *FunctionBuilder::InsertElement(ValueHandle *vec, ValueHandle *val, ValueHandle *idx)
+{
+    return builder->InsertElement(vec, val, idx);
+}
+
 ValueHandle *FunctionBuilder::CallFunction(ValueHandle *fn, std::vector<ValueHandle *> args)
 {
     return builder->CallFunction(fn, args);

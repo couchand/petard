@@ -247,3 +247,43 @@ describe 'FunctionBuilder', ->
     it 'produces floating point values', ->
       val = me.value f32, 3.141
       val.type.toString().should.equal 'float'
+
+  describe 'extractElement', ->
+    me = beforeEach -> me = unit.makeFunction 'main', i32, i32, llvm.getVectorTy 3, i32
+
+    it 'expects a vector value', ->
+      (-> me.extractElement()).should.throw /vector/i
+      (-> me.extractElement 42).should.throw /vector/i
+      (-> me.extractElement me.parameter 0).should.throw /vector/i
+
+    it 'expects an integer index', ->
+      v = me.parameter 1
+      (-> me.extractElement v).should.throw /index/i
+      (-> me.extractElement v, me.parameter 1).should.throw /index/i
+
+    it 'produces an extractelement instruction', ->
+      v = me.parameter 1
+      n = me.extractElement v, 0
+      n.type.toString().should.equal 'i32'
+
+  describe 'insertElement', ->
+    me = beforeEach -> me = unit.makeFunction 'main', i32, i32, llvm.getVectorTy 3, i32
+
+    it 'expects a vector value', ->
+      (-> me.insertElement()).should.throw /vector/i
+      (-> me.insertElement 42).should.throw /vector/i
+      (-> me.insertElement me.parameter 0).should.throw /vector/i
+
+    it 'expects a value to insert', ->
+      v = me.parameter 1
+      (-> me.insertElement v).should.throw /value/i
+
+    it 'expects an integer index', ->
+      v = me.parameter 1
+      (-> me.insertElement v, me.parameter 0).should.throw /index/i
+
+    it 'produces an insertelement instruction', ->
+      x = me.parameter 0
+      v = me.parameter 1
+      n = me.insertElement v, x, 0
+      n.type.toString().should.equal v.type.toString()

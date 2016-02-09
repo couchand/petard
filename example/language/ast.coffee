@@ -47,7 +47,7 @@ class FunctionCall
       pt = fnty.parameters[i]
 
       unless pt.isCompatibleWith at
-        throw new Error "incompatible types in call to #{@fn}[#{i}]: #{pt.toString()} and #{at.tostring()}"
+        throw new Error "incompatible types in call to #{@fn} (parameter #{i}): #{pt.toString()} and #{at.toString()}"
 
     fnty.returns
 
@@ -199,6 +199,31 @@ class WhileStatement
     for statement in @body
       statement.compile bod, fns, params, vars
 
+class FunctionDeclaration
+  constructor: (@name, @returns, @parameters) ->
+  typecheck: (fntys) ->
+    ptys = []
+    for param in @parameters
+      p = getType param[0]
+      unless p
+        throw new Error "unknown type in function declaration: #{param[0]}"
+      ptys.push p
+
+    returnty = getType @returns
+    unless returnty
+      throw new Error "unknown type in function declaration: #{@returns}"
+    ptys.unshift returnty
+
+    @ty = fntys[@name] = llvm.getFunctionTy.apply llvm, ptys
+
+    console.log 'fn type', @ty.toString()
+
+    @ty
+
+  compile: (unit, fns) ->
+    init = [@name, @ty.returns].concat @ty.parameters
+    fns[@name] = unit.declareFunction.apply unit, init
+
 class FunctionDefinition
   constructor: (@name, @returns, @parameters, @body) ->
   typecheck: (fntys) ->
@@ -210,11 +235,11 @@ class FunctionDefinition
         throw new Error "unknown type in function definition: #{param[0]}"
       ptys.push paramtys[param[1]] = p
 
-    ptys.push returnty = getType @returns
+    ptys.unshift returnty = getType @returns
     unless returnty
       throw new Error "unknown type in function definition: #{@returns}"
 
-    fntys[@name] = llvm.getFunctionTy.apply llvm, ptys
+    @ty = fntys[@name] = llvm.getFunctionTy.apply llvm, ptys
 
     vartys = {}
     for statement in @body
@@ -224,7 +249,11 @@ class FunctionDefinition
         unless returnty.isCompatibleWith ty
           throw new Error "incompatible type in return: #{returnty.toString()} and #{ty.toString()}"
 
-  compile: (builder, fns) ->
+  compile: (unit, fns) ->
+    init = [@name, @ty.returns].concat @ty.parameters
+    builder = unit.makeFunction.apply unit, init
+    fns[@name] = builder
+
     params = {}
     for i, param of @parameters
       params[param[1]] = builder.parameter +i
@@ -235,12 +264,11 @@ class FunctionDefinition
 
 class CodeUnit
   constructor: (@name, @fns) ->
-    @fntys = {}
   typecheck: ->
-    @fntys = {}
+    fntys = {}
 
     for fn in @fns
-      fn.typecheck @fntys
+      fn.typecheck fntys
 
   compile: ->
     unit = new llvm.CodeUnit @name
@@ -248,12 +276,7 @@ class CodeUnit
     fns = {}
 
     for fn in @fns
-      fnty = @fntys[fn.name]
-      params = [fn.name, fnty.returns].concat fnty.parameters
-
-      b = fns[fn.name] = unit.makeFunction.apply unit, params
-
-      fn.compile b, fns
+      fn.compile unit, fns
 
     unit
 
@@ -268,6 +291,7 @@ module.exports = {
   AssignmentStatement
   IfStatement
   WhileStatement
+  FunctionDeclaration
   FunctionDefinition
   CodeUnit
 }

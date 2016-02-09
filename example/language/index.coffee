@@ -12,6 +12,7 @@
   IfStatement
   WhileStatement
   FunctionDefinition
+  FunctionDeclaration
   CodeUnit
 } = require './ast'
 
@@ -30,37 +31,47 @@
   parseStatement
   parseBlock
   parseFunctionDefinition
+  parseFunctionDeclaration
   parseCodeUnit
 } = require './parser'
 
 compile = (name, code) ->
   unit = parseCodeUnit name, code
+  console.log unit
   unit.typecheck()
   unit.compile()
 
 if module isnt require.main
   module.exports = {
     IntLiteral
+    FloatLiteral
     Variable
     FunctionCall
     BinaryExpression
     ReturnStatement
+    DeclarationStatement
+    AssignmentStatement
     IfStatement
+    WhileStatement
     FunctionDefinition
+    FunctionDeclaration
     CodeUnit
-  
+
     parseIntLiteral
+    parseFloatLiteral
     parseVariable
     parseFunctionCall
     parseBinaryExpression
     parseExpression
     parseReturnStatement
+    parseDeclarationStatement
     parseAssignmentStatement
     parseIfStatement
     parseWhileStatement
     parseStatement
     parseBlock
     parseFunctionDefinition
+    parseFunctionDeclaration
     parseCodeUnit
 
     compile

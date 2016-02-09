@@ -12,6 +12,7 @@
   IfStatement
   WhileStatement
   FunctionDefinition
+  FunctionDeclaration
   CodeUnit
 } = require './ast'
 
@@ -128,7 +129,7 @@ parseDeclarationStatement = (str) ->
   next = nameP[0]
   name = nameP[1].name
 
-  assignM = /\s*=\s*/.exec next
+  assignM = /^\s*=\s*/.exec next
   return unless assignM
   next = next[assignM[0].length..]
 
@@ -148,7 +149,7 @@ parseAssignmentStatement = (str) ->
   next = nameP[0]
   name = nameP[1].name
 
-  assignM = /\s*=\s*/.exec next
+  assignM = /^\s*=\s*/.exec next
   return unless assignM
   next = next[assignM[0].length..]
 
@@ -247,6 +248,35 @@ parseBlock = (str) ->
 
   [val, statements]
 
+parseFunctionDeclaration = (str) ->
+  defm = /^\s*def\s*/.exec str
+  return unless defm
+  next = str[defm[0].length..]
+
+  typeM = parseVariable next
+  return unless typeM
+  next = typeM[0]
+  type = typeM[1].name
+
+  nameM = parseVariable next
+  return unless nameM
+  next = nameM[0]
+  name = nameM[1].name
+
+  openP = /^\s*\(\s*/.exec next
+  return unless openP
+  next = next[openP[0].length..]
+
+  varsM = parseParameters next
+  return unless varsM
+  next = varsM[0]
+  vars = varsM[1]
+
+  semiP = /^\s*\)\s*;\s*/.exec next
+  return unless semiP
+
+  [next[semiP[0].length..], new FunctionDeclaration name, type, vars]
+
 parseFunctionDefinition = (str) ->
   defm = /^\s*def\s*/.exec str
   return unless defm
@@ -262,7 +292,7 @@ parseFunctionDefinition = (str) ->
   next = nameM[0]
   name = nameM[1].name
 
-  openP = /\s*\(\s*/.exec next
+  openP = /^\s*\(\s*/.exec next
   return unless openP
   next = next[openP[0].length..]
 
@@ -311,10 +341,19 @@ parseParameters = (str) ->
 
   [next, parameters]
 
+parseFunction = (str) ->
+  fdecl = parseFunctionDeclaration str
+  console.log 'decl',fdecl
+  return fdecl if fdecl
+
+  fdef = parseFunctionDefinition str
+  console.log 'def',fdef
+  return fdef if fdef
+
 parseCodeUnit = (name, str) ->
   next = str
   fns = []
-  while fn = parseFunctionDefinition next
+  while fn = parseFunction next
     next = fn[0]
     fns.push fn[1]
   new CodeUnit name, fns
@@ -334,5 +373,6 @@ module.exports = {
   parseStatement
   parseBlock
   parseFunctionDefinition
+  parseFunctionDeclaration
   parseCodeUnit
 }

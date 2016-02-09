@@ -1,0 +1,14 @@
+def float leibniz(float guess, float step) {
+  if (step < 100.0) {
+    float posden = 2.0 * step + 1.0;
+    float pos = 4.0 / posden;
+    float negden = posden + 2.0;
+    float neg = 4.0 / negden;
+    ret leibniz(guess + pos - neg, step + 2.0);
+  }
+  ret guess;
+}
+
+def float pi() {
+  ret leibniz(0.0, 0.0);
+}

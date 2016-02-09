@@ -17,26 +17,23 @@
 
 parseIntLiteral = (str) ->
   if /^[0-9]/.test str
-    match = /^[0-9]+/.exec str
-    val = parseInt match[0]
+    match = /^([0-9]+)\s*/.exec str
+    val = parseInt match[1]
     return [str[match[0].length..], new IntLiteral val]
 
 parseFloatLiteral = (str) ->
-  wholeP = parseIntLiteral str
-  return unless wholeP
-  next = wholeP[0]
-  whole = wholeP[1]
-
-  match = /^\.[0-9]+/.exec next
+  match = /^([0-9]+\.[0-9]+)\s*/.exec str
   return unless match
 
-  [next[match[0].length..], new FloatLiteral parseFloat "#{whole.value}#{match[0]}"]
+  rem = str[match[0].length..]
+  [rem, new FloatLiteral parseFloat match[1]]
 
 parseVariable = (str) ->
   if /^[_a-zA-Z]/.test str
     match = /^([_a-zA-Z][_a-zA-Z0-9]*)\s*/.exec str
     name = match[1]
-    return [str[match[0].length..], new Variable name]
+    rem = str[match[0].length..]
+    return [rem, new Variable name]
 
 parseFunctionCall = (str) ->
   if /^[_a-zA-Z][_a-zA-Z0-9]*\s*\(\s*/.test str
@@ -52,7 +49,7 @@ parseFunctionCall = (str) ->
       rest = child[0]
 
     while /^\s*,/.test rest
-      match2 = /^\s*,\s*/.test rest
+      match2 = /^\s*,\s*/.exec rest
 
       rest2 = rest[match2[0].length..]
 
@@ -74,9 +71,9 @@ parseBinaryExpression = (str) ->
   next = leftP[0]
   left = leftP[1]
 
-  return unless /^\s*(==|[<+-])\s*/.test next
+  return unless /^\s*(==|[-<+*/])\s*/.test next
 
-  match = /^\s*(==|[<+-])\s*/.exec next
+  match = /^\s*(==|[-<+*/])\s*/.exec next
   op = match[1]
   rest = next[match[0].length..]
 
@@ -300,13 +297,14 @@ parseParameters = (str) ->
   parameters.push [firstTy[1].name, firstName[1].name]
   next = firstName[0]
 
-  while comma = /\s*,\s*/.exec next
+  while comma = /^\s*,\s*/.exec next
     next = next[comma[0].length..]
 
     followingTy = parseVariable next
     return [next, parameters] unless followingTy
 
     followingName = parseVariable followingTy[0]
+    return [next, parameters] unless followingName
 
     parameters.push [followingTy[1].name, followingName[1].name]
     next = followingName[0]

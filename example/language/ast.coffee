@@ -68,7 +68,7 @@ class BinaryExpression
     rt = @right.typecheck fntys, paramtys, vartys
     unless lt.isCompatibleWith rt
       throw new Error "incompatible types in binary #{@op}: #{lt.toString()} and #{rt.toString()}"
-    switch @op
+    @ty = switch @op
       when '==', '<' then llvm.type.i1
       else lt
 
@@ -76,10 +76,24 @@ class BinaryExpression
     l = @left.compile builder, fns, params, vars
     r = @right.compile builder, fns, params, vars
     switch @op
-      when '==' then builder.equal l, r
       when '+' then builder.add l, r
       when '-' then builder.sub l, r
-      when '<' then builder.sLessThan l, r
+      when '*' then builder.mul l, r
+      when '<'
+        if @ty.isFloatType
+          builder.foLessThan l, r
+        else
+          builder.sLessThan l, r
+      when '=='
+        if @ty.isFloatType()
+          builder.foEqual l, r
+        else
+          builder.equal l, r
+      when '/'
+        if @ty.isFloatType()
+          builder.fdiv l, r
+        else
+          builder.sdiv l, r
 
 class ReturnStatement
   constructor: (@expr) ->

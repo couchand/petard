@@ -6,6 +6,7 @@
   FunctionCall
   BinaryExpression
   ReturnStatement
+  DeclarationStatement
   AssignmentStatement
   IfStatement
   WhileStatement
@@ -21,8 +22,8 @@ parseIntLiteral = (str) ->
 
 parseVariable = (str) ->
   if /^[_a-zA-Z]/.test str
-    match = /^[_a-zA-Z][_a-zA-Z0-9]*/.exec str
-    name = match[0]
+    match = /^([_a-zA-Z][_a-zA-Z0-9]*)\s*/.exec str
+    name = match[1]
     return [str[match[0].length..], new Variable name]
 
 parseFunctionCall = (str) ->
@@ -103,6 +104,31 @@ parseReturnStatement = (str) ->
   return unless semi
 
   [body[0][semi[0].length..], new ReturnStatement body[1]]
+
+parseDeclarationStatement = (str) ->
+  typeP = parseVariable str
+  return unless typeP
+  next = typeP[0]
+  type = typeP[1].name
+
+  nameP = parseVariable next
+  return unless nameP
+  next = nameP[0]
+  name = nameP[1].name
+
+  assignM = /\s*=\s*/.exec next
+  return unless assignM
+  next = next[assignM[0].length..]
+
+  exprP = parseExpression next
+  return unless exprP
+
+  semi = /^\s*;\s*/.exec exprP[0]
+  return unless semi
+
+  rest = exprP[0][semi[0].length..]
+
+  [rest, new DeclarationStatement type, name, exprP[1]]
 
 parseAssignmentStatement = (str) ->
   nameP = parseVariable str
@@ -193,6 +219,9 @@ parseStatement = (str) ->
   retS = parseReturnStatement str
   return retS if retS
 
+  declareS = parseDeclarationStatement str
+  return declareS if declareS
+
   assignS = parseAssignmentStatement str
   return assignS if assignS
 
@@ -210,6 +239,11 @@ parseFunctionDefinition = (str) ->
   defm = /^\s*def\s*/.exec str
   return unless defm
   next = str[defm[0].length..]
+
+  typeM = parseVariable next
+  return unless typeM
+  next = typeM[0]
+  type = typeM[1].name
 
   nameM = parseVariable next
   return unless nameM
@@ -237,25 +271,30 @@ parseFunctionDefinition = (str) ->
 
   next2 = bodyM[0][closeBrace[0].length..]
 
-  [next2, new FunctionDefinition name, vars, body]
+  [next2, new FunctionDefinition name, type, vars, body]
 
 parseParameters = (str) ->
   parameters = []
 
-  first = parseVariable str
-  return [str, []] unless first
+  firstTy = parseVariable str
+  return [str, []] unless firstTy
 
-  parameters.push first[1].name
-  next = first[0]
+  firstName = parseVariable firstTy[0]
+  return [str, []] unless firstName
+
+  parameters.push [firstTy[1].name, firstName[1].name]
+  next = firstName[0]
 
   while comma = /\s*,\s*/.exec next
     next = next[comma[0].length..]
 
-    following = parseVariable next
-    return [next, parameters] unless following
+    followingTy = parseVariable next
+    return [next, parameters] unless followingTy
 
-    parameters.push following[1].name
-    next = following[0]
+    followingName = parseVariable followingTy[0]
+
+    parameters.push [followingTy[1].name, followingName[1].name]
+    next = followingName[0]
 
   [next, parameters]
 
@@ -274,6 +313,7 @@ module.exports = {
   parseBinaryExpression
   parseExpression
   parseReturnStatement
+  parseDeclarationStatement
   parseAssignmentStatement
   parseIfStatement
   parseWhileStatement

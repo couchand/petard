@@ -2,6 +2,10 @@
 
 llvm = require '../../'
 
+getType = (ty) ->
+  if ty of llvm.type
+    llvm.type[ty]
+
 class IntLiteral
   constructor: (@value) ->
   typecheck: ->
@@ -38,6 +42,7 @@ class FunctionCall
         throw new Error "incompatible types in call to #{@fn}[#{i}]: #{pt.toString()} and #{at.tostring()}"
 
     fnty.returns
+
   compile: (builder, fns, params, vars) ->
     args = for arg in @args
       arg.compile builder, fns, params, vars
@@ -56,8 +61,9 @@ class BinaryExpression
     unless lt.isCompatibleWith rt
       throw new Error "incompatible types in binary #{@op}: #{lt.toString()} and #{rt.toString()}"
     switch @op
-      when '==', '<' then return llvm.type.i1
-      else return lt
+      when '==', '<' then llvm.type.i1
+      else lt
+
   compile: (builder, fns, params, vars) ->
     l = @left.compile builder, fns, params, vars
     r = @right.compile builder, fns, params, vars
@@ -73,6 +79,35 @@ class ReturnStatement
     @expr.typecheck.apply @expr, arguments
   compile: (builder, fns, params, vars) ->
     builder.return @expr.compile builder, fns, params, vars
+
+class DeclarationStatement
+  constructor: (@type, @name, @expr) ->
+  typecheck: (fntys, paramtys, vartys) ->
+    if @name of vartys or @name of paramtys
+      throw new Error "redeclaration of #{@name}"
+
+    exprty = @expr.typecheck fntys, paramtys, vartys
+
+    varty = getType @type
+    unless varty
+      throw new Error "unknown type in declaration: #{@type}"
+
+    unless exprty.isCompatibleWith varty
+      throw new Error "incompatible types in declaration: #{varty.toString()} and #{exprty.toString()}"
+
+    vartys[@name] = varty
+
+  compile: (builder, fns, params, vars) ->
+    varty = getType @type
+    unless varty
+      throw new Error "unknown type in declaration: #{@type}"
+
+    location = builder.alloca varty
+    val = @expr.compile builder, fns, params, vars
+
+    builder.store val, location
+
+    vars[@name] = location
 
 class AssignmentStatement
   constructor: (@name, @expr) ->
@@ -146,25 +181,34 @@ class WhileStatement
       statement.compile bod, fns, params, vars
 
 class FunctionDefinition
-  constructor: (@name, @parameters, @body) ->
+  constructor: (@name, @returns, @parameters, @body) ->
   typecheck: (fntys) ->
     paramtys = {}
     ptys = []
     for i, param of @parameters
-      ptys.push paramtys[param] = llvm.type.i32
+      p = getType param[0]
+      unless p
+        throw new Error "unknown type in function definition: #{param[0]}"
+      ptys.push paramtys[param[1]] = p
 
-    ptys.push returnty = llvm.type.i32
+    ptys.push returnty = getType @returns
+    unless returnty
+      throw new Error "unknown type in function definition: #{@returns}"
 
     fntys[@name] = llvm.getFunctionTy.apply llvm, ptys
 
     vartys = {}
     for statement in @body
-      statement.typecheck fntys, paramtys, vartys
+      ty = statement.typecheck fntys, paramtys, vartys
+
+      if statement instanceof ReturnStatement
+        unless returnty.isCompatibleWith ty
+          throw new Error "incompatible type in return: #{returnty.toString()} and #{ty.toString()}"
 
   compile: (builder, fns) ->
     params = {}
     for i, param of @parameters
-      params[param] = builder.parameter +i
+      params[param[1]] = builder.parameter +i
 
     vars = {}
     for statement in @body
@@ -200,6 +244,7 @@ module.exports = {
   FunctionCall
   BinaryExpression
   ReturnStatement
+  DeclarationStatement
   AssignmentStatement
   IfStatement
   WhileStatement

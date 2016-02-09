@@ -174,6 +174,14 @@ Reference function parameter `index`.
 Perform pointer math on the aggregate type pointer to produce a new pointer
 to the given structure member.  For details, see the [GetElementPointer FAQ][2].
 
+##### [Value][11] extractElement([Value][11] vec, Number|[Value][11] index)
+
+Extract the element at the specified index from the vector.
+
+##### [Value][11] insertElement([Value][11] vec, [Value][11] value, Number|[Value][11] index)
+
+Insert the value as the element at the specified index from the vector.
+
 ##### [Value][11] loadConstant([Value][11] constant)
 
 Load a constant value.  Currently the only usage is to load a string constant,
@@ -399,6 +407,7 @@ Cast the value to another type without changing the bits.
 
 Non-branching value select.  Returns the value corresponding to the ifTrue value
 if the condition is true, and the ifFalse value if the condition is not true.
+Also operates on vectors.
 
 ##### [Value][11] value([Type][10] type, Any value)
 
@@ -559,6 +568,8 @@ This dict contains all the basic types for easy reference.
   * `f64` - A double-precision floating point value. (LLVM's `double`)
   * [Type][10] arrayOf(Number size, [Type][10] element) - Takes a size and type
     and returns an array of that size and type.
+  * [Type][10] vectorOf(Number size, [Type][10] element) - Takes a size and type
+    and returns a vector of that size and type.
   * [Type][10] structOf(\[[Type][10]\] elements) - Takes an array of types and
     returns a struct composed of those types.
   * [Type][10] pointerTo([Type][10] pointee) - Takes a type and returns a

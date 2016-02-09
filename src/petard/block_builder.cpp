@@ -289,13 +289,37 @@ ValueHandle *BlockBuilder::GetElementPointer(ValueHandle *ptr, std::vector<Value
 {
     unsigned count = idxs.size();
 
-    if (!ptr->Type->isPointerType()) return 0;
+    PointerTypeHandle *ptrTy = 0;
 
-    PointerTypeHandle *ptrTy = static_cast<PointerTypeHandle *>(ptr->Type);
+    if (ptr->Type->isVectorType())
+    {
+        VectorTypeHandle *vecTy = static_cast<VectorTypeHandle *>(ptr->Type);
+
+        if (vecTy->element->isPointerType())
+        {
+            ptrTy = static_cast<PointerTypeHandle *>(vecTy->element);
+        }
+    }
+    else if (ptr->Type->isPointerType())
+    {
+        ptrTy = static_cast<PointerTypeHandle *>(ptr->Type);
+    }
+
+    if (!ptrTy)
+    {
+        return 0;
+    }
+
     TypeHandle *elty = getElementType(ptrTy->pointee, getRest(idxs));
 
     if (!elty) return 0;
     TypeHandle *newty = new PointerTypeHandle(elty);
+
+    if (ptr->Type->isVectorType())
+    {
+        VectorTypeHandle *vecTy = static_cast<VectorTypeHandle *>(ptr->Type);
+        newty = new VectorTypeHandle(vecTy->size, newty);
+    }
 
     std::vector<llvm::Value *> idxlist;
     idxlist.reserve(count);
@@ -303,6 +327,24 @@ ValueHandle *BlockBuilder::GetElementPointer(ValueHandle *ptr, std::vector<Value
     for (ValueHandle *idx : idxs)
     {
         llvm::Value *idxValue = idx->getLLVMValue();
+
+        if (idx->Type->isVectorType())
+        {
+            VectorTypeHandle *vt = static_cast<VectorTypeHandle *>(idx->Type);
+            if (!newty->isVectorType())
+            {
+                newty = new VectorTypeHandle(vt->size, newty);
+            }
+            else
+            {
+                VectorTypeHandle *nt = static_cast<VectorTypeHandle *>(newty);
+                if (vt->size != nt->size)
+                {
+                    return 0;
+                }
+            }
+        }
+
         idxlist.push_back(idxValue);
     }
 
@@ -327,6 +369,12 @@ TypeHandle *BlockBuilder::getElementType(TypeHandle *ty, std::vector<ValueHandle
     {
         PointerTypeHandle *ptrTy = static_cast<PointerTypeHandle *>(ty);
         return getElementType(ptrTy->pointee, rest);
+    }
+
+    if (ty->isVectorType())
+    {
+        VectorTypeHandle *vecTy = static_cast<VectorTypeHandle *>(ty);
+        return getElementType(vecTy->element, rest);
     }
 
     if (ty->isArrayType())

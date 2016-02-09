@@ -170,10 +170,37 @@ describe 'FunctionBuilder', ->
       spot = me.alloca llvm.getStructTy [i32]
       (-> me.getElementPointer spot, 0, p).should.throw /index/i
 
-    it 'indexed into a struct', ->
+    it 'indexes into a struct', ->
       spot = me.alloca llvm.getStructTy [i32]
       ptr = me.getElementPointer spot, 0, 0
       ptr.type.toString().should.equal 'i32*'
+
+    it 'indexes into a vector', ->
+      spot = me.alloca llvm.getVectorTy 3, i32
+      ptr = me.getElementPointer spot, 0, 0
+      ptr.type.toString().should.equal 'i32*'
+
+    it 'indexes with a vector', ->
+      vt = llvm.getVectorTy 3, i32
+      me = unit.makeFunction 'vecfn', i32, vt
+      spot = me.alloca llvm.getArrayTy 3, i32
+      ptrs = me.getElementPointer spot, 0, me.parameter 0
+      ptrs.type.toString().should.equal '<3 x i32*>'
+
+    it 'indexes from a vector', ->
+      vt = llvm.getVectorTy 3, llvm.getPointerTy llvm.getArrayTy 3, i32
+      me = unit.makeFunction 'vecfn', i32, vt
+      ptrs = me.getElementPointer me.parameter(0), 0, 0
+      ptrs.type.toString().should.equal '<3 x i32*>'
+
+    it 'index from a vector with a vector', ->
+      vt = llvm.getVectorTy 3, llvm.getPointerTy llvm.getArrayTy 3, i32
+      it = llvm.getVectorTy 3, i32
+      me = unit.makeFunction 'vecfn', i32, vt, it
+      bases = me.parameter 0
+      idxs = me.parameter 1
+      ptrs = me.getElementPointer me.parameter(0), 0, idxs
+      ptrs.type.toString().should.equal '<3 x i32*>'
 
   describe 'callFunction', ->
     f = g = me = beforeEach ->

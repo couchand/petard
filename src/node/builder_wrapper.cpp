@@ -453,7 +453,6 @@ NAN_METHOD(BuilderWrapper::GetElementPointer)
     BuilderWrapper *self = Nan::ObjectWrap::Unwrap<BuilderWrapper>(info.This());
 
     EXPECT_PARAM("GetElementPointer", 0, ValueWrapper, "pointer base")
-
     ValueWrapper *base = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[0].As<Object>());
 
     if (info.Length() == 1)

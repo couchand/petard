@@ -2,10 +2,12 @@
 
 {
   IntLiteral
+  FloatLiteral
   Variable
   FunctionCall
   BinaryExpression
   ReturnStatement
+  DeclarationStatement
   AssignmentStatement
   IfStatement
   WhileStatement
@@ -15,11 +17,13 @@
 
 {
   parseIntLiteral
+  parseFloatLiteral
   parseVariable
   parseFunctionCall
   parseBinaryExpression
   parseExpression
   parseReturnStatement
+  parseDeclarationStatement
   parseAssignmentStatement
   parseIfStatement
   parseWhileStatement

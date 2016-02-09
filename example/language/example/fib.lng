@@ -1,9 +1,9 @@
-def i32 fib(i32 x) {
+def int fib(int x) {
   if (x == 0) { ret 1; }
   if (x == 1) { ret 1; }
   ret fib(x - 1) + fib(x - 2);
 }
 
-def i32 main() {
+def int main() {
   ret fib(10);
 }

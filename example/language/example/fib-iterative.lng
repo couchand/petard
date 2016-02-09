@@ -1,9 +1,9 @@
-def i32 fib(i32 x) {
-  i32 a = 1;
-  i32 b = 1;
-  i32 n = 0;
+def int fib(int x) {
+  int a = 1;
+  int b = 1;
+  int n = 0;
   while (n < x) {
-    tmp = a;
+    int tmp = a;
     a = b;
     b = tmp + b;
     n = n + 1;
@@ -11,6 +11,6 @@ def i32 fib(i32 x) {
   ret a;
 }
 
-def i32 main() {
+def int main() {
   ret fib(10);
 }

@@ -3,8 +3,9 @@
 llvm = require '../../'
 
 getType = (ty) ->
-  if ty of llvm.type
-    llvm.type[ty]
+  switch ty
+    when 'int' then llvm.type.i32
+    when 'float' then llvm.type.f32
 
 class IntLiteral
   constructor: (@value) ->
@@ -12,6 +13,13 @@ class IntLiteral
     llvm.type.i32
   compile: (builder, fns, params, vars) ->
     builder.value llvm.type.i32, @value
+
+class FloatLiteral
+  constructor: (@value) ->
+  typecheck: ->
+    llvm.type.f32
+  compile: (builder) ->
+    builder.value llvm.type.f32, @value
 
 class Variable
   constructor: (@name) ->
@@ -115,15 +123,12 @@ class AssignmentStatement
     locationty = if @name of vartys
       vartys[@name]
     else
-      llvm.type.i32
+      throw new Error "unknown value in assignment: #{@name}"
 
     exprty = @expr.typecheck fntys, paramtys, vartys
 
     unless locationty.isCompatibleWith exprty
       throw new Error "incompatible types in assignment: #{locationty.toString()} and #{exprty.toString()}"
-
-    unless @name of vartys
-      vartys[@name] = locationty
 
     locationty
 
@@ -216,11 +221,12 @@ class FunctionDefinition
 
 class CodeUnit
   constructor: (@name, @fns) ->
+    @fntys = {}
   typecheck: ->
-    fntys = {}
+    @fntys = {}
 
     for fn in @fns
-      fn.typecheck fntys
+      fn.typecheck @fntys
 
   compile: ->
     unit = new llvm.CodeUnit @name
@@ -228,9 +234,8 @@ class CodeUnit
     fns = {}
 
     for fn in @fns
-      params = [fn.name, llvm.type.i32]
-      for _ in fn.parameters
-        params.push llvm.type.i32
+      fnty = @fntys[fn.name]
+      params = [fn.name, fnty.returns].concat fnty.parameters
 
       b = fns[fn.name] = unit.makeFunction.apply unit, params
 
@@ -240,6 +245,7 @@ class CodeUnit
 
 module.exports = {
   IntLiteral
+  FloatLiteral
   Variable
   FunctionCall
   BinaryExpression

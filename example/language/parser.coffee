@@ -2,6 +2,7 @@
 
 {
   IntLiteral
+  FloatLiteral
   Variable
   FunctionCall
   BinaryExpression
@@ -20,6 +21,17 @@ parseIntLiteral = (str) ->
     val = parseInt match[0]
     return [str[match[0].length..], new IntLiteral val]
 
+parseFloatLiteral = (str) ->
+  wholeP = parseIntLiteral str
+  return unless wholeP
+  next = wholeP[0]
+  whole = wholeP[1]
+
+  match = /^\.[0-9]+/.exec next
+  return unless match
+
+  [next[match[0].length..], new FloatLiteral parseFloat "#{whole.value}#{match[0]}"]
+
 parseVariable = (str) ->
   if /^[_a-zA-Z]/.test str
     match = /^([_a-zA-Z][_a-zA-Z0-9]*)\s*/.exec str
@@ -31,7 +43,7 @@ parseFunctionCall = (str) ->
     match = /^([_a-zA-Z][_a-zA-Z0-9]*)\s*\(\s*/.exec str
     name = match[1]
     rest = str[match[0].length..]
-    
+
     params = []
 
     child = parseExpression rest
@@ -51,7 +63,7 @@ parseFunctionCall = (str) ->
     closing = /^\s*\)\s*/.exec rest
 
     return unless closing
-    
+
     [rest[closing[0].length..], new FunctionCall(name, params)]
 
 # TODO: fix precedence
@@ -89,6 +101,9 @@ parsePrimary = (str) ->
 
   varP = parseVariable str
   return varP if varP
+
+  floatP = parseFloatLiteral str
+  return floatP if floatP
 
   intP = parseIntLiteral str
   return intP if intP
@@ -308,6 +323,7 @@ parseCodeUnit = (name, str) ->
 
 module.exports = {
   parseIntLiteral
+  parseFloatLiteral
   parseVariable
   parseFunctionCall
   parseBinaryExpression

@@ -450,14 +450,8 @@ NAN_METHOD(BuilderWrapper::CallFunction)
 
     for (unsigned i = 1, e = info.Length(); i < e; i += 1)
     {
-        Local<Object> handle = info[i]->ToObject();
-
-        if (!Nan::New(ValueWrapper::prototype)->HasInstance(handle))
-        {
-            return Nan::ThrowError("Argument must be a value");
-        }
-
-        ValueWrapper *arg = Nan::ObjectWrap::Unwrap<ValueWrapper>(handle);
+        EXPECT_PARAM("CallFunction", i, ValueWrapper, "argument value")
+        ValueWrapper *arg = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[i]->ToObject());
         argVals.push_back(arg->Val);
         argTypes.push_back(arg->Val->Type);
     }

@@ -62,6 +62,11 @@ NAN_METHOD(BuilderWrapper::Alloca)
         return Nan::ThrowError("Alloca array size type not supported");
     }
 
+    if (!h)
+    {
+        return Nan::ThrowError("Uncaught error in Alloca!");
+    }
+
     info.GetReturnValue().Set(ValueWrapper::wrapValue(h));
 }
 
@@ -78,6 +83,11 @@ NAN_METHOD(BuilderWrapper::Load)
     }
 
     ValueHandle *load = wrapper->Builder->Load(ptr->Val);
+
+    if (!load)
+    {
+        return Nan::ThrowError("Uncaught error in Load!");
+    }
     
     info.GetReturnValue().Set(ValueWrapper::wrapValue(load));
 }
@@ -155,6 +165,11 @@ NAN_METHOD(BuilderWrapper::Store)
                                                                                       \
     ValueHandle *result = wrapper->Builder->name(lhs->Val, rhs->Val);                 \
                                                                                       \
+    if (!result)                                                                      \
+    {                                                                                 \
+        return Nan::ThrowError("Uncaught error in binary");                           \
+    }                                                                                 \
+                                                                                      \
     info.GetReturnValue().Set(ValueWrapper::wrapValue(result));                       \
 }
 
@@ -219,6 +234,11 @@ BINARY_METHOD(FUAtMost)
                                                                                       \
     ValueHandle *result = wrapper->Builder->name(v->Val, t->Type);                    \
                                                                                       \
+    if (!result)                                                                      \
+    {                                                                                 \
+        return Nan::ThrowError("Uncaught error in cast!");                            \
+    }                                                                                 \
+                                                                                      \
     info.GetReturnValue().Set(ValueWrapper::wrapValue(result));                       \
 }
 
@@ -260,6 +280,11 @@ NAN_METHOD(BuilderWrapper::Select)
 
     ValueHandle *result = wrapper->Builder->Select(cond->Val, ifTrue->Val, ifFalse->Val);
 
+    if (!result)
+    {
+        return Nan::ThrowError("Uncaught error in Select!");
+    }
+
     info.GetReturnValue().Set(ValueWrapper::wrapValue(result));
 }
 
@@ -287,6 +312,11 @@ NAN_METHOD(BuilderWrapper::Value)
     else
     {
         return Nan::ThrowError("Value type not supported");
+    }
+
+    if (!result)
+    {
+        return Nan::ThrowError("Uncaught error in Value!");
     }
 
     info.GetReturnValue().Set(ValueWrapper::wrapValue(result));
@@ -356,7 +386,7 @@ NAN_METHOD(BuilderWrapper::Parameter)
 
     ValueHandle *val = wrapper->Builder->Parameter((size_t)numVal);
 
-    if (val == 0)
+    if (!val)
     {
         return Nan::ThrowError("Parameter index invalid");
     }
@@ -366,7 +396,6 @@ NAN_METHOD(BuilderWrapper::Parameter)
 
 NAN_METHOD(BuilderWrapper::LoadConstant)
 {
-
     BuilderWrapper *self = Nan::ObjectWrap::Unwrap<BuilderWrapper>(info.This());
 
     EXPECT_PARAM("LoadConstant", 0, ValueWrapper, "constant value")
@@ -437,7 +466,6 @@ NAN_METHOD(BuilderWrapper::GetElementPointer)
 
 NAN_METHOD(BuilderWrapper::CallFunction)
 {
-
     BuilderWrapper *self = Nan::ObjectWrap::Unwrap<BuilderWrapper>(info.This());
 
     if (info.Length() == 0)
@@ -514,6 +542,11 @@ NAN_METHOD(BuilderWrapper::CallFunction)
         return Nan::ThrowError("Must provide function value");
     }
 
+    if (!result)
+    {
+        return Nan::ThrowError("Uncaught error in FunctionCall!");
+    }
+
     info.GetReturnValue().Set(ValueWrapper::wrapValue(result));
 }
 
@@ -528,6 +561,12 @@ NAN_METHOD(BuilderWrapper::Switch)
     BuilderWrapper *def = Nan::ObjectWrap::Unwrap<BuilderWrapper>(info[1].As<Object>());
 
     SwitchBuilder *sw = self->Builder->Switch(cond->Val, def->Builder);
+
+    if (!sw)
+    {
+        return Nan::ThrowError("Uncaught error in Switch!");
+    }
+
     info.GetReturnValue().Set(SwitchBuilderWrapper::wrapSwitchBuilder(sw));
 }
 
@@ -596,6 +635,12 @@ NAN_METHOD(BuilderWrapper::CreateBlock)
     String::Utf8Value encoded(name);
 
     InstructionBuilder *child = self->Builder->ChildBlock(*encoded);
+
+    if (!child)
+    {
+        return Nan::ThrowError("Uncaught error in CreateBlock!");
+    }
+
     info.GetReturnValue().Set(BuilderWrapper::wrapBuilder(child));
 }
 
@@ -618,6 +663,12 @@ NAN_METHOD(BuilderWrapper::SplitBlock)
     String::Utf8Value encoded(name);
 
     InstructionBuilder *child = self->Builder->SplitBlock(*encoded);
+
+    if (!child)
+    {
+        return Nan::ThrowError("Uncaught error in SplitBlock!");
+    }
+
     info.GetReturnValue().Set(BuilderWrapper::wrapBuilder(child));
 }
 

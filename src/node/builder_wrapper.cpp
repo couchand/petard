@@ -163,6 +163,42 @@ NAN_METHOD(BuilderWrapper::Store)
     ValueWrapper *lhs = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[0].As<Object>());  \
     ValueWrapper *rhs = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[1].As<Object>());  \
                                                                                       \
+    TypeHandle *lt = lhs->Val->Type;                                                  \
+    TypeHandle *rt = rhs->Val->Type;                                                  \
+                                                                                      \
+    TypeHandle *let = lt;                                                             \
+    TypeHandle *ret = rt;                                                             \
+                                                                                      \
+    if (lt->isVectorType())                                                           \
+    {                                                                                 \
+        if (!rt->isVectorType())                                                      \
+        {                                                                             \
+            return Nan::ThrowError("If one value is a vector, both must be");         \
+        }                                                                             \
+                                                                                      \
+        VectorTypeHandle *lvt = static_cast<VectorTypeHandle *>(lt);                  \
+        let = lvt->element;                                                           \
+        VectorTypeHandle *rvt = static_cast<VectorTypeHandle *>(rt);                  \
+        ret = rvt->element;                                                           \
+                                                                                      \
+        if (lvt->size != rvt->size)                                                   \
+        {                                                                             \
+            return Nan::ThrowError("Vectors must have the same length");              \
+        }                                                                             \
+    }                                                                                 \
+                                                                                      \
+    if ( (!let->isIntType() && !let->isFloatType())                                   \
+      || (!ret->isIntType() && !ret->isFloatType()) )                                 \
+    {                                                                                 \
+        return Nan::ThrowError("Values must be a numeric type");                      \
+    }                                                                                 \
+                                                                                      \
+    if (!lt->isCompatibleWith(rt))                                                    \
+    {                                                                                 \
+        return Nan::ThrowError("Type mismatch in binary");                            \
+    }                                                                                 \
+                                                                                      \
+                                                                                      \
     ValueHandle *result = wrapper->Builder->name(lhs->Val, rhs->Val);                 \
                                                                                       \
     if (!result)                                                                      \

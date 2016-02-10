@@ -2,12 +2,10 @@
 
 llvm = require '../../'
 
+{i1, i8, i32, i64, f32, pointerTo, structOf, vectorOf, arrayOf} = llvm.type
 vd = llvm.getVoidTy()
-i1 = llvm.getIntTy 1
-i8 = llvm.getIntTy 8
-i32 = llvm.getIntTy 32
-i64 = llvm.getIntTy 64
-f32 = llvm.getFloatTy 32
+i8p = pointerTo i8
+i32p = pointerTo i32
 
 describe 'FunctionBuilder', ->
   unit = beforeEach -> unit = new llvm.CodeUnit 'foobar.baz'
@@ -36,7 +34,7 @@ describe 'FunctionBuilder', ->
       me.return 42
 
     it 'rejects a number if unconvertible', ->
-      me = unit.makeFunction 'pointer', llvm.getPointerTy i8
+      me = unit.makeFunction 'pointer', i8p
       (-> me.return 42).should.throw /type/i
 
     it 'accepts a value', ->
@@ -87,7 +85,7 @@ describe 'FunctionBuilder', ->
       spot.type.toString().should.equal 'i32*'
 
     it 'expects a numeric type for the range', ->
-      me = unit.makeFunction 'something', vd, llvm.getPointerTy i32
+      me = unit.makeFunction 'something', vd, i32p
       ptr = me.parameter 0
       (-> me.alloca i32, ptr).should.throw /size/i
 
@@ -123,7 +121,7 @@ describe 'FunctionBuilder', ->
       (-> me.store bigVal, intSpot).should.throw /type/i
       smallVal = me.value i8, 10
       (-> me.store smallVal, intSpot).should.throw /type/i
-      floatVal = me.value llvm.getFloatTy(32), 3.141
+      floatVal = me.value f32, 3.141
       (-> me.store floatVal, intSpot).should.throw /type/i
 
   describe 'getElementPointer', ->
@@ -324,3 +322,81 @@ describe 'FunctionBuilder', ->
       v = me.parameter 1
       n = me.insertElement v, x, 0
       n.type.toString().should.equal v.type.toString()
+
+  describe 'binary arithmetic', ->
+    me = beforeEach -> me = unit.makeFunction 'main', i32, i32, f32, vectorOf(3, i32), vectorOf(3, f32), vectorOf(4, f32)
+
+    testOne = (name, acceptsInts, acceptsFloats) ->
+      describe name, ->
+        it 'expects two values', ->
+          (-> me[name]()).should.throw /value/i
+          (-> me[name] 42).should.throw /value/i
+          (-> me[name] me.parameter 0).should.throw /value/i
+
+        it 'expects numeric values', ->
+          me = unit.makeFunction 'variety', i32, f32, i8, i8p, structOf([i32]), arrayOf(3, i32)
+
+          float = me.parameter 0
+          char = me.parameter 1
+          charp = me.parameter 2
+          struct = me.parameter 3
+          array = me.parameter 4
+
+          (-> me[name] float, float).should.not.throw /value/i if acceptsFloats
+          (-> me[name] char, char).should.not.throw /value/i  if acceptsInts
+
+          (-> me[name] charp, charp).should.throw /value/i
+          (-> me[name] struct, struct).should.throw /value/i
+          (-> me[name] array, array).should.throw /value/i
+
+        if acceptsInts
+          it 'accepts ints', ->
+            int = me.parameter 0
+            result = me[name] int, int
+            result.type.toString().should.equal int.type.toString()
+
+          it 'accepts int vectors', ->
+            vec = me.parameter 2
+            result = me[name] vec, vec
+            result.type.toString().should.equal vec.type.toString()
+
+        if acceptsFloats
+          it 'accepts floats', ->
+            flo = me.parameter 1
+            result = me[name] flo, flo
+            result.type.toString().should.equal flo.type.toString()
+
+          it 'accepts float vectors', ->
+            vec = me.parameter 3
+            result = me[name] vec, vec
+            result.type.toString().should.equal vec.type.toString()
+
+        it 'expects vectors to be the same length', ->
+          vec3 = me.parameter 3
+          vec4 = me.parameter 4
+          (-> me[name] vec3, vec4).should.throw /length/i
+
+        it 'expects types to be the same', ->
+          i = me.parameter 0
+          f = me.parameter 1
+          (-> me[name] i, f).should.throw /type/i
+
+        it 'expects vector element types to be the same', ->
+          iv = me.parameter 2
+          fv = me.parameter 3
+          (-> me[name] iv, fv).should.throw /type/i
+
+        it 'expects the vector element to be numeric', ->
+          me = unit.makeFunction 'variety', i32, vectorOf(3, i32p)
+          pv = me.parameter 0
+          (-> me[name] pv, pv).should.throw /type/i
+
+    testOne 'add'
+    testOne 'sub'
+    testOne 'mul'
+    testOne 'udiv', yes, no
+    testOne 'sdiv', yes, no
+    testOne 'fdiv', no, yes
+    testOne 'urem', yes, no
+    testOne 'srem', yes, no
+    testOne 'frem', no, yes

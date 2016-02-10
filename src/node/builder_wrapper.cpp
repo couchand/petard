@@ -211,6 +211,7 @@ NAN_METHOD(BuilderWrapper::Store)
 bool isFloat(TypeHandle *t) { return t->isFloatType(); }
 bool isInt(TypeHandle *t) { return t->isIntType(); }
 bool isNum(TypeHandle *t) { return t->isFloatType() || t->isIntType(); }
+bool isPtr(TypeHandle *t) { return t->isPointerType(); }
 
 BINARY_METHOD(Add, isNum)
 BINARY_METHOD(Sub, isNum)
@@ -251,7 +252,7 @@ BINARY_METHOD(FUAtLeast, isFloat)
 BINARY_METHOD(FULessThan, isFloat)
 BINARY_METHOD(FUAtMost, isFloat)
 
-#define CAST_METHOD(name) NAN_METHOD(BuilderWrapper::name)                            \
+#define CAST_METHOD(name, valPred, tyPred) NAN_METHOD(BuilderWrapper::name)           \
 {                                                                                     \
     BuilderWrapper *wrapper = Nan::ObjectWrap::Unwrap<BuilderWrapper>(info.This());   \
                                                                                       \
@@ -271,6 +272,40 @@ BINARY_METHOD(FUAtMost, isFloat)
     ValueWrapper *v = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[0].As<Object>());    \
     TypeWrapper *t = Nan::ObjectWrap::Unwrap<TypeWrapper>(info[1].As<Object>());      \
                                                                                       \
+    TypeHandle *vt = v->Val->Type;                                                    \
+    TypeHandle *tt = t->Type;                                                         \
+                                                                                      \
+    TypeHandle *vet = vt;                                                             \
+    TypeHandle *tet = tt;                                                             \
+                                                                                      \
+    if (vt->isVectorType())                                                           \
+    {                                                                                 \
+        if (!tt->isVectorType())                                                      \
+        {                                                                             \
+            return Nan::ThrowError("If value is a vector, type must be");             \
+        }                                                                             \
+                                                                                      \
+        VectorTypeHandle *vvt = static_cast<VectorTypeHandle *>(vt);                  \
+        vet = vvt->element;                                                           \
+        VectorTypeHandle *tvt = static_cast<VectorTypeHandle *>(tt);                  \
+        tet = tvt->element;                                                           \
+                                                                                      \
+        if (vvt->size != tvt->size)                                                   \
+        {                                                                             \
+            return Nan::ThrowError("Vectors must have the same length");              \
+        }                                                                             \
+    }                                                                                 \
+                                                                                      \
+    if (!valPred(vet))                                                                \
+    {                                                                                 \
+        return Nan::ThrowError("Type error in cast");                                 \
+    }                                                                                 \
+                                                                                      \
+    if (!tyPred(tet))                                                                 \
+    {                                                                                 \
+        return Nan::ThrowError("Type error in cast");                                 \
+    }                                                                                 \
+                                                                                      \
     ValueHandle *result = wrapper->Builder->name(v->Val, t->Type);                    \
                                                                                       \
     if (!result)                                                                      \
@@ -281,18 +316,18 @@ BINARY_METHOD(FUAtMost, isFloat)
     info.GetReturnValue().Set(ValueWrapper::wrapValue(result));                       \
 }
 
-CAST_METHOD(Trunc)
-CAST_METHOD(ZExt)
-CAST_METHOD(SExt)
-CAST_METHOD(FPToUI)
-CAST_METHOD(FPToSI)
-CAST_METHOD(UIToFP)
-CAST_METHOD(SIToFP)
-CAST_METHOD(FPTrunc)
-CAST_METHOD(FPExt)
-CAST_METHOD(PtrToInt)
-CAST_METHOD(IntToPtr)
-CAST_METHOD(Bitcast)
+CAST_METHOD(Trunc, isInt, isInt)
+CAST_METHOD(ZExt, isInt, isInt)
+CAST_METHOD(SExt, isInt, isInt)
+CAST_METHOD(FPToUI, isFloat, isInt)
+CAST_METHOD(FPToSI, isFloat, isInt)
+CAST_METHOD(UIToFP, isInt, isFloat)
+CAST_METHOD(SIToFP, isInt, isFloat)
+CAST_METHOD(FPTrunc, isFloat, isFloat)
+CAST_METHOD(FPExt, isFloat, isFloat)
+CAST_METHOD(PtrToInt, isPtr, isInt)
+CAST_METHOD(IntToPtr, isInt, isPtr)
+CAST_METHOD(Bitcast, isPtr, isPtr)
 
 NAN_METHOD(BuilderWrapper::Select)
 {

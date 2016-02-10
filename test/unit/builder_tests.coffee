@@ -445,3 +445,86 @@ describe 'FunctionBuilder', ->
     testBinary 'fuAtLeast', no, yes, i1
     testBinary 'fuLessThan', no, yes, i1
     testBinary 'fuAtMost', no, yes, i1
+
+  describe 'casting', ->
+    testFCast = (name, fromFloat, toFloat) ->
+      describe name, ->
+        me = beforeEach -> me = unit.makeFunction 'main', i32, i32, f32, vectorOf(3, i32), vectorOf(3, f32)
+
+        it 'expects a value to cast', ->
+          (-> me[name]()).should.throw /value/i
+          (-> me[name] 42).should.throw /value/i
+
+        it 'expects the right value type', ->
+          wrong = if fromFloat then me.parameter 0 else me.parameter 1
+          (-> me[name] wrong).should.throw /value/i
+
+        it 'expects a type to cast to', ->
+          val = if fromFloat then me.parameter 1 else me.parameter 0
+          (-> me[name] val).should.throw /type/i
+          (-> me[name] val, me.parameter 0).should.throw /type/i
+
+        it 'expects the right type of type to cast to', ->
+          val = if fromFloat then me.parameter 1 else me.parameter 0
+          wrong = if toFloat then i32 else f32
+          (-> me[name] val, wrong).should.throw /type/i
+
+        it 'produces a cast', ->
+          val = if fromFloat then me.parameter 1 else me.parameter 0
+          ty = if toFloat then f32 else i32
+          cast = me[name] val, ty
+          cast.type.toString().should.equal ty.toString()
+
+        it 'produces a vector cast', ->
+          vec = if fromFloat then me.parameter 3 else me.parameter 2
+          ty = vectorOf 3, if toFloat then f32 else i32
+          cast = me[name] vec, ty
+          cast.type.toString().should.equal ty.toString()
+
+    testPCast = (name, fromPtr, toPtr) ->
+      describe name, ->
+        me = beforeEach -> me = unit.makeFunction 'ptrs', i32, i32, i32p, vectorOf(3, i32), vectorOf(3, i32p)
+
+        it 'expects a value to cast', ->
+          (-> me[name]()).should.throw /value/i
+          (-> me[name] 42).should.throw /value/i
+
+        it 'expects the right value type', ->
+          wrong = if fromPtr then me.parameter 0 else me.parameter 1
+          (-> me[name] wrong).should.throw /value/i
+
+        it 'expects a type to cast to', ->
+          val = if fromPtr then me.parameter 1 else me.parameter 0
+          (-> me[name] val).should.throw /type/i
+          (-> me[name] val, me.parameter 0).should.throw /type/i
+
+        it 'expects the right type of type to cast to', ->
+          val = if fromPtr then me.parameter 1 else me.parameter 0
+          wrong = if toPtr then i32 else i32p
+          (-> me[name] val, wrong).should.throw /type/i
+
+        it 'produces a cast', ->
+          val = if fromPtr then me.parameter 1 else me.parameter 0
+          ty = if toPtr then i32p else i32
+          cast = me[name] val, ty
+          cast.type.toString().should.equal ty.toString()
+
+        it 'produces a vector cast', ->
+          vec = if fromPtr then me.parameter 3 else me.parameter 2
+          ty = vectorOf 3, if toPtr then i32p else i32
+          cast = me[name] vec, ty
+          cast.type.toString().should.equal ty.toString()
+
+    testFCast 'trunc', no, no
+    testFCast 'zext', no, no
+    testFCast 'sext', no, no
+    testFCast 'fpToUI', yes, no
+    testFCast 'fpToSI', yes, no
+    testFCast 'uiToFP', no, yes
+    testFCast 'siToFP', no, yes
+    testFCast 'fpTrunc', yes, yes
+    testFCast 'fpext', yes, yes
+
+    testPCast 'ptrToInt', yes, no
+    testPCast 'intToPtr', no, yes
+    testPCast 'bitcast', yes, yes

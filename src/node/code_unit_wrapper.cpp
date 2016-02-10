@@ -58,6 +58,11 @@ NAN_METHOD(CodeUnitWrapper::JITFunction)
 
     void *jitted = self->Unit->JITFunction(fn);
 
+    if (!jitted)
+    {
+        return Nan::ThrowError("Uncaught error JIT compiling function!");
+    }
+
     info.GetReturnValue().Set(Nan::NewBuffer((char *)jitted, sizeof(void (*)()), &doNotFree, 0).ToLocalChecked());
 }
 
@@ -153,6 +158,11 @@ NAN_METHOD(CodeUnitWrapper::Constant)
         String::Utf8Value encoded(str);
 
         ConstantValueHandle *handle = self->Unit->ConstantString(*encoded);
+
+        if (!handle)
+        {
+            return Nan::ThrowError("Uncaught error loading constant string!");
+        }
         info.GetReturnValue().Set(ValueWrapper::wrapValue(handle));
     }
     else

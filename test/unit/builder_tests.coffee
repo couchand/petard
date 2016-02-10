@@ -326,7 +326,7 @@ describe 'FunctionBuilder', ->
   describe 'binary arithmetic', ->
     me = beforeEach -> me = unit.makeFunction 'main', i32, i32, f32, vectorOf(3, i32), vectorOf(3, f32), vectorOf(4, f32)
 
-    testOne = (name, acceptsInts, acceptsFloats) ->
+    testBinary = (name, acceptsInts, acceptsFloats) ->
       describe name, ->
         it 'expects two values', ->
           (-> me[name]()).should.throw /value/i
@@ -342,8 +342,8 @@ describe 'FunctionBuilder', ->
           struct = me.parameter 3
           array = me.parameter 4
 
-          (-> me[name] float, float).should.not.throw /value/i if acceptsFloats
-          (-> me[name] char, char).should.not.throw /value/i  if acceptsInts
+          (-> me[name] float, float).should.not.throw() if acceptsFloats
+          (-> me[name] char, char).should.not.throw() if acceptsInts
 
           (-> me[name] charp, charp).should.throw /value/i
           (-> me[name] struct, struct).should.throw /value/i
@@ -359,6 +359,14 @@ describe 'FunctionBuilder', ->
             vec = me.parameter 2
             result = me[name] vec, vec
             result.type.toString().should.equal vec.type.toString()
+        else
+          it 'does not accept ints', ->
+            int = me.parameter 0
+            (-> me[name] int, int).should.throw /type/i
+
+          it 'does not accept int vectors', ->
+            vec = me.parameter 2
+            (-> me[name] vec, vec).should.throw /type/i
 
         if acceptsFloats
           it 'accepts floats', ->
@@ -370,6 +378,14 @@ describe 'FunctionBuilder', ->
             vec = me.parameter 3
             result = me[name] vec, vec
             result.type.toString().should.equal vec.type.toString()
+        else
+          it 'does not accept floats', ->
+            float = me.parameter 1
+            (-> me[name] float, float).should.throw /type/i
+
+          it 'does not accept float vectors', ->
+            vec = me.parameter 3
+            (-> me[name] vec, vec).should.throw /type/i
 
         it 'expects vectors to be the same length', ->
           vec3 = me.parameter 3
@@ -391,12 +407,18 @@ describe 'FunctionBuilder', ->
           pv = me.parameter 0
           (-> me[name] pv, pv).should.throw /type/i
 
-    testOne 'add'
-    testOne 'sub'
-    testOne 'mul'
-    testOne 'udiv', yes, no
-    testOne 'sdiv', yes, no
-    testOne 'fdiv', no, yes
-    testOne 'urem', yes, no
-    testOne 'srem', yes, no
-    testOne 'frem', no, yes
+    testBinary 'add', yes, yes
+    testBinary 'sub', yes, yes
+    testBinary 'mul', yes, yes
+    testBinary 'udiv', yes, no
+    testBinary 'sdiv', yes, no
+    testBinary 'fdiv', no, yes
+    testBinary 'urem', yes, no
+    testBinary 'srem', yes, no
+    testBinary 'frem', no, yes
+    testBinary 'and', yes, no
+    testBinary 'or', yes, no
+    testBinary 'xor', yes, no
+    testBinary 'shl', yes, no
+    testBinary 'lshr', yes, no
+    testBinary 'ashr', yes, no

@@ -144,7 +144,7 @@ NAN_METHOD(BuilderWrapper::Store)
     info.GetReturnValue().Set(info.This());
 }
 
-#define BINARY_METHOD(name) NAN_METHOD(BuilderWrapper::name)                          \
+#define BINARY_METHOD(name, pred) NAN_METHOD(BuilderWrapper::name)                    \
 {                                                                                     \
     BuilderWrapper *wrapper = Nan::ObjectWrap::Unwrap<BuilderWrapper>(info.This());   \
                                                                                       \
@@ -187,10 +187,9 @@ NAN_METHOD(BuilderWrapper::Store)
         }                                                                             \
     }                                                                                 \
                                                                                       \
-    if ( (!let->isIntType() && !let->isFloatType())                                   \
-      || (!ret->isIntType() && !ret->isFloatType()) )                                 \
+    if (!pred(let) || !pred(ret))                                                     \
     {                                                                                 \
-        return Nan::ThrowError("Values must be a numeric type");                      \
+        return Nan::ThrowError("Error with value types in binary");                   \
     }                                                                                 \
                                                                                       \
     if (!lt->isCompatibleWith(rt))                                                    \
@@ -209,44 +208,48 @@ NAN_METHOD(BuilderWrapper::Store)
     info.GetReturnValue().Set(ValueWrapper::wrapValue(result));                       \
 }
 
-BINARY_METHOD(Add)
-BINARY_METHOD(Sub)
-BINARY_METHOD(Mul)
-BINARY_METHOD(UDiv)
-BINARY_METHOD(SDiv)
-BINARY_METHOD(FDiv)
-BINARY_METHOD(URem)
-BINARY_METHOD(SRem)
-BINARY_METHOD(FRem)
-BINARY_METHOD(And)
-BINARY_METHOD(Or)
-BINARY_METHOD(Xor)
-BINARY_METHOD(Shl)
-BINARY_METHOD(LShr)
-BINARY_METHOD(AShr)
+bool isFloat(TypeHandle *t) { return t->isFloatType(); }
+bool isInt(TypeHandle *t) { return t->isIntType(); }
+bool isNum(TypeHandle *t) { return t->isFloatType() || t->isIntType(); }
 
-BINARY_METHOD(Equal)
-BINARY_METHOD(NotEqual)
-BINARY_METHOD(UGreaterThan)
-BINARY_METHOD(UAtLeast)
-BINARY_METHOD(ULessThan)
-BINARY_METHOD(UAtMost)
-BINARY_METHOD(SGreaterThan)
-BINARY_METHOD(SAtLeast)
-BINARY_METHOD(SLessThan)
-BINARY_METHOD(SAtMost)
-BINARY_METHOD(FOEqual)
-BINARY_METHOD(FONotEqual)
-BINARY_METHOD(FOGreaterThan)
-BINARY_METHOD(FOAtLeast)
-BINARY_METHOD(FOLessThan)
-BINARY_METHOD(FOAtMost)
-BINARY_METHOD(FUEqual)
-BINARY_METHOD(FUNotEqual)
-BINARY_METHOD(FUGreaterThan)
-BINARY_METHOD(FUAtLeast)
-BINARY_METHOD(FULessThan)
-BINARY_METHOD(FUAtMost)
+BINARY_METHOD(Add, isNum)
+BINARY_METHOD(Sub, isNum)
+BINARY_METHOD(Mul, isNum)
+BINARY_METHOD(UDiv, isInt)
+BINARY_METHOD(SDiv, isInt)
+BINARY_METHOD(FDiv, isFloat)
+BINARY_METHOD(URem, isInt)
+BINARY_METHOD(SRem, isInt)
+BINARY_METHOD(FRem, isFloat)
+BINARY_METHOD(And, isInt)
+BINARY_METHOD(Or, isInt)
+BINARY_METHOD(Xor, isInt)
+BINARY_METHOD(Shl, isInt)
+BINARY_METHOD(LShr, isInt)
+BINARY_METHOD(AShr, isInt)
+
+BINARY_METHOD(Equal, isInt)
+BINARY_METHOD(NotEqual, isInt)
+BINARY_METHOD(UGreaterThan, isInt)
+BINARY_METHOD(UAtLeast, isInt)
+BINARY_METHOD(ULessThan, isInt)
+BINARY_METHOD(UAtMost, isInt)
+BINARY_METHOD(SGreaterThan, isInt)
+BINARY_METHOD(SAtLeast, isInt)
+BINARY_METHOD(SLessThan, isInt)
+BINARY_METHOD(SAtMost, isInt)
+BINARY_METHOD(FOEqual, isFloat)
+BINARY_METHOD(FONotEqual, isFloat)
+BINARY_METHOD(FOGreaterThan, isFloat)
+BINARY_METHOD(FOAtLeast, isFloat)
+BINARY_METHOD(FOLessThan, isFloat)
+BINARY_METHOD(FOAtMost, isFloat)
+BINARY_METHOD(FUEqual, isFloat)
+BINARY_METHOD(FUNotEqual, isFloat)
+BINARY_METHOD(FUGreaterThan, isFloat)
+BINARY_METHOD(FUAtLeast, isFloat)
+BINARY_METHOD(FULessThan, isFloat)
+BINARY_METHOD(FUAtMost, isFloat)
 
 #define CAST_METHOD(name) NAN_METHOD(BuilderWrapper::name)                            \
 {                                                                                     \

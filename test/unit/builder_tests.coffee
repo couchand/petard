@@ -326,7 +326,7 @@ describe 'FunctionBuilder', ->
   describe 'binary arithmetic', ->
     me = beforeEach -> me = unit.makeFunction 'main', i32, i32, f32, vectorOf(3, i32), vectorOf(3, f32), vectorOf(4, f32)
 
-    testBinary = (name, acceptsInts, acceptsFloats) ->
+    testBinary = (name, acceptsInts, acceptsFloats, returns) ->
       describe name, ->
         it 'expects two values', ->
           (-> me[name]()).should.throw /value/i
@@ -353,12 +353,12 @@ describe 'FunctionBuilder', ->
           it 'accepts ints', ->
             int = me.parameter 0
             result = me[name] int, int
-            result.type.toString().should.equal int.type.toString()
+            result.type.toString().should.equal if returns then returns.toString() else int.type.toString()
 
           it 'accepts int vectors', ->
             vec = me.parameter 2
             result = me[name] vec, vec
-            result.type.toString().should.equal vec.type.toString()
+            result.type.toString().should.equal if returns then returns.toString() else vec.type.toString()
         else
           it 'does not accept ints', ->
             int = me.parameter 0
@@ -372,12 +372,12 @@ describe 'FunctionBuilder', ->
           it 'accepts floats', ->
             flo = me.parameter 1
             result = me[name] flo, flo
-            result.type.toString().should.equal flo.type.toString()
+            result.type.toString().should.equal if returns then returns.toString() else flo.type.toString()
 
           it 'accepts float vectors', ->
             vec = me.parameter 3
             result = me[name] vec, vec
-            result.type.toString().should.equal vec.type.toString()
+            result.type.toString().should.equal if returns then returns.toString() else vec.type.toString()
         else
           it 'does not accept floats', ->
             float = me.parameter 1
@@ -422,3 +422,26 @@ describe 'FunctionBuilder', ->
     testBinary 'shl', yes, no
     testBinary 'lshr', yes, no
     testBinary 'ashr', yes, no
+
+    testBinary 'equal', yes, no, i1
+    testBinary 'notEqual', yes, no, i1
+    testBinary 'uGreaterThan', yes, no, i1
+    testBinary 'uAtLeast', yes, no, i1
+    testBinary 'uLessThan', yes, no, i1
+    testBinary 'uAtMost', yes, no, i1
+    testBinary 'sGreaterThan', yes, no, i1
+    testBinary 'sAtLeast', yes, no, i1
+    testBinary 'sLessThan', yes, no, i1
+    testBinary 'sAtMost', yes, no, i1
+    testBinary 'foEqual', no, yes, i1
+    testBinary 'foNotEqual', no, yes, i1
+    testBinary 'foGreaterThan', no, yes, i1
+    testBinary 'foAtLeast', no, yes, i1
+    testBinary 'foLessThan', no, yes, i1
+    testBinary 'foAtMost', no, yes, i1
+    testBinary 'fuEqual', no, yes, i1
+    testBinary 'fuNotEqual', no, yes, i1
+    testBinary 'fuGreaterThan', no, yes, i1
+    testBinary 'fuAtLeast', no, yes, i1
+    testBinary 'fuLessThan', no, yes, i1
+    testBinary 'fuAtMost', no, yes, i1

@@ -9,6 +9,8 @@
 
 #include "nan_macros.h"
 
+#include <memory>
+
 NAN_METHOD(BuilderWrapper::New)
 {
     if (!info.IsConstructCall() || info.Length() == 0 || !info[0]->IsExternal())
@@ -43,7 +45,7 @@ NAN_METHOD(BuilderWrapper::Alloca)
         Local<Number> num = info[1].As<Number>();
         double numVal = num->Value();
 
-        ValueHandle *arraySize = wrapper->Builder->MakeValue(new IntTypeHandle(32), numVal);
+        ValueHandle *arraySize = wrapper->Builder->MakeValue(std::make_shared<IntTypeHandle>(32), numVal);
         h = wrapper->Builder->Alloca(t->Type, arraySize);
     }
     else if (Nan::New(ValueWrapper::prototype)->HasInstance(info[1]))
@@ -109,7 +111,7 @@ NAN_METHOD(BuilderWrapper::Store)
         return Nan::ThrowError("Store requires pointer type");
     }
 
-    const PointerTypeHandle *pt = static_cast<const PointerTypeHandle *>(ptr->Val->Type);
+    const PointerTypeHandle *pt = static_cast<const PointerTypeHandle *>(ptr->Val->Type.get());
 
     if (info[0]->IsNumber())
     {
@@ -129,7 +131,7 @@ NAN_METHOD(BuilderWrapper::Store)
     {
         ValueWrapper *value = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[0].As<Object>());
 
-        if (!value->Val->Type->isCompatibleWith(pt->pointee))
+        if (!value->Val->Type->isCompatibleWith(pt->pointee.get()))
         {
             return Nan::ThrowError("Store type mismatch");
         }
@@ -163,8 +165,8 @@ NAN_METHOD(BuilderWrapper::Store)
     ValueWrapper *lhs = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[0].As<Object>());  \
     ValueWrapper *rhs = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[1].As<Object>());  \
                                                                                       \
-    const TypeHandle *lt = lhs->Val->Type;                                            \
-    const TypeHandle *rt = rhs->Val->Type;                                            \
+    const TypeHandle *lt = lhs->Val->Type.get();                                      \
+    const TypeHandle *rt = rhs->Val->Type.get();                                      \
                                                                                       \
     const TypeHandle *let = lt;                                                       \
     const TypeHandle *ret = rt;                                                       \
@@ -177,9 +179,9 @@ NAN_METHOD(BuilderWrapper::Store)
         }                                                                             \
                                                                                       \
         const VectorTypeHandle *lvt = static_cast<const VectorTypeHandle *>(lt);      \
-        let = lvt->element;                                                           \
+        let = lvt->element.get();                                                     \
         const VectorTypeHandle *rvt = static_cast<const VectorTypeHandle *>(rt);      \
-        ret = rvt->element;                                                           \
+        ret = rvt->element.get();                                                     \
                                                                                       \
         if (lvt->size != rvt->size)                                                   \
         {                                                                             \
@@ -272,8 +274,8 @@ BINARY_METHOD(FUAtMost, isFloat)
     ValueWrapper *v = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[0].As<Object>());    \
     TypeWrapper *t = Nan::ObjectWrap::Unwrap<TypeWrapper>(info[1].As<Object>());      \
                                                                                       \
-    const TypeHandle *vt = v->Val->Type;                                              \
-    const TypeHandle *tt = t->Type;                                                   \
+    const TypeHandle *vt = v->Val->Type.get();                                        \
+    const TypeHandle *tt = t->Type.get();                                             \
                                                                                       \
     const TypeHandle *vet = vt;                                                       \
     const TypeHandle *tet = tt;                                                       \
@@ -286,9 +288,9 @@ BINARY_METHOD(FUAtMost, isFloat)
         }                                                                             \
                                                                                       \
         const VectorTypeHandle *vvt = static_cast<const VectorTypeHandle *>(vt);      \
-        vet = vvt->element;                                                           \
+        vet = vvt->element.get();                                                     \
         const VectorTypeHandle *tvt = static_cast<const VectorTypeHandle *>(tt);      \
-        tet = tvt->element;                                                           \
+        tet = tvt->element.get();                                                     \
                                                                                       \
         if (vvt->size != tvt->size)                                                   \
         {                                                                             \
@@ -336,9 +338,9 @@ NAN_METHOD(BuilderWrapper::Select)
     EXPECT_PARAM("Select", 0, ValueWrapper, "condition")
     ValueWrapper *cond = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[0].As<Object>());
 
-    const TypeHandle *condTy = cond->Val->Type;
+    const TypeHandle *condTy = cond->Val->Type.get();
 
-    if (!condTy->isVectorType() && !condTy->isCompatibleWith(new IntTypeHandle(1)))
+    if (!condTy->isVectorType() && !condTy->isCompatibleWith(std::make_shared<IntTypeHandle>(1).get()))
     {
         return Nan::ThrowError("Select condition must be an i1");
     }
@@ -351,8 +353,8 @@ NAN_METHOD(BuilderWrapper::Select)
 
     if (condTy->isVectorType())
     {
-        const TypeHandle *tTy = ifTrue->Val->Type;
-        const TypeHandle *fTy = ifFalse->Val->Type;
+        const TypeHandle *tTy = ifTrue->Val->Type.get();
+        const TypeHandle *fTy = ifFalse->Val->Type.get();
 
         if (!tTy->isVectorType() || !fTy->isVectorType())
         {
@@ -368,7 +370,7 @@ NAN_METHOD(BuilderWrapper::Select)
         }
     }
 
-    if (!ifTrue->Val->Type->isCompatibleWith(ifFalse->Val->Type))
+    if (!ifTrue->Val->Type->isCompatibleWith(ifFalse->Val->Type.get()))
     {
         return Nan::ThrowError("Select values must be the same type");
     }
@@ -438,8 +440,8 @@ NAN_METHOD(BuilderWrapper::Return)
 {
     BuilderWrapper *wrapper = Nan::ObjectWrap::Unwrap<BuilderWrapper>(info.This());
 
-    const FunctionTypeHandle *parentType = wrapper->Builder->GetParent()->Type;
-    const TypeHandle *returnType = parentType->returns;
+    const FunctionTypeHandle *parentType = wrapper->Builder->GetParent()->Type.get();
+    std::shared_ptr<const TypeHandle> returnType = parentType->returns;
 
     if (returnType->isVoidType())
     {
@@ -469,7 +471,7 @@ NAN_METHOD(BuilderWrapper::Return)
     {
         ValueWrapper *value = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[0].As<Object>());
 
-        if (!value->Val->Type->isCompatibleWith(returnType))
+        if (!value->Val->Type->isCompatibleWith(returnType.get()))
         {
             return Nan::ThrowError("Return type mismatch");
         }
@@ -529,7 +531,7 @@ ValueHandle *getValueHandle(InstructionBuilder *builder, Local<v8::Value> thing)
     {
         Local<Number> num = thing.As<Number>();
         double val = num->Value();
-        return builder->MakeValue(new IntTypeHandle(32), val);
+        return builder->MakeValue(std::make_shared<IntTypeHandle>(32), val);
     }
     if (Nan::New(ValueWrapper::prototype)->HasInstance(thing))
     {
@@ -628,8 +630,8 @@ NAN_METHOD(BuilderWrapper::InsertElement)
     EXPECT_PARAM("InsertElement", 1, ValueWrapper, "value")
     ValueWrapper *value = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[1]->ToObject());
 
-    const VectorTypeHandle *vecTy = static_cast<const VectorTypeHandle *>(vec->Val->Type);
-    if (!value->Val->Type->isCompatibleWith(vecTy->element))
+    const VectorTypeHandle *vecTy = static_cast<const VectorTypeHandle *>(vec->Val->Type.get());
+    if (!value->Val->Type->isCompatibleWith(vecTy->element.get()))
     {
         return Nan::ThrowError("Incompatible types in InsertElement");
     }
@@ -670,7 +672,7 @@ NAN_METHOD(BuilderWrapper::CallFunction)
     }
 
     std::vector<ValueHandle *> argVals;
-    std::vector<const TypeHandle *> argTypes;
+    std::vector<std::shared_ptr<const TypeHandle>> argTypes;
 
     for (unsigned i = 1, e = info.Length(); i < e; i += 1)
     {
@@ -694,7 +696,7 @@ NAN_METHOD(BuilderWrapper::CallFunction)
             return Nan::ThrowError("Only function values are callable");
         }
 
-        const FunctionTypeHandle *fnty = static_cast<const FunctionTypeHandle *>(callee->Type);
+        const FunctionTypeHandle *fnty = static_cast<const FunctionTypeHandle *>(callee->Type.get());
 
         if (fnty->params.size() != argTypes.size())
         {
@@ -703,7 +705,7 @@ NAN_METHOD(BuilderWrapper::CallFunction)
 
         for (unsigned i = 0, e = argTypes.size(); i < e; i += 1)
         {
-            if (!argTypes[i]->isCompatibleWith(fnty->params[i]))
+            if (!argTypes[i]->isCompatibleWith(fnty->params[i].get()))
             {
                 return Nan::ThrowError("Type mismatch in parameters for function call");
             }
@@ -716,7 +718,7 @@ NAN_METHOD(BuilderWrapper::CallFunction)
         FunctionBuilderWrapper *wrapper = Nan::ObjectWrap::Unwrap<FunctionBuilderWrapper>(handle);
         FunctionBuilder *callee = wrapper->getFunctionBuilder();
 
-        const FunctionTypeHandle *fnty = static_cast<const FunctionTypeHandle *>(callee->Type);
+        const FunctionTypeHandle *fnty = static_cast<const FunctionTypeHandle *>(callee->Type.get());
 
         if (fnty->params.size() != argTypes.size())
         {
@@ -725,7 +727,7 @@ NAN_METHOD(BuilderWrapper::CallFunction)
 
         for (unsigned i = 0, e = argTypes.size(); i < e; i += 1)
         {
-            if (!argTypes[i]->isCompatibleWith(fnty->params[i]))
+            if (!argTypes[i]->isCompatibleWith(fnty->params[i].get()))
             {
                 return Nan::ThrowError("Type mismatch in parameters for function call");
             }

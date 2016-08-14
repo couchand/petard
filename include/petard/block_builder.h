@@ -4,6 +4,7 @@
 #define BLOCK_BUILDER_H
 
 #include <vector>
+#include <memory>
 
 #include "type.h"
 #include "value.h"
@@ -33,8 +34,8 @@ public:
     void InsertAfter() { insertAfter = true; }
     void InsertBefore() { insertAfter = false; }
 
-    ValueHandle *MakeValue(const TypeHandle *t, double i);
-    ValueHandle *MakeUndefined(const TypeHandle *t);
+    ValueHandle *MakeValue(std::shared_ptr<const TypeHandle> t, double i);
+    ValueHandle *MakeUndefined(std::shared_ptr<const TypeHandle> t);
 
     BlockBuilder *ChildBlock(const char *name);
     BlockBuilder *SplitBlock(const char *name);
@@ -47,7 +48,7 @@ public:
 
     ValueHandle *LoadConstant(ValueHandle *value);
     ValueHandle *GetElementPointer(ValueHandle *ptr, std::vector<ValueHandle *> idxs);
-    const TypeHandle *getElementType(const TypeHandle *ty, std::vector<ValueHandle *> idxs);
+    std::shared_ptr<const TypeHandle> getElementType(const TypeHandle *ty, std::vector<ValueHandle *> idxs);
     ValueHandle *ExtractElement(ValueHandle *vec, ValueHandle *idx);
     ValueHandle *InsertElement(ValueHandle *vec, ValueHandle *val, ValueHandle *idx);
 
@@ -57,8 +58,8 @@ public:
     void Return();
     void Return(ValueHandle *value);
 
-    ValueHandle *Alloca(const TypeHandle *type);
-    ValueHandle *Alloca(const TypeHandle *type, ValueHandle *arraySize);
+    ValueHandle *Alloca(std::shared_ptr<const TypeHandle> type);
+    ValueHandle *Alloca(std::shared_ptr<const TypeHandle> type, ValueHandle *arraySize);
 
     ValueHandle *Load(ValueHandle *ptr);
 
@@ -106,7 +107,7 @@ public:
     BINARY_HEADER(FULessThan)
     BINARY_HEADER(FUAtMost)
 
-#define CAST_HEADER(name) virtual ValueHandle *name(ValueHandle *value, const TypeHandle *type);
+#define CAST_HEADER(name) virtual ValueHandle *name(ValueHandle *value, std::shared_ptr<const TypeHandle> type);
 
     CAST_HEADER(Trunc)
     CAST_HEADER(ZExt)

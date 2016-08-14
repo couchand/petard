@@ -92,25 +92,28 @@ bool CodeUnit::WriteToFile(const char *name)
     return true;
 }
 
-FunctionBuilder *CodeUnit::MakeFunction(const char *name, const FunctionTypeHandle *type)
+FunctionBuilder *CodeUnit::MakeFunction(const char *name, std::shared_ptr<const FunctionTypeHandle> type)
 {
-    llvm::Function *f = buildFunctionHeader(name, type);
+    llvm::Function *f = buildFunctionHeader(name, type.get());
 
     if (!f) return 0;
 
-    return new FunctionBuilder(name, type, Context, f);
+    return new FunctionBuilder(name, std::move(type), Context, f);
 }
 
-FunctionValueHandle *CodeUnit::DeclareFunction(const char *name, const FunctionTypeHandle *type)
+FunctionValueHandle *CodeUnit::DeclareFunction(const char *name, std::shared_ptr<const FunctionTypeHandle> type)
 {
-    llvm::Function *f = buildFunctionHeader(name, type);
+    llvm::Function *f = buildFunctionHeader(name, type.get());
 
-    return new FunctionValueHandle(type, f);
+    return new FunctionValueHandle(std::move(type), f);
 }
 
 ConstantValueHandle *CodeUnit::ConstantString(const std::string &value)
 {
-    const TypeHandle *type = new ArrayTypeHandle(value.size() + 1, new IntTypeHandle(8));
+    std::shared_ptr<const TypeHandle> type = std::make_shared<ArrayTypeHandle>(
+      value.size() + 1,
+      std::move(std::make_shared<IntTypeHandle>(8))
+    );
 
     llvm::GlobalVariable *gv = new llvm::GlobalVariable(
       *TheModule,
@@ -120,7 +123,7 @@ ConstantValueHandle *CodeUnit::ConstantString(const std::string &value)
       llvm::ConstantDataArray::getString(Context, value)
     );
 
-    const TypeHandle *ptrtype = new PointerTypeHandle(type);
+    std::shared_ptr<const TypeHandle> ptrtype = std::make_shared<PointerTypeHandle>(type);
 
-    return new ConstantValueHandle(ptrtype, gv);
+    return new ConstantValueHandle(std::move(ptrtype), gv);
 }

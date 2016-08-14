@@ -3,6 +3,8 @@
 #ifndef CODE_UNIT_H
 #define CODE_UNIT_H
 
+#include <memory>
+
 #include "type.h"
 #include "value.h"
 #include "function_builder.h"
@@ -26,8 +28,8 @@ public:
 
     bool WriteToFile(const char *filename);
 
-    FunctionBuilder *MakeFunction(const char *name, const FunctionTypeHandle *type);
-    FunctionValueHandle *DeclareFunction(const char *name, const FunctionTypeHandle *type);
+    FunctionBuilder *MakeFunction(const char *name, std::shared_ptr<const FunctionTypeHandle> type);
+    FunctionValueHandle *DeclareFunction(const char *name, std::shared_ptr<const FunctionTypeHandle> type);
 
     ConstantValueHandle *ConstantString(const std::string &value);
 

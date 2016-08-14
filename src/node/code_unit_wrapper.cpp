@@ -102,7 +102,7 @@ NAN_METHOD(CodeUnitWrapper::MakeFunction)
 
     EXTRACT_FUNCTION_PARAMS(1)
 
-    FunctionBuilder *builder = self->Unit->MakeFunction(*encoded, new FunctionTypeHandle(returns, takes));
+    FunctionBuilder *builder = self->Unit->MakeFunction(*encoded, std::make_shared<FunctionTypeHandle>(returns, takes));
 
     if (!builder)
     {
@@ -132,7 +132,7 @@ NAN_METHOD(CodeUnitWrapper::DeclareFunction)
 
     EXTRACT_FUNCTION_PARAMS(1)
 
-    FunctionValueHandle *fn = self->Unit->DeclareFunction(*encoded, new FunctionTypeHandle(returns, takes));
+    FunctionValueHandle *fn = self->Unit->DeclareFunction(*encoded, std::make_shared<FunctionTypeHandle>(returns, takes));
 
     if (!fn)
     {

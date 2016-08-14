@@ -3,6 +3,8 @@
 #include "type_wrapper.h"
 #include "nan_macros.h"
 
+std::map<const TypeHandle *, std::shared_ptr<const TypeHandle>> TypeWrapper::type_cache;
+
 NAN_METHOD(TypeWrapper::New)
 {
     if (!info.IsConstructCall() || info.Length() == 0 || !info[0]->IsExternal())
@@ -12,7 +14,8 @@ NAN_METHOD(TypeWrapper::New)
 
     Handle<External> handle = Handle<External>::Cast(info[0]);
     const TypeHandle *t = static_cast<const TypeHandle *>(handle->Value());
-    TypeWrapper *instance = new TypeWrapper(t);
+    std::shared_ptr<const TypeHandle> ty = type_cache[t];
+    TypeWrapper *instance = new TypeWrapper(ty);
 
     instance->Wrap(info.This());
 
@@ -39,7 +42,7 @@ NAN_METHOD(TypeWrapper::IsCompatibleWith)
 
     TypeWrapper *other = Nan::ObjectWrap::Unwrap<TypeWrapper>(info[0].As<Object>());
 
-    bool isCompatible = self->Type->isCompatibleWith(other->Type);
+    bool isCompatible = self->Type->isCompatibleWith(other->Type.get());
     info.GetReturnValue().Set(isCompatible);
 }
 
@@ -62,21 +65,21 @@ TYPE_PREDICATE(IsFunctionType, isFunctionType);
 #define RETURN_IF_TYPE(cls, pred, ret) \
     if (self->Type->pred()) \
     { \
-        const cls *ty = static_cast<const cls *>(self->Type); \
+        const cls *ty = static_cast<const cls *>(self->Type.get()); \
         info.GetReturnValue().Set(ty->ret); \
     }
 
 #define RETURN_IF_TYPE_W(cls, pred, ret) \
     if (self->Type->pred()) \
     { \
-        const cls *ty = static_cast<const cls *>(self->Type); \
+        const cls *ty = static_cast<const cls *>(self->Type.get()); \
         info.GetReturnValue().Set(wrapType(ty->ret)); \
     }
 
 #define RETURN_IF_TYPE_R(cls, pred, source) \
     if (self->Type->pred()) \
     { \
-        const cls *ty = static_cast<const cls *>(self->Type); \
+        const cls *ty = static_cast<const cls *>(self->Type.get()); \
 \
         Local<Context> ctx = Nan::GetCurrentContext(); \
 \
@@ -145,12 +148,20 @@ NAN_GETTER(TypeWrapper::GetParameters)
     RETURN_IF_TYPE_R(FunctionTypeHandle, isFunctionType, params)
 }
 
-Handle<Value> TypeWrapper::wrapType(const TypeHandle *type)
+Handle<Value> TypeWrapper::wrapType(std::shared_ptr<const TypeHandle> type)
 {
+    const TypeHandle *ptr = type.get();
+    if (type_cache.count(ptr)) {
+      type = type_cache[ptr];
+    }
+    else {
+      type_cache[type.get()] = type;
+    }
+
     Nan::EscapableHandleScope scope;
 
     const unsigned argc = 1;
-    Handle<Value> argv[1] = { Nan::New<External>((void *)type) };
+    Handle<Value> argv[argc] = { Nan::New<External>((void *)type.get()) };
     Local<Function> cons = Nan::New(constructor());
 
     return scope.Escape(Nan::NewInstance(cons, argc, argv).ToLocalChecked());
@@ -191,7 +202,7 @@ NAN_MODULE_INIT(TypeWrapper::Init)
 
 NAN_METHOD(TypeWrapper::GetVoidTy)
 {
-    info.GetReturnValue().Set(wrapType(new VoidTypeHandle()));
+    info.GetReturnValue().Set(wrapType(std::make_shared<VoidTypeHandle>()));
 }
 
 NAN_METHOD(TypeWrapper::GetIntTy)
@@ -217,7 +228,7 @@ NAN_METHOD(TypeWrapper::GetIntTy)
         return Nan::ThrowError("Integer bit width not valid");
     }
 
-    info.GetReturnValue().Set(wrapType(new IntTypeHandle(bits)));
+    info.GetReturnValue().Set(wrapType(std::make_shared<IntTypeHandle>(bits)));
 }
 
 NAN_METHOD(TypeWrapper::GetFloatTy)
@@ -237,7 +248,7 @@ NAN_METHOD(TypeWrapper::GetFloatTy)
 
     unsigned bits = (unsigned)requestedBits;
 
-    info.GetReturnValue().Set(wrapType(new FloatTypeHandle(bits)));
+    info.GetReturnValue().Set(wrapType(std::make_shared<FloatTypeHandle>(bits)));
 }
 
 NAN_METHOD(TypeWrapper::GetPointerTy)
@@ -255,15 +266,12 @@ NAN_METHOD(TypeWrapper::GetPointerTy)
     }
 
     TypeWrapper *wrapper = Nan::ObjectWrap::Unwrap<TypeWrapper>(handle);
-    const TypeHandle *pointee = wrapper->Type;
-
-    info.GetReturnValue().Set(wrapType(new PointerTypeHandle(pointee)));
+    info.GetReturnValue().Set(wrapType(std::make_shared<PointerTypeHandle>(wrapper->Type)));
 }
 
 NAN_METHOD(TypeWrapper::GetVectorTy)
 {
     unsigned size;
-    const TypeHandle *element;
 
     if (info.Length() == 0 || !info[0]->IsNumber())
     {
@@ -276,15 +284,12 @@ NAN_METHOD(TypeWrapper::GetVectorTy)
 
     EXPECT_PARAM("GetVectorTy", 1, TypeWrapper, "element type")
     TypeWrapper *wrapper = Nan::ObjectWrap::Unwrap<TypeWrapper>(info[1]->ToObject());
-    element = wrapper->Type;
-
-    info.GetReturnValue().Set(wrapType(new VectorTypeHandle(size, element)));
+    info.GetReturnValue().Set(wrapType(std::make_shared<VectorTypeHandle>(size, wrapper->Type)));
 }
 
 NAN_METHOD(TypeWrapper::GetArrayTy)
 {
     unsigned size;
-    const TypeHandle *element;
 
     if (info.Length() == 0 || !info[0]->IsNumber())
     {
@@ -308,9 +313,7 @@ NAN_METHOD(TypeWrapper::GetArrayTy)
     }
 
     TypeWrapper *wrapper = Nan::ObjectWrap::Unwrap<TypeWrapper>(handle);
-    element = wrapper->Type;
-
-    info.GetReturnValue().Set(wrapType(new ArrayTypeHandle(size, element)));
+    info.GetReturnValue().Set(wrapType(std::make_shared<ArrayTypeHandle>(size, wrapper->Type)));
 }
 
 NAN_METHOD(TypeWrapper::GetStructTy)
@@ -327,7 +330,7 @@ NAN_METHOD(TypeWrapper::GetStructTy)
 
     Local<Array> types = info[0].As<Array>();
 
-    std::vector<const TypeHandle *> elementTypes;
+    std::vector<std::shared_ptr<const TypeHandle>> elementTypes;
 
     unsigned e = types->Length();
     elementTypes.reserve(e);
@@ -345,14 +348,14 @@ NAN_METHOD(TypeWrapper::GetStructTy)
         elementTypes.push_back(el->Type);
     }
 
-    info.GetReturnValue().Set(wrapType(new StructTypeHandle(elementTypes)));
+    info.GetReturnValue().Set(wrapType(std::make_shared<StructTypeHandle>(elementTypes)));
 }
 
 NAN_METHOD(TypeWrapper::GetFunctionTy)
 {
     EXTRACT_FUNCTION_PARAMS(0)
 
-    info.GetReturnValue().Set(wrapType(new FunctionTypeHandle(returns, takes)));
+    info.GetReturnValue().Set(wrapType(std::make_shared<FunctionTypeHandle>(returns, takes)));
 }
 
 Nan::Persistent<FunctionTemplate> TypeWrapper::prototype;

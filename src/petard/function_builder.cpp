@@ -2,14 +2,14 @@
 
 #include "function_builder.h"
 
-ValueHandle *FunctionBuilder::MakeValue(const TypeHandle *t, double i)
+ValueHandle *FunctionBuilder::MakeValue(std::shared_ptr<const TypeHandle> t, double i)
 {
-    return builder->MakeValue(t, i);
+    return builder->MakeValue(std::move(t), i);
 }
 
-ValueHandle *FunctionBuilder::MakeUndefined(const TypeHandle *t)
+ValueHandle *FunctionBuilder::MakeUndefined(std::shared_ptr<const TypeHandle> t)
 {
-    return builder->MakeUndefined(t);
+    return builder->MakeUndefined(std::move(t));
 }
 
 BlockBuilder *FunctionBuilder::ChildBlock(const char *name)
@@ -56,14 +56,14 @@ void FunctionBuilder::Return(ValueHandle *value)
     builder->Return(value);
 }
 
-ValueHandle *FunctionBuilder::Alloca(const TypeHandle *t)
+ValueHandle *FunctionBuilder::Alloca(std::shared_ptr<const TypeHandle> t)
 {
-    return builder->Alloca(t);
+    return builder->Alloca(std::move(t));
 }
 
-ValueHandle *FunctionBuilder::Alloca(const TypeHandle *t, ValueHandle *size)
+ValueHandle *FunctionBuilder::Alloca(std::shared_ptr<const TypeHandle> t, ValueHandle *size)
 {
-    return builder->Alloca(t, size);
+    return builder->Alloca(std::move(t), size);
 }
 
 ValueHandle *FunctionBuilder::Load(ValueHandle *ptr)
@@ -121,9 +121,9 @@ BINARY_BUILDER(FUAtLeast)
 BINARY_BUILDER(FULessThan)
 BINARY_BUILDER(FUAtMost)
 
-#define CAST_BUILDER(name) ValueHandle *FunctionBuilder::name(ValueHandle *value, const TypeHandle *type) \
+#define CAST_BUILDER(name) ValueHandle *FunctionBuilder::name(ValueHandle *value, std::shared_ptr<const TypeHandle> type) \
 { \
-    return builder->name(value, type); \
+    return builder->name(value, std::move(type)); \
 }
 
 CAST_BUILDER(Trunc)
@@ -150,8 +150,8 @@ ValueHandle *FunctionBuilder::Parameter(size_t index)
     {
         return 0;
     }
-    const TypeHandle *t = Type->params[index];
-    return new PlainValueHandle(t, parameters[index]);
+    std::shared_ptr<const TypeHandle> t = Type->params[index];
+    return new PlainValueHandle(std::move(t), parameters[index]);
 }
 
 ValueHandle *FunctionBuilder::LoadConstant(ValueHandle *value)

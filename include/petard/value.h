@@ -10,10 +10,10 @@
 class ValueHandle
 {
 public:
-    ValueHandle(const TypeHandle *t)
-    : Type(t) {}
+    ValueHandle(std::shared_ptr<const TypeHandle> t)
+    : Type(std::move(t)) {}
 
-    const TypeHandle *Type;
+    std::shared_ptr<const TypeHandle> Type;
 
     virtual llvm::Value *getLLVMValue() = 0;
     virtual bool isConstant() { return false; }
@@ -23,8 +23,8 @@ class PlainValueHandle : public ValueHandle
 {
     bool isC;
 public:
-    PlainValueHandle(const TypeHandle *t, llvm::Value* v, bool c = false)
-    : ValueHandle(t), isC(c), Value(v) {}
+    PlainValueHandle(std::shared_ptr<const TypeHandle> t, llvm::Value* v, bool c = false)
+    : ValueHandle(std::move(t)), isC(c), Value(v) {}
 
     llvm::Value *Value;
 
@@ -37,8 +37,8 @@ public:
 class ConstantValueHandle : public ValueHandle
 {
 public:
-    ConstantValueHandle(const TypeHandle *t, llvm::GlobalVariable *g)
-    : ValueHandle(t), Storage(g) {}
+    ConstantValueHandle(std::shared_ptr<const TypeHandle> t, llvm::GlobalVariable *g)
+    : ValueHandle(std::move(t)), Storage(g) {}
 
     llvm::GlobalVariable *Storage;
 
@@ -50,8 +50,8 @@ public:
 class FunctionValueHandle : public ValueHandle
 {
 public:
-    FunctionValueHandle(const TypeHandle *t, llvm::Function *f)
-    : ValueHandle(t), Function(f) {}
+    FunctionValueHandle(std::shared_ptr<const TypeHandle> t, llvm::Function *f)
+    : ValueHandle(std::move(t)), Function(f) {}
 
     llvm::Function *Function;
 

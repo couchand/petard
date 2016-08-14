@@ -8,6 +8,7 @@ using Nan::ObjectWrap;
 
 using namespace v8;
 
+#include <map>
 #include <vector>
 
 #include "type.h"
@@ -18,12 +19,12 @@ using namespace v8;
 
 // function type helper
 #define EXTRACT_FUNCTION_PARAMS(first)                                        \
-    const TypeHandle *returns;                                                \
-    std::vector<const TypeHandle *> takes;                                    \
+    std::shared_ptr<const TypeHandle> returns;                                \
+    std::vector<std::shared_ptr<const TypeHandle>> takes;                     \
                                                                               \
     if (info.Length() == first)                                               \
     {                                                                         \
-        returns = new VoidTypeHandle();                                       \
+        returns = std::make_shared<VoidTypeHandle>();                         \
     }                                                                         \
     else                                                                      \
     {                                                                         \
@@ -43,8 +44,10 @@ using namespace v8;
 
 class TypeWrapper : public Nan::ObjectWrap
 {
-    TypeWrapper(const TypeHandle *t)
-    : Type(t) {}
+    TypeWrapper(std::shared_ptr<const TypeHandle> t)
+    : Type(std::move(t)) {}
+
+    static std::map<const TypeHandle *, std::shared_ptr<const TypeHandle>> type_cache;
 
     static NAN_METHOD(New);
     static NAN_METHOD(ToString);
@@ -68,9 +71,9 @@ class TypeWrapper : public Nan::ObjectWrap
     static NAN_GETTER(GetParameters);
 
 public:
-    static Handle<Value> wrapType(const TypeHandle *type);
+    static Handle<Value> wrapType(std::shared_ptr<const TypeHandle> type);
 
-    const TypeHandle *Type;
+    std::shared_ptr<const TypeHandle> Type;
 
     static Nan::Persistent<FunctionTemplate> prototype;
 

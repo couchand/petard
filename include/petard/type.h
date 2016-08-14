@@ -5,6 +5,7 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 
 #include "llvm/IR/LLVMContext.h"
 #include "llvm/IR/TypeBuilder.h"
@@ -41,11 +42,11 @@ public:
 class FunctionTypeHandle : public TypeHandle
 {
 public:
-    const TypeHandle *returns;
-    std::vector<const TypeHandle *> params;
+    std::shared_ptr<const TypeHandle> returns;
+    std::vector<std::shared_ptr<const TypeHandle>> params;
 
-    FunctionTypeHandle(const TypeHandle *r, std::vector<const TypeHandle *> p)
-    : returns(r), params(p) {}
+    FunctionTypeHandle(std::shared_ptr<const TypeHandle> r, std::vector<std::shared_ptr<const TypeHandle>> p)
+    : returns(std::move(r)), params(std::move(p)) {}
 
     llvm::Type *getLLVMType(llvm::LLVMContext &context) const;
     std::string toString() const;
@@ -58,13 +59,13 @@ public:
 
         const FunctionTypeHandle *otherFn = static_cast<const FunctionTypeHandle *>(other);
 
-        if (!returns->isCompatibleWith(otherFn->returns)) return false;
+        if (!returns->isCompatibleWith(otherFn->returns.get())) return false;
 
         if (params.size() != otherFn->params.size()) return false;
 
         for (unsigned i = 0, e = params.size(); i < e; i += 1)
         {
-            if (!params[i]->isCompatibleWith(otherFn->params[i])) return false;
+            if (!params[i]->isCompatibleWith(otherFn->params[i].get())) return false;
         }
 
         return true;
@@ -118,10 +119,10 @@ public:
 class PointerTypeHandle : public TypeHandle
 {
 public:
-    const TypeHandle *pointee;
+    std::shared_ptr<const TypeHandle> pointee;
 
-    PointerTypeHandle(const TypeHandle *p)
-    : pointee(p) {}
+    PointerTypeHandle(std::shared_ptr<const TypeHandle> p)
+    : pointee(std::move(p)) {}
 
     llvm::Type *getLLVMType(llvm::LLVMContext &context) const;
     std::string toString() const;
@@ -133,7 +134,7 @@ public:
         if (!other->isPointerType()) return false;
 
         const PointerTypeHandle *otherPtr = static_cast<const PointerTypeHandle *>(other);
-        return pointee->isCompatibleWith(otherPtr->pointee);
+        return pointee->isCompatibleWith(otherPtr->pointee.get());
     }
 };
 
@@ -141,10 +142,10 @@ class VectorTypeHandle : public TypeHandle
 {
 public:
     const unsigned size;
-    const TypeHandle *element;
+    std::shared_ptr<const TypeHandle> element;
 
-    VectorTypeHandle(const unsigned s, const TypeHandle *e)
-    : size(s), element(e) {}
+    VectorTypeHandle(const unsigned s, std::shared_ptr<const TypeHandle> e)
+    : size(s), element(std::move(e)) {}
 
     llvm::Type *getLLVMType(llvm::LLVMContext &context) const;
     std::string toString() const;
@@ -156,7 +157,7 @@ public:
         if (!other->isVectorType()) return false;
 
         const VectorTypeHandle *otherVec = static_cast<const VectorTypeHandle *>(other);
-        return size == otherVec->size && element->isCompatibleWith(otherVec->element);
+        return size == otherVec->size && element->isCompatibleWith(otherVec->element.get());
     }
 };
 
@@ -164,10 +165,10 @@ class ArrayTypeHandle : public TypeHandle
 {
 public:
     const unsigned size;
-    const TypeHandle *element;
+    std::shared_ptr<const TypeHandle> element;
 
-    ArrayTypeHandle(const unsigned s, const TypeHandle *e)
-    : size(s), element(e) {}
+    ArrayTypeHandle(const unsigned s, std::shared_ptr<const TypeHandle> e)
+    : size(s), element(std::move(e)) {}
 
     llvm::Type *getLLVMType(llvm::LLVMContext &context) const;
     std::string toString() const;
@@ -179,17 +180,17 @@ public:
         if (!other->isArrayType()) return false;
 
         const ArrayTypeHandle *otherArr = static_cast<const ArrayTypeHandle *>(other);
-        return size == otherArr->size && element->isCompatibleWith(otherArr->element);
+        return size == otherArr->size && element->isCompatibleWith(otherArr->element.get());
     }
 };
 
 class StructTypeHandle : public TypeHandle
 {
 public:
-    std::vector<const TypeHandle *> elements;
+    std::vector<std::shared_ptr<const TypeHandle>> elements;
 
-    StructTypeHandle(std::vector<const TypeHandle *> e)
-    : elements(e) {}
+    StructTypeHandle(std::vector<std::shared_ptr<const TypeHandle>> e)
+    : elements(std::move(e)) {}
 
     llvm::Type *getLLVMType(llvm::LLVMContext &context) const;
     std::string toString() const;
@@ -206,7 +207,7 @@ public:
 
         for (unsigned i = 0, e = elements.size(); i < e; i += 1)
         {
-            if (!elements[i]->isCompatibleWith(otherStruct->elements[i])) return false;
+            if (!elements[i]->isCompatibleWith(otherStruct->elements[i].get())) return false;
         }
 
         return true;

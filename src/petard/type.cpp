@@ -4,18 +4,18 @@
 
 #include <sstream>
 
-llvm::Type *VoidTypeHandle::getLLVMType(llvm::LLVMContext &context)
+llvm::Type *VoidTypeHandle::getLLVMType(llvm::LLVMContext &context) const
 {
     return llvm::Type::getVoidTy(context);
 }
 
-std::string VoidTypeHandle::toString()
+std::string VoidTypeHandle::toString() const
 {
     std::string name("void");
     return name;
 }
 
-llvm::Type *FunctionTypeHandle::getLLVMType(llvm::LLVMContext &context)
+llvm::Type *FunctionTypeHandle::getLLVMType(llvm::LLVMContext &context) const
 {
     llvm::Type *returnType = returns->getLLVMType(context);
 
@@ -28,7 +28,7 @@ llvm::Type *FunctionTypeHandle::getLLVMType(llvm::LLVMContext &context)
     return llvm::FunctionType::get(returnType, parameterTypes, false);
 }
 
-std::string FunctionTypeHandle::toString()
+std::string FunctionTypeHandle::toString() const
 {
     std::stringstream ss;
     ss << returns->toString() << " (";
@@ -48,19 +48,19 @@ std::string FunctionTypeHandle::toString()
     return ss.str();
 }
 
-llvm::Type *IntTypeHandle::getLLVMType(llvm::LLVMContext &context)
+llvm::Type *IntTypeHandle::getLLVMType(llvm::LLVMContext &context) const
 {
     return llvm::Type::getIntNTy(context, numBits);
 }
 
-std::string IntTypeHandle::toString()
+std::string IntTypeHandle::toString() const
 {
     std::stringstream ss;
     ss << "i" << numBits;
     return ss.str();
 }
 
-llvm::Type *FloatTypeHandle::getLLVMType(llvm::LLVMContext &context)
+llvm::Type *FloatTypeHandle::getLLVMType(llvm::LLVMContext &context) const
 {
     switch (numBits)
     {
@@ -71,7 +71,7 @@ llvm::Type *FloatTypeHandle::getLLVMType(llvm::LLVMContext &context)
     }
 }
 
-std::string FloatTypeHandle::toString()
+std::string FloatTypeHandle::toString() const
 {
     switch (numBits)
     {
@@ -82,42 +82,42 @@ std::string FloatTypeHandle::toString()
     }
 }
 
-llvm::Type *PointerTypeHandle::getLLVMType(llvm::LLVMContext &context)
+llvm::Type *PointerTypeHandle::getLLVMType(llvm::LLVMContext &context) const
 {
     return llvm::PointerType::getUnqual(pointee->getLLVMType(context));
 }
 
-std::string PointerTypeHandle::toString()
+std::string PointerTypeHandle::toString() const
 {
     std::string pointeeStr(pointee->toString());
     return pointeeStr + "*";
 }
 
-llvm::Type *VectorTypeHandle::getLLVMType(llvm::LLVMContext &context)
+llvm::Type *VectorTypeHandle::getLLVMType(llvm::LLVMContext &context) const
 {
     return llvm::VectorType::get(element->getLLVMType(context), size);
 }
 
-std::string VectorTypeHandle::toString()
+std::string VectorTypeHandle::toString() const
 {
     std::stringstream ss;
     ss << "<" << size << " x " << element->toString() << ">";
     return ss.str();
 }
 
-llvm::Type *ArrayTypeHandle::getLLVMType(llvm::LLVMContext &context)
+llvm::Type *ArrayTypeHandle::getLLVMType(llvm::LLVMContext &context) const
 {
     return llvm::ArrayType::get(element->getLLVMType(context), size);
 }
 
-std::string ArrayTypeHandle::toString()
+std::string ArrayTypeHandle::toString() const
 {
     std::stringstream ss;
     ss << "[" << size << " x " << element->toString() << "]";
     return ss.str();
 }
 
-llvm::Type *StructTypeHandle::getLLVMType(llvm::LLVMContext &context)
+llvm::Type *StructTypeHandle::getLLVMType(llvm::LLVMContext &context) const
 {
     std::vector<llvm::Type *> elementTypes;
     elementTypes.reserve(elements.size());
@@ -130,7 +130,7 @@ llvm::Type *StructTypeHandle::getLLVMType(llvm::LLVMContext &context)
     return llvm::StructType::get(context, elementTypes);
 }
 
-std::string StructTypeHandle::toString()
+std::string StructTypeHandle::toString() const
 {
     std::stringstream ss;
     ss << "{";

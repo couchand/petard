@@ -12,51 +12,51 @@
 class TypeHandle
 {
 public:
-    virtual llvm::Type *getLLVMType(llvm::LLVMContext &context) = 0;
-    virtual std::string toString() = 0;
+    virtual llvm::Type *getLLVMType(llvm::LLVMContext &context) const = 0;
+    virtual std::string toString() const = 0;
 
-    virtual bool isVoidType() { return false; }
-    virtual bool isIntType() { return false; }
-    virtual bool isFloatType() { return false; }
-    virtual bool isPointerType() { return false; }
-    virtual bool isFunctionType() { return false; }
-    virtual bool isVectorType() { return false; }
-    virtual bool isArrayType() { return false; }
-    virtual bool isStructType() { return false; }
+    virtual bool isVoidType() const { return false; }
+    virtual bool isIntType() const { return false; }
+    virtual bool isFloatType() const { return false; }
+    virtual bool isPointerType() const { return false; }
+    virtual bool isFunctionType() const { return false; }
+    virtual bool isVectorType() const { return false; }
+    virtual bool isArrayType() const { return false; }
+    virtual bool isStructType() const { return false; }
 
-    virtual bool isCompatibleWith(TypeHandle *other) = 0;
+    virtual bool isCompatibleWith(const TypeHandle *other) const = 0;
 };
 
 class VoidTypeHandle : public TypeHandle
 {
 public:
-    llvm::Type *getLLVMType(llvm::LLVMContext &context);
-    std::string toString();
+    llvm::Type *getLLVMType(llvm::LLVMContext &context) const;
+    std::string toString() const;
 
-    bool isVoidType() { return true; }
+    bool isVoidType() const { return true; }
 
-    bool isCompatibleWith(TypeHandle *other) { return other->isVoidType(); }
+    bool isCompatibleWith(const TypeHandle *other) const { return other->isVoidType(); }
 };
 
 class FunctionTypeHandle : public TypeHandle
 {
 public:
-    TypeHandle *returns;
-    std::vector<TypeHandle *> params;
+    const TypeHandle *returns;
+    std::vector<const TypeHandle *> params;
 
-    FunctionTypeHandle(TypeHandle *r, std::vector<TypeHandle *> p)
+    FunctionTypeHandle(const TypeHandle *r, std::vector<const TypeHandle *> p)
     : returns(r), params(p) {}
 
-    llvm::Type *getLLVMType(llvm::LLVMContext &context);
-    std::string toString();
+    llvm::Type *getLLVMType(llvm::LLVMContext &context) const;
+    std::string toString() const;
 
-    bool isFunctionType() { return true; }
+    bool isFunctionType() const { return true; }
 
-    bool isCompatibleWith(TypeHandle *other)
+    bool isCompatibleWith(const TypeHandle *other) const
     {
         if (!other->isFunctionType()) return false;
 
-        FunctionTypeHandle *otherFn = static_cast<FunctionTypeHandle *>(other);
+        const FunctionTypeHandle *otherFn = static_cast<const FunctionTypeHandle *>(other);
 
         if (!returns->isCompatibleWith(otherFn->returns)) return false;
 
@@ -74,21 +74,21 @@ public:
 class IntTypeHandle : public TypeHandle
 {
 public:
-    unsigned const numBits;
+    const unsigned numBits;
 
-    IntTypeHandle(unsigned bitWidth)
+    IntTypeHandle(unsigned const bitWidth)
     : numBits(bitWidth) {}
 
-    llvm::Type *getLLVMType(llvm::LLVMContext &context);
-    std::string toString();
+    llvm::Type *getLLVMType(llvm::LLVMContext &context) const;
+    std::string toString() const;
 
-    bool isIntType() { return true; }
+    bool isIntType() const { return true; }
 
-    bool isCompatibleWith(TypeHandle *other)
+    bool isCompatibleWith(const TypeHandle *other) const
     {
         if (!other->isIntType()) return false;
 
-        IntTypeHandle *otherInt = static_cast<IntTypeHandle *>(other);
+        const IntTypeHandle *otherInt = static_cast<const IntTypeHandle *>(other);
         return numBits == otherInt->numBits;
     }
 };
@@ -96,21 +96,21 @@ public:
 class FloatTypeHandle : public TypeHandle
 {
 public:
-    unsigned const numBits;
+    const unsigned numBits;
 
-    FloatTypeHandle(unsigned bitWidth)
+    FloatTypeHandle(unsigned const bitWidth)
     : numBits(bitWidth) {}
 
-    llvm::Type *getLLVMType(llvm::LLVMContext &context);
-    std::string toString();
+    llvm::Type *getLLVMType(llvm::LLVMContext &context) const;
+    std::string toString() const;
 
-    bool isFloatType() { return true; }
+    bool isFloatType() const { return true; }
 
-    bool isCompatibleWith(TypeHandle *other)
+    bool isCompatibleWith(const TypeHandle *other) const
     {
         if (!other->isFloatType()) return false;
 
-        FloatTypeHandle *otherFloat = static_cast<FloatTypeHandle *>(other);
+        const FloatTypeHandle *otherFloat = static_cast<const FloatTypeHandle *>(other);
         return numBits == otherFloat->numBits;
     }
 };
@@ -118,21 +118,21 @@ public:
 class PointerTypeHandle : public TypeHandle
 {
 public:
-    TypeHandle *pointee;
+    const TypeHandle *pointee;
 
-    PointerTypeHandle(TypeHandle *p)
+    PointerTypeHandle(const TypeHandle *p)
     : pointee(p) {}
 
-    llvm::Type *getLLVMType(llvm::LLVMContext &context);
-    std::string toString();
+    llvm::Type *getLLVMType(llvm::LLVMContext &context) const;
+    std::string toString() const;
 
-    bool isPointerType() { return true; }
+    bool isPointerType() const { return true; }
 
-    bool isCompatibleWith(TypeHandle *other)
+    bool isCompatibleWith(const TypeHandle *other) const
     {
         if (!other->isPointerType()) return false;
 
-        PointerTypeHandle *otherPtr = static_cast<PointerTypeHandle *>(other);
+        const PointerTypeHandle *otherPtr = static_cast<const PointerTypeHandle *>(other);
         return pointee->isCompatibleWith(otherPtr->pointee);
     }
 };
@@ -140,22 +140,22 @@ public:
 class VectorTypeHandle : public TypeHandle
 {
 public:
-    unsigned size;
-    TypeHandle *element;
+    const unsigned size;
+    const TypeHandle *element;
 
-    VectorTypeHandle(unsigned s, TypeHandle *e)
+    VectorTypeHandle(const unsigned s, const TypeHandle *e)
     : size(s), element(e) {}
 
-    llvm::Type *getLLVMType(llvm::LLVMContext &context);
-    std::string toString();
+    llvm::Type *getLLVMType(llvm::LLVMContext &context) const;
+    std::string toString() const;
 
-    bool isVectorType() { return true; }
+    bool isVectorType() const { return true; }
 
-    bool isCompatibleWith(TypeHandle *other)
+    bool isCompatibleWith(const TypeHandle *other) const
     {
         if (!other->isVectorType()) return false;
 
-        VectorTypeHandle *otherVec = static_cast<VectorTypeHandle *>(other);
+        const VectorTypeHandle *otherVec = static_cast<const VectorTypeHandle *>(other);
         return size == otherVec->size && element->isCompatibleWith(otherVec->element);
     }
 };
@@ -163,22 +163,22 @@ public:
 class ArrayTypeHandle : public TypeHandle
 {
 public:
-    unsigned size;
-    TypeHandle *element;
+    const unsigned size;
+    const TypeHandle *element;
 
-    ArrayTypeHandle(unsigned s, TypeHandle *e)
+    ArrayTypeHandle(const unsigned s, const TypeHandle *e)
     : size(s), element(e) {}
 
-    llvm::Type *getLLVMType(llvm::LLVMContext &context);
-    std::string toString();
+    llvm::Type *getLLVMType(llvm::LLVMContext &context) const;
+    std::string toString() const;
 
-    bool isArrayType() { return true; }
+    bool isArrayType() const { return true; }
 
-    bool isCompatibleWith(TypeHandle *other)
+    bool isCompatibleWith(const TypeHandle *other) const
     {
         if (!other->isArrayType()) return false;
 
-        ArrayTypeHandle *otherArr = static_cast<ArrayTypeHandle *>(other);
+        const ArrayTypeHandle *otherArr = static_cast<const ArrayTypeHandle *>(other);
         return size == otherArr->size && element->isCompatibleWith(otherArr->element);
     }
 };
@@ -186,21 +186,21 @@ public:
 class StructTypeHandle : public TypeHandle
 {
 public:
-    std::vector<TypeHandle *> elements;
+    std::vector<const TypeHandle *> elements;
 
-    StructTypeHandle(std::vector<TypeHandle *> e)
+    StructTypeHandle(std::vector<const TypeHandle *> e)
     : elements(e) {}
 
-    llvm::Type *getLLVMType(llvm::LLVMContext &context);
-    std::string toString();
+    llvm::Type *getLLVMType(llvm::LLVMContext &context) const;
+    std::string toString() const;
 
-    bool isStructType() { return true; }
+    bool isStructType() const { return true; }
 
-    bool isCompatibleWith(TypeHandle *other)
+    bool isCompatibleWith(const TypeHandle *other) const
     {
         if (!other->isStructType()) return false;
 
-        StructTypeHandle *otherStruct = static_cast<StructTypeHandle *>(other);
+        const StructTypeHandle *otherStruct = static_cast<const StructTypeHandle *>(other);
 
         if (elements.size() != otherStruct->elements.size()) return false;
 

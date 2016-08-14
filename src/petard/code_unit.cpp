@@ -56,7 +56,7 @@ void *CodeUnit::JITFunction(FunctionBuilder *fn)
     return TheEngine->getPointerToFunction(fn->F);
 }
 
-llvm::Function *CodeUnit::buildFunctionHeader(const char *name, FunctionTypeHandle *type)
+llvm::Function *CodeUnit::buildFunctionHeader(const char *name, const FunctionTypeHandle *type)
 {
     std::string myName(name);
 
@@ -92,7 +92,7 @@ bool CodeUnit::WriteToFile(const char *name)
     return true;
 }
 
-FunctionBuilder *CodeUnit::MakeFunction(const char *name, FunctionTypeHandle *type)
+FunctionBuilder *CodeUnit::MakeFunction(const char *name, const FunctionTypeHandle *type)
 {
     llvm::Function *f = buildFunctionHeader(name, type);
 
@@ -101,7 +101,7 @@ FunctionBuilder *CodeUnit::MakeFunction(const char *name, FunctionTypeHandle *ty
     return new FunctionBuilder(name, type, Context, f);
 }
 
-FunctionValueHandle *CodeUnit::DeclareFunction(const char *name, FunctionTypeHandle *type)
+FunctionValueHandle *CodeUnit::DeclareFunction(const char *name, const FunctionTypeHandle *type)
 {
     llvm::Function *f = buildFunctionHeader(name, type);
 
@@ -110,7 +110,7 @@ FunctionValueHandle *CodeUnit::DeclareFunction(const char *name, FunctionTypeHan
 
 ConstantValueHandle *CodeUnit::ConstantString(const std::string &value)
 {
-    TypeHandle *type = new ArrayTypeHandle(value.size() + 1, new IntTypeHandle(8));
+    const TypeHandle *type = new ArrayTypeHandle(value.size() + 1, new IntTypeHandle(8));
 
     llvm::GlobalVariable *gv = new llvm::GlobalVariable(
       *TheModule,
@@ -120,7 +120,7 @@ ConstantValueHandle *CodeUnit::ConstantString(const std::string &value)
       llvm::ConstantDataArray::getString(Context, value)
     );
 
-    TypeHandle *ptrtype = new PointerTypeHandle(type);
+    const TypeHandle *ptrtype = new PointerTypeHandle(type);
 
     return new ConstantValueHandle(ptrtype, gv);
 }

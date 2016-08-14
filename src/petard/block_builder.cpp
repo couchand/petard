@@ -6,7 +6,7 @@
 
 #include "llvm_utils.h"
 
-ValueHandle *BlockBuilder::MakeValue(TypeHandle *t, double i)
+ValueHandle *BlockBuilder::MakeValue(const TypeHandle *t, double i)
 {
     llvm::Value *v;
 
@@ -26,7 +26,7 @@ ValueHandle *BlockBuilder::MakeValue(TypeHandle *t, double i)
     return new PlainValueHandle(t, v, true);
 }
 
-ValueHandle *BlockBuilder::MakeUndefined(TypeHandle *t)
+ValueHandle *BlockBuilder::MakeUndefined(const TypeHandle *t)
 {
     llvm::Value *v = llvm::UndefValue::get(t->getLLVMType(context));
     if (!v) return 0;
@@ -109,14 +109,14 @@ void BlockBuilder::Return(ValueHandle *value)
     if (insertAfter) builder.SetInsertPoint(inst);
 }
 
-ValueHandle *BlockBuilder::Alloca(TypeHandle *t)
+ValueHandle *BlockBuilder::Alloca(const TypeHandle *t)
 {
     llvm::AllocaInst *alloca = builder.CreateAlloca(t->getLLVMType(context));
     if (insertAfter) builder.SetInsertPoint(alloca);
     return new PlainValueHandle(new PointerTypeHandle(t), alloca);
 }
 
-ValueHandle *BlockBuilder::Alloca(TypeHandle *t, ValueHandle *size)
+ValueHandle *BlockBuilder::Alloca(const TypeHandle *t, ValueHandle *size)
 {
     llvm::AllocaInst *alloca = builder.CreateAlloca(t->getLLVMType(context), size->getLLVMValue());
     if (insertAfter) builder.SetInsertPoint(alloca);
@@ -125,7 +125,7 @@ ValueHandle *BlockBuilder::Alloca(TypeHandle *t, ValueHandle *size)
 
 ValueHandle *BlockBuilder::Load(ValueHandle *ptr)
 {
-    PointerTypeHandle *pt = static_cast<PointerTypeHandle *>(ptr->Type);
+    const PointerTypeHandle *pt = static_cast<const PointerTypeHandle *>(ptr->Type);
 
     llvm::LoadInst *load = builder.CreateLoad(ptr->getLLVMValue());
     if (insertAfter) builder.SetInsertPoint(load);
@@ -141,7 +141,7 @@ void BlockBuilder::Store(ValueHandle *value, ValueHandle *ptr)
 #define BINARY_BUILDER(name, factory) \
 ValueHandle *BlockBuilder::name(ValueHandle *lhs, ValueHandle *rhs) \
 { \
-    TypeHandle *t = lhs->Type; /* TODO: something better */ \
+    const TypeHandle *t = lhs->Type; /* TODO: something better */ \
     llvm::Value *val = builder.factory(lhs->getLLVMValue(), rhs->getLLVMValue()); \
     return new PlainValueHandle(t, val); \
 }
@@ -149,17 +149,17 @@ ValueHandle *BlockBuilder::name(ValueHandle *lhs, ValueHandle *rhs) \
 #define BINARY_BUILDER2(name, intfactory, floatfactory) \
 ValueHandle *BlockBuilder::name(ValueHandle *lhs, ValueHandle *rhs) \
 { \
-    TypeHandle *lt = lhs->Type; \
-    TypeHandle *rt = rhs->Type; \
+    const TypeHandle *lt = lhs->Type; \
+    const TypeHandle *rt = rhs->Type; \
     if (!lt->isCompatibleWith(rt)) \
     { \
         return 0; \
     } \
-    TypeHandle *t = lt; \
-    TypeHandle *et = t; \
+    const TypeHandle *t = lt; \
+    const TypeHandle *et = t; \
     if (t->isVectorType()) \
     { \
-        VectorTypeHandle *vt = static_cast<VectorTypeHandle *>(t); \
+        const VectorTypeHandle *vt = static_cast<const VectorTypeHandle *>(t); \
         et = vt->element; \
     } \
     llvm::Value *val; \
@@ -225,7 +225,7 @@ BINARY_PREDICATE(FUAtLeast, CreateFCmpUGE)
 BINARY_PREDICATE(FULessThan, CreateFCmpULT)
 BINARY_PREDICATE(FUAtMost, CreateFCmpULE)
 
-#define CAST_BUILDER(name, factory) ValueHandle *BlockBuilder::name(ValueHandle *value, TypeHandle *type) \
+#define CAST_BUILDER(name, factory) ValueHandle *BlockBuilder::name(ValueHandle *value, const TypeHandle *type) \
 { \
     llvm::Value *val = builder.factory(value->getLLVMValue(), type->getLLVMType(context)); \
     return new PlainValueHandle(type, val); \
@@ -246,7 +246,7 @@ CAST_BUILDER(Bitcast, CreateBitCast)
 
 ValueHandle *BlockBuilder::Select(ValueHandle *cond, ValueHandle *ifTrue, ValueHandle *ifFalse)
 {
-    TypeHandle *t = ifTrue->Type; // TODO: unify types
+    const TypeHandle *t = ifTrue->Type; // TODO: unify types
 
     llvm::Value *val = builder.CreateSelect(
         cond->getLLVMValue(),
@@ -269,11 +269,11 @@ ValueHandle *BlockBuilder::LoadConstant(ValueHandle *value)
         return 0;
     }
 
-    PointerTypeHandle *ptrty = static_cast<PointerTypeHandle *>(value->Type);
+    const PointerTypeHandle *ptrty = static_cast<const PointerTypeHandle *>(value->Type);
 
     std::vector<ValueHandle *> idxs;
     idxs.push_back(MakeValue(new IntTypeHandle(32), 0));
-    TypeHandle *elty = getElementType(ptrty->pointee, idxs);
+    const TypeHandle *elty = getElementType(ptrty->pointee, idxs);
 
     llvm::Value *expression = builder.CreateConstGEP2_32(value->getLLVMValue(), 0, 0);
 
@@ -297,20 +297,20 @@ ValueHandle *BlockBuilder::GetElementPointer(ValueHandle *ptr, std::vector<Value
 {
     unsigned count = idxs.size();
 
-    PointerTypeHandle *ptrTy = 0;
+    const PointerTypeHandle *ptrTy = 0;
 
     if (ptr->Type->isVectorType())
     {
-        VectorTypeHandle *vecTy = static_cast<VectorTypeHandle *>(ptr->Type);
+        const VectorTypeHandle *vecTy = static_cast<const VectorTypeHandle *>(ptr->Type);
 
         if (vecTy->element->isPointerType())
         {
-            ptrTy = static_cast<PointerTypeHandle *>(vecTy->element);
+            ptrTy = static_cast<const PointerTypeHandle *>(vecTy->element);
         }
     }
     else if (ptr->Type->isPointerType())
     {
-        ptrTy = static_cast<PointerTypeHandle *>(ptr->Type);
+        ptrTy = static_cast<const PointerTypeHandle *>(ptr->Type);
     }
 
     if (!ptrTy)
@@ -318,14 +318,14 @@ ValueHandle *BlockBuilder::GetElementPointer(ValueHandle *ptr, std::vector<Value
         return 0;
     }
 
-    TypeHandle *elty = getElementType(ptrTy->pointee, getRest(idxs));
+    const TypeHandle *elty = getElementType(ptrTy->pointee, getRest(idxs));
 
     if (!elty) return 0;
-    TypeHandle *newty = new PointerTypeHandle(elty);
+    const TypeHandle *newty = new PointerTypeHandle(elty);
 
     if (ptr->Type->isVectorType())
     {
-        VectorTypeHandle *vecTy = static_cast<VectorTypeHandle *>(ptr->Type);
+        const VectorTypeHandle *vecTy = static_cast<const VectorTypeHandle *>(ptr->Type);
         newty = new VectorTypeHandle(vecTy->size, newty);
     }
 
@@ -338,14 +338,14 @@ ValueHandle *BlockBuilder::GetElementPointer(ValueHandle *ptr, std::vector<Value
 
         if (idx->Type->isVectorType())
         {
-            VectorTypeHandle *vt = static_cast<VectorTypeHandle *>(idx->Type);
+            const VectorTypeHandle *vt = static_cast<const VectorTypeHandle *>(idx->Type);
             if (!newty->isVectorType())
             {
                 newty = new VectorTypeHandle(vt->size, newty);
             }
             else
             {
-                VectorTypeHandle *nt = static_cast<VectorTypeHandle *>(newty);
+                const VectorTypeHandle *nt = static_cast<const VectorTypeHandle *>(newty);
                 if (vt->size != nt->size)
                 {
                     return 0;
@@ -363,7 +363,7 @@ ValueHandle *BlockBuilder::GetElementPointer(ValueHandle *ptr, std::vector<Value
     return new PlainValueHandle(newty, elPtr);
 }
 
-TypeHandle *BlockBuilder::getElementType(TypeHandle *ty, std::vector<ValueHandle *> idxs)
+const TypeHandle *BlockBuilder::getElementType(const TypeHandle *ty, std::vector<ValueHandle *> idxs)
 {
     if (idxs.size() == 0)
     {
@@ -375,19 +375,19 @@ TypeHandle *BlockBuilder::getElementType(TypeHandle *ty, std::vector<ValueHandle
 
     if (ty->isPointerType())
     {
-        PointerTypeHandle *ptrTy = static_cast<PointerTypeHandle *>(ty);
+        const PointerTypeHandle *ptrTy = static_cast<const PointerTypeHandle *>(ty);
         return getElementType(ptrTy->pointee, rest);
     }
 
     if (ty->isVectorType())
     {
-        VectorTypeHandle *vecTy = static_cast<VectorTypeHandle *>(ty);
+        const VectorTypeHandle *vecTy = static_cast<const VectorTypeHandle *>(ty);
         return getElementType(vecTy->element, rest);
     }
 
     if (ty->isArrayType())
     {
-        ArrayTypeHandle *arrTy = static_cast<ArrayTypeHandle *>(ty);
+        const ArrayTypeHandle *arrTy = static_cast<const ArrayTypeHandle *>(ty);
         return getElementType(arrTy->element, rest);
     }
 
@@ -395,7 +395,7 @@ TypeHandle *BlockBuilder::getElementType(TypeHandle *ty, std::vector<ValueHandle
     {
         if (!first->isConstant()) return 0;
 
-        StructTypeHandle *strucTy = static_cast<StructTypeHandle *>(ty);
+        const StructTypeHandle *strucTy = static_cast<const StructTypeHandle *>(ty);
         llvm::ConstantInt *idx = static_cast<llvm::ConstantInt *>(first->getLLVMValue());
 
         // TODO: check that value is in range
@@ -414,7 +414,7 @@ ValueHandle *BlockBuilder::ExtractElement(ValueHandle *vec, ValueHandle *idx)
         return 0;
     }
 
-    VectorTypeHandle *vecTy = static_cast<VectorTypeHandle *>(vec->Type);
+    const VectorTypeHandle *vecTy = static_cast<const VectorTypeHandle *>(vec->Type);
 
     llvm::Value *res = builder.CreateExtractElement(vec->getLLVMValue(), idx->getLLVMValue());
     if (!res) return 0;
@@ -429,7 +429,7 @@ ValueHandle *BlockBuilder::InsertElement(ValueHandle *vec, ValueHandle *val, Val
         return 0;
     }
 
-    VectorTypeHandle *vecTy = static_cast<VectorTypeHandle *>(vec->Type);
+    const VectorTypeHandle *vecTy = static_cast<const VectorTypeHandle *>(vec->Type);
 
     if (!val->Type->isCompatibleWith(vecTy->element))
     {
@@ -442,7 +442,7 @@ ValueHandle *BlockBuilder::InsertElement(ValueHandle *vec, ValueHandle *val, Val
     return new PlainValueHandle(vecTy, res);
 }
 
-ValueHandle *BlockBuilder::callFunction(FunctionTypeHandle *fnTy, llvm::Value *fn, std::vector<ValueHandle *> args)
+ValueHandle *BlockBuilder::callFunction(const FunctionTypeHandle *fnTy, llvm::Value *fn, std::vector<ValueHandle *> args)
 {
     std::vector<llvm::Value *> argVals;
     for (unsigned i = 0, e = args.size(); i < e; i++)
@@ -457,12 +457,12 @@ ValueHandle *BlockBuilder::callFunction(FunctionTypeHandle *fnTy, llvm::Value *f
 
 ValueHandle *BlockBuilder::CallFunction(ValueHandle *fn, std::vector<ValueHandle *> args)
 {
-    FunctionTypeHandle *fnTy = static_cast<FunctionTypeHandle *>(fn->Type);
+    const FunctionTypeHandle *fnTy = static_cast<const FunctionTypeHandle *>(fn->Type);
     return callFunction(fnTy, fn->getLLVMValue(), args);
 }
 
 ValueHandle *BlockBuilder::CallFunction(FunctionBuilder *fn, std::vector<ValueHandle *> args)
 {
-    FunctionTypeHandle *fnTy = static_cast<FunctionTypeHandle *>(fn->Type);
+    const FunctionTypeHandle *fnTy = static_cast<const FunctionTypeHandle *>(fn->Type);
     return callFunction(fnTy, fn->F, args);
 }

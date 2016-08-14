@@ -10,10 +10,10 @@
 class ValueHandle
 {
 public:
-    ValueHandle(TypeHandle *t)
+    ValueHandle(const TypeHandle *t)
     : Type(t) {}
 
-    TypeHandle *Type;
+    const TypeHandle *Type;
 
     virtual llvm::Value *getLLVMValue() = 0;
     virtual bool isConstant() { return false; }
@@ -23,7 +23,7 @@ class PlainValueHandle : public ValueHandle
 {
     bool isC;
 public:
-    PlainValueHandle(TypeHandle *t, llvm::Value* v, bool c = false)
+    PlainValueHandle(const TypeHandle *t, llvm::Value* v, bool c = false)
     : ValueHandle(t), isC(c), Value(v) {}
 
     llvm::Value *Value;
@@ -37,7 +37,7 @@ public:
 class ConstantValueHandle : public ValueHandle
 {
 public:
-    ConstantValueHandle(TypeHandle *t, llvm::GlobalVariable *g)
+    ConstantValueHandle(const TypeHandle *t, llvm::GlobalVariable *g)
     : ValueHandle(t), Storage(g) {}
 
     llvm::GlobalVariable *Storage;
@@ -50,7 +50,7 @@ public:
 class FunctionValueHandle : public ValueHandle
 {
 public:
-    FunctionValueHandle(TypeHandle *t, llvm::Function *f)
+    FunctionValueHandle(const TypeHandle *t, llvm::Function *f)
     : ValueHandle(t), Function(f) {}
 
     llvm::Function *Function;

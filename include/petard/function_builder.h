@@ -24,7 +24,7 @@ class FunctionBuilder : public InstructionBuilder
     std::vector<llvm::Value *> parameters;
 
 public:
-    FunctionBuilder(const char *name, FunctionTypeHandle *t, llvm::LLVMContext &c, llvm::Function *f)
+    FunctionBuilder(const char *name, const FunctionTypeHandle *t, llvm::LLVMContext &c, llvm::Function *f)
     : context(c), Name(name), Type(t), F(f)
     {
         llvm::BasicBlock *entry = llvm::BasicBlock::Create(context, "entry", F);
@@ -42,7 +42,7 @@ public:
     }
 
     std::string Name;
-    FunctionTypeHandle *Type;
+    const FunctionTypeHandle *Type;
     llvm::Function *F;
 
     FunctionBuilder *GetParent() { return this; }
@@ -50,8 +50,8 @@ public:
     void InsertAfter() { builder->InsertAfter(); }
     void InsertBefore() { builder->InsertBefore(); }
 
-    ValueHandle *MakeValue(TypeHandle *t, double i);
-    ValueHandle *MakeUndefined(TypeHandle *t);
+    ValueHandle *MakeValue(const TypeHandle *t, double i);
+    ValueHandle *MakeUndefined(const TypeHandle *t);
 
     BlockBuilder *ChildBlock(const char *name);
     BlockBuilder *SplitBlock(const char *name);
@@ -73,8 +73,8 @@ public:
     void Return();
     void Return(ValueHandle *value);
 
-    ValueHandle *Alloca(TypeHandle *type);
-    ValueHandle *Alloca(TypeHandle *type, ValueHandle *arraySize);
+    ValueHandle *Alloca(const TypeHandle *type);
+    ValueHandle *Alloca(const TypeHandle *type, ValueHandle *arraySize);
 
     ValueHandle *Load(ValueHandle *ptr);
 
@@ -122,7 +122,7 @@ public:
     BINARY_HEADER(FULessThan)
     BINARY_HEADER(FUAtMost)
 
-#define CAST_HEADER(name) virtual ValueHandle *name(ValueHandle *value, TypeHandle *type);
+#define CAST_HEADER(name) virtual ValueHandle *name(ValueHandle *value, const TypeHandle *type);
 
     CAST_HEADER(Trunc)
     CAST_HEADER(ZExt)

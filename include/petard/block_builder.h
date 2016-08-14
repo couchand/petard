@@ -18,7 +18,7 @@ class BlockBuilder : public InstructionBuilder
     llvm::BasicBlock *block;
     bool insertAfter = false;
 
-    ValueHandle* callFunction(FunctionTypeHandle *fnTy, llvm::Value *fn, std::vector<ValueHandle *> args);
+    ValueHandle* callFunction(const FunctionTypeHandle *fnTy, llvm::Value *fn, std::vector<ValueHandle *> args);
 
 public:
     BlockBuilder(llvm::LLVMContext &c, FunctionBuilder *p, llvm::BasicBlock *b)
@@ -33,8 +33,8 @@ public:
     void InsertAfter() { insertAfter = true; }
     void InsertBefore() { insertAfter = false; }
 
-    ValueHandle *MakeValue(TypeHandle *t, double i);
-    ValueHandle *MakeUndefined(TypeHandle *t);
+    ValueHandle *MakeValue(const TypeHandle *t, double i);
+    ValueHandle *MakeUndefined(const TypeHandle *t);
 
     BlockBuilder *ChildBlock(const char *name);
     BlockBuilder *SplitBlock(const char *name);
@@ -47,7 +47,7 @@ public:
 
     ValueHandle *LoadConstant(ValueHandle *value);
     ValueHandle *GetElementPointer(ValueHandle *ptr, std::vector<ValueHandle *> idxs);
-    TypeHandle *getElementType(TypeHandle *ty, std::vector<ValueHandle *> idxs);
+    const TypeHandle *getElementType(const TypeHandle *ty, std::vector<ValueHandle *> idxs);
     ValueHandle *ExtractElement(ValueHandle *vec, ValueHandle *idx);
     ValueHandle *InsertElement(ValueHandle *vec, ValueHandle *val, ValueHandle *idx);
 
@@ -57,8 +57,8 @@ public:
     void Return();
     void Return(ValueHandle *value);
 
-    ValueHandle *Alloca(TypeHandle *type);
-    ValueHandle *Alloca(TypeHandle *type, ValueHandle *arraySize);
+    ValueHandle *Alloca(const TypeHandle *type);
+    ValueHandle *Alloca(const TypeHandle *type, ValueHandle *arraySize);
 
     ValueHandle *Load(ValueHandle *ptr);
 
@@ -106,7 +106,7 @@ public:
     BINARY_HEADER(FULessThan)
     BINARY_HEADER(FUAtMost)
 
-#define CAST_HEADER(name) virtual ValueHandle *name(ValueHandle *value, TypeHandle *type);
+#define CAST_HEADER(name) virtual ValueHandle *name(ValueHandle *value, const TypeHandle *type);
 
     CAST_HEADER(Trunc)
     CAST_HEADER(ZExt)

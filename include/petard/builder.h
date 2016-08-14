@@ -20,8 +20,8 @@ public:
     virtual void InsertAfter() = 0;
     virtual void InsertBefore() = 0;
 
-    virtual ValueHandle *MakeValue(TypeHandle *t, double i) = 0;
-    virtual ValueHandle *MakeUndefined(TypeHandle *t) = 0;
+    virtual ValueHandle *MakeValue(const TypeHandle *t, double i) = 0;
+    virtual ValueHandle *MakeUndefined(const TypeHandle *t) = 0;
 
     virtual BlockBuilder *ChildBlock(const char *name) = 0;
     virtual BlockBuilder *SplitBlock(const char *name) = 0;
@@ -43,8 +43,8 @@ public:
     virtual void Return() = 0;
     virtual void Return(ValueHandle *value) = 0;
 
-    virtual ValueHandle *Alloca(TypeHandle *type) = 0;
-    virtual ValueHandle *Alloca(TypeHandle *type, ValueHandle *arraySize) = 0;
+    virtual ValueHandle *Alloca(const TypeHandle *type) = 0;
+    virtual ValueHandle *Alloca(const TypeHandle *type, ValueHandle *arraySize) = 0;
 
     virtual ValueHandle *Load(ValueHandle *ptr) = 0;
 
@@ -92,7 +92,7 @@ public:
     BINARY_INTERFACE(FULessThan)
     BINARY_INTERFACE(FUAtMost)
 
-#define CAST_INTERFACE(name) virtual ValueHandle *name(ValueHandle *value, TypeHandle *type) = 0;
+#define CAST_INTERFACE(name) virtual ValueHandle *name(ValueHandle *value, const TypeHandle *type) = 0;
 
     CAST_INTERFACE(Trunc)
     CAST_INTERFACE(ZExt)

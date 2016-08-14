@@ -11,7 +11,7 @@ NAN_METHOD(TypeWrapper::New)
     }
 
     Handle<External> handle = Handle<External>::Cast(info[0]);
-    TypeHandle *t = static_cast<TypeHandle *>(handle->Value());
+    const TypeHandle *t = static_cast<const TypeHandle *>(handle->Value());
     TypeWrapper *instance = new TypeWrapper(t);
 
     instance->Wrap(info.This());
@@ -62,21 +62,21 @@ TYPE_PREDICATE(IsFunctionType, isFunctionType);
 #define RETURN_IF_TYPE(cls, pred, ret) \
     if (self->Type->pred()) \
     { \
-        cls *ty = static_cast<cls *>(self->Type); \
+        const cls *ty = static_cast<const cls *>(self->Type); \
         info.GetReturnValue().Set(ty->ret); \
     }
 
 #define RETURN_IF_TYPE_W(cls, pred, ret) \
     if (self->Type->pred()) \
     { \
-        cls *ty = static_cast<cls *>(self->Type); \
+        const cls *ty = static_cast<const cls *>(self->Type); \
         info.GetReturnValue().Set(wrapType(ty->ret)); \
     }
 
 #define RETURN_IF_TYPE_R(cls, pred, source) \
     if (self->Type->pred()) \
     { \
-        cls *ty = static_cast<cls *>(self->Type); \
+        const cls *ty = static_cast<const cls *>(self->Type); \
 \
         Local<Context> ctx = Nan::GetCurrentContext(); \
 \
@@ -145,7 +145,7 @@ NAN_GETTER(TypeWrapper::GetParameters)
     RETURN_IF_TYPE_R(FunctionTypeHandle, isFunctionType, params)
 }
 
-Handle<Value> TypeWrapper::wrapType(TypeHandle *type)
+Handle<Value> TypeWrapper::wrapType(const TypeHandle *type)
 {
     Nan::EscapableHandleScope scope;
 
@@ -255,7 +255,7 @@ NAN_METHOD(TypeWrapper::GetPointerTy)
     }
 
     TypeWrapper *wrapper = Nan::ObjectWrap::Unwrap<TypeWrapper>(handle);
-    TypeHandle *pointee = wrapper->Type;
+    const TypeHandle *pointee = wrapper->Type;
 
     info.GetReturnValue().Set(wrapType(new PointerTypeHandle(pointee)));
 }
@@ -263,7 +263,7 @@ NAN_METHOD(TypeWrapper::GetPointerTy)
 NAN_METHOD(TypeWrapper::GetVectorTy)
 {
     unsigned size;
-    TypeHandle *element;
+    const TypeHandle *element;
 
     if (info.Length() == 0 || !info[0]->IsNumber())
     {
@@ -284,7 +284,7 @@ NAN_METHOD(TypeWrapper::GetVectorTy)
 NAN_METHOD(TypeWrapper::GetArrayTy)
 {
     unsigned size;
-    TypeHandle *element;
+    const TypeHandle *element;
 
     if (info.Length() == 0 || !info[0]->IsNumber())
     {
@@ -327,7 +327,7 @@ NAN_METHOD(TypeWrapper::GetStructTy)
 
     Local<Array> types = info[0].As<Array>();
 
-    std::vector<TypeHandle *> elementTypes;
+    std::vector<const TypeHandle *> elementTypes;
 
     unsigned e = types->Length();
     elementTypes.reserve(e);

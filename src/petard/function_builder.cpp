@@ -2,12 +2,12 @@
 
 #include "function_builder.h"
 
-ValueHandle *FunctionBuilder::MakeValue(TypeHandle *t, double i)
+ValueHandle *FunctionBuilder::MakeValue(const TypeHandle *t, double i)
 {
     return builder->MakeValue(t, i);
 }
 
-ValueHandle *FunctionBuilder::MakeUndefined(TypeHandle *t)
+ValueHandle *FunctionBuilder::MakeUndefined(const TypeHandle *t)
 {
     return builder->MakeUndefined(t);
 }
@@ -56,12 +56,12 @@ void FunctionBuilder::Return(ValueHandle *value)
     builder->Return(value);
 }
 
-ValueHandle *FunctionBuilder::Alloca(TypeHandle *t)
+ValueHandle *FunctionBuilder::Alloca(const TypeHandle *t)
 {
     return builder->Alloca(t);
 }
 
-ValueHandle *FunctionBuilder::Alloca(TypeHandle *t, ValueHandle *size)
+ValueHandle *FunctionBuilder::Alloca(const TypeHandle *t, ValueHandle *size)
 {
     return builder->Alloca(t, size);
 }
@@ -121,7 +121,7 @@ BINARY_BUILDER(FUAtLeast)
 BINARY_BUILDER(FULessThan)
 BINARY_BUILDER(FUAtMost)
 
-#define CAST_BUILDER(name) ValueHandle *FunctionBuilder::name(ValueHandle *value, TypeHandle *type) \
+#define CAST_BUILDER(name) ValueHandle *FunctionBuilder::name(ValueHandle *value, const TypeHandle *type) \
 { \
     return builder->name(value, type); \
 }
@@ -150,7 +150,7 @@ ValueHandle *FunctionBuilder::Parameter(size_t index)
     {
         return 0;
     }
-    TypeHandle *t = Type->params[index];
+    const TypeHandle *t = Type->params[index];
     return new PlainValueHandle(t, parameters[index]);
 }
 

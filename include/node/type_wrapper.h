@@ -18,8 +18,8 @@ using namespace v8;
 
 // function type helper
 #define EXTRACT_FUNCTION_PARAMS(first)                                        \
-    TypeHandle *returns;                                                      \
-    std::vector<TypeHandle *> takes;                                          \
+    const TypeHandle *returns;                                                \
+    std::vector<const TypeHandle *> takes;                                    \
                                                                               \
     if (info.Length() == first)                                               \
     {                                                                         \
@@ -43,7 +43,7 @@ using namespace v8;
 
 class TypeWrapper : public Nan::ObjectWrap
 {
-    TypeWrapper(TypeHandle *t)
+    TypeWrapper(const TypeHandle *t)
     : Type(t) {}
 
     static NAN_METHOD(New);
@@ -68,9 +68,9 @@ class TypeWrapper : public Nan::ObjectWrap
     static NAN_GETTER(GetParameters);
 
 public:
-    static Handle<Value> wrapType(TypeHandle *type);
+    static Handle<Value> wrapType(const TypeHandle *type);
 
-    TypeHandle *Type;
+    const TypeHandle *Type;
 
     static Nan::Persistent<FunctionTemplate> prototype;
 

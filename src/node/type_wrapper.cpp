@@ -151,17 +151,14 @@ NAN_GETTER(TypeWrapper::GetParameters)
 Handle<Value> TypeWrapper::wrapType(std::shared_ptr<const TypeHandle> type)
 {
     const TypeHandle *ptr = type.get();
-    if (type_cache.count(ptr)) {
-      type = type_cache[ptr];
-    }
-    else {
-      type_cache[type.get()] = type;
+    if (!type_cache.count(ptr)) {
+      type_cache[type.get()] = std::move(type);
     }
 
     Nan::EscapableHandleScope scope;
 
     const unsigned argc = 1;
-    Handle<Value> argv[argc] = { Nan::New<External>((void *)type.get()) };
+    Handle<Value> argv[argc] = { Nan::New<External>((void *)ptr) };
     Local<Function> cons = Nan::New(constructor());
 
     return scope.Escape(Nan::NewInstance(cons, argc, argv).ToLocalChecked());

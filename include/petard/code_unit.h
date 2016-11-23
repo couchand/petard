@@ -29,9 +29,9 @@ public:
     bool WriteToFile(const char *filename);
 
     FunctionBuilder *MakeFunction(const char *name, std::shared_ptr<const FunctionTypeHandle> type);
-    FunctionValueHandle *DeclareFunction(const char *name, std::shared_ptr<const FunctionTypeHandle> type);
+    std::shared_ptr<FunctionValueHandle> DeclareFunction(const char *name, std::shared_ptr<const FunctionTypeHandle> type);
 
-    ConstantValueHandle *ConstantString(const std::string &value);
+    std::shared_ptr<ConstantValueHandle> ConstantString(const std::string &value);
 
     llvm::LLVMContext &Context;
     llvm::Module *TheModule;

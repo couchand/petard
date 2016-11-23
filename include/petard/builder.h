@@ -20,8 +20,8 @@ public:
     virtual void InsertAfter() = 0;
     virtual void InsertBefore() = 0;
 
-    virtual ValueHandle *MakeValue(std::shared_ptr<const TypeHandle> t, double i) = 0;
-    virtual ValueHandle *MakeUndefined(std::shared_ptr<const TypeHandle> t) = 0;
+    virtual std::shared_ptr<ValueHandle> MakeValue(std::shared_ptr<const TypeHandle> t, double i) = 0;
+    virtual std::shared_ptr<ValueHandle> MakeUndefined(std::shared_ptr<const TypeHandle> t) = 0;
 
     virtual BlockBuilder *ChildBlock(const char *name) = 0;
     virtual BlockBuilder *SplitBlock(const char *name) = 0;
@@ -29,28 +29,28 @@ public:
     virtual void RemoveTerminator() = 0;
 
     virtual void Br(InstructionBuilder *dest) = 0;
-    virtual void CondBr(ValueHandle *condition, InstructionBuilder *ifTrue, InstructionBuilder *ifFalse) = 0;
-    virtual SwitchBuilder *Switch(ValueHandle *condition, InstructionBuilder *defaultDest) = 0;
+    virtual void CondBr(std::shared_ptr<ValueHandle> condition, InstructionBuilder *ifTrue, InstructionBuilder *ifFalse) = 0;
+    virtual SwitchBuilder *Switch(std::shared_ptr<ValueHandle> condition, InstructionBuilder *defaultDest) = 0;
 
-    virtual ValueHandle *LoadConstant(ValueHandle *value) = 0;
-    virtual ValueHandle *GetElementPointer(ValueHandle *ptr, std::vector<ValueHandle *> idxs) = 0;
-    virtual ValueHandle *ExtractElement(ValueHandle *vec, ValueHandle *idx) = 0;
-    virtual ValueHandle *InsertElement(ValueHandle *vec, ValueHandle *val, ValueHandle *idx) = 0;
+    virtual std::shared_ptr<ValueHandle> LoadConstant(std::shared_ptr<ValueHandle> value) = 0;
+    virtual std::shared_ptr<ValueHandle> GetElementPointer(std::shared_ptr<ValueHandle> ptr, std::vector<std::shared_ptr<ValueHandle> > idxs) = 0;
+    virtual std::shared_ptr<ValueHandle> ExtractElement(std::shared_ptr<ValueHandle> vec, std::shared_ptr<ValueHandle> idx) = 0;
+    virtual std::shared_ptr<ValueHandle> InsertElement(std::shared_ptr<ValueHandle> vec, std::shared_ptr<ValueHandle> val, std::shared_ptr<ValueHandle> idx) = 0;
 
-    virtual ValueHandle *CallFunction(ValueHandle *fn, std::vector<ValueHandle *> args) = 0;
-    virtual ValueHandle *CallFunction(FunctionBuilder *fn, std::vector<ValueHandle *> args) = 0;
+    virtual std::shared_ptr<ValueHandle> CallFunction(std::shared_ptr<ValueHandle> fn, std::vector<std::shared_ptr<ValueHandle> > args) = 0;
+    virtual std::shared_ptr<ValueHandle> CallFunction(FunctionBuilder *fn, std::vector<std::shared_ptr<ValueHandle> > args) = 0;
 
     virtual void Return() = 0;
-    virtual void Return(ValueHandle *value) = 0;
+    virtual void Return(std::shared_ptr<ValueHandle> value) = 0;
 
-    virtual ValueHandle *Alloca(std::shared_ptr<const TypeHandle> type) = 0;
-    virtual ValueHandle *Alloca(std::shared_ptr<const TypeHandle> type, ValueHandle *arraySize) = 0;
+    virtual std::shared_ptr<ValueHandle> Alloca(std::shared_ptr<const TypeHandle> type) = 0;
+    virtual std::shared_ptr<ValueHandle> Alloca(std::shared_ptr<const TypeHandle> type, std::shared_ptr<ValueHandle> arraySize) = 0;
 
-    virtual ValueHandle *Load(ValueHandle *ptr) = 0;
+    virtual std::shared_ptr<ValueHandle> Load(std::shared_ptr<ValueHandle> ptr) = 0;
 
-    virtual void Store(ValueHandle *value, ValueHandle *ptr) = 0;
+    virtual void Store(std::shared_ptr<ValueHandle> value, std::shared_ptr<ValueHandle> ptr) = 0;
 
-#define BINARY_INTERFACE(name) virtual ValueHandle *name(ValueHandle *lhs, ValueHandle *rhs) = 0;
+#define BINARY_INTERFACE(name) virtual std::shared_ptr<ValueHandle> name(std::shared_ptr<ValueHandle> lhs, std::shared_ptr<ValueHandle> rhs) = 0;
 
     BINARY_INTERFACE(Add)
     BINARY_INTERFACE(Sub)
@@ -92,7 +92,7 @@ public:
     BINARY_INTERFACE(FULessThan)
     BINARY_INTERFACE(FUAtMost)
 
-#define CAST_INTERFACE(name) virtual ValueHandle *name(ValueHandle *value, std::shared_ptr<const TypeHandle> type) = 0;
+#define CAST_INTERFACE(name) virtual std::shared_ptr<ValueHandle> name(std::shared_ptr<ValueHandle> value, std::shared_ptr<const TypeHandle> type) = 0;
 
     CAST_INTERFACE(Trunc)
     CAST_INTERFACE(ZExt)
@@ -107,9 +107,9 @@ public:
     CAST_INTERFACE(IntToPtr)
     CAST_INTERFACE(Bitcast)
 
-    virtual ValueHandle *Select(ValueHandle *cond, ValueHandle *ifTrue, ValueHandle *ifFalse) = 0;
+    virtual std::shared_ptr<ValueHandle> Select(std::shared_ptr<ValueHandle> cond, std::shared_ptr<ValueHandle> ifTrue, std::shared_ptr<ValueHandle> ifFalse) = 0;
 
-    virtual ValueHandle *Parameter(size_t index) = 0;
+    virtual std::shared_ptr<ValueHandle> Parameter(size_t index) = 0;
 };
 
 #endif

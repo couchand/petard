@@ -4,6 +4,8 @@
 
 #include "type_wrapper.h"
 
+std::map<ValueHandle *, std::shared_ptr<ValueHandle>> ValueWrapper::value_cache;
+
 NAN_METHOD(ValueWrapper::New)
 {
     if (!info.IsConstructCall() || info.Length() == 0 || !info[0]->IsExternal())
@@ -13,7 +15,8 @@ NAN_METHOD(ValueWrapper::New)
 
     Handle<External> handle = Handle<External>::Cast(info[0]);
     ValueHandle *v = static_cast<ValueHandle *>(handle->Value());
-    ValueWrapper *instance = new ValueWrapper(v);
+    std::shared_ptr<ValueHandle> val = value_cache[v];
+    ValueWrapper *instance = new ValueWrapper(val);
 
     instance->Wrap(info.This());
 
@@ -27,12 +30,17 @@ NAN_GETTER(ValueWrapper::GetType)
     info.GetReturnValue().Set(TypeWrapper::wrapType(wrapper->Val->Type));
 }
 
-Handle<Value> ValueWrapper::wrapValue(ValueHandle *value)
+Handle<Value> ValueWrapper::wrapValue(std::shared_ptr<ValueHandle> value)
 {
+    ValueHandle *ptr = value.get();
+    if (!value_cache.count(ptr)) {
+      value_cache[ptr] = std::move(value);
+    }
+
     Nan::EscapableHandleScope scope;
 
     const unsigned argc = 1;
-    Handle<Value> argv[argc] = { Nan::New<External>((void *)value) };
+    Handle<Value> argv[argc] = { Nan::New<External>((void *)ptr) };
     Local<Function> cons = Nan::New(constructor());
 
     return scope.Escape(Nan::NewInstance(cons, argc, argv).ToLocalChecked());

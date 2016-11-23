@@ -6,7 +6,7 @@
 
 #include "llvm_utils.h"
 
-ValueHandle *BlockBuilder::MakeValue(std::shared_ptr<const TypeHandle> t, double i)
+std::shared_ptr<ValueHandle> BlockBuilder::MakeValue(std::shared_ptr<const TypeHandle> t, double i)
 {
     llvm::Value *v;
 
@@ -23,15 +23,15 @@ ValueHandle *BlockBuilder::MakeValue(std::shared_ptr<const TypeHandle> t, double
         return 0;
     }
 
-    return new PlainValueHandle(std::move(t), v, true);
+    return std::make_shared<PlainValueHandle>(std::move(t), v, true);
 }
 
-ValueHandle *BlockBuilder::MakeUndefined(std::shared_ptr<const TypeHandle> t)
+std::shared_ptr<ValueHandle> BlockBuilder::MakeUndefined(std::shared_ptr<const TypeHandle> t)
 {
     llvm::Value *v = llvm::UndefValue::get(t->getLLVMType(context));
     if (!v) return 0;
 
-    return new PlainValueHandle(std::move(t), v, true);
+    return std::make_shared<PlainValueHandle>(std::move(t), v, true);
 }
 
 BlockBuilder *BlockBuilder::ChildBlock(const char *name)
@@ -69,7 +69,7 @@ void BlockBuilder::Br(InstructionBuilder *dest)
     if (insertAfter) builder.SetInsertPoint(inst);
 }
 
-void BlockBuilder::CondBr(ValueHandle *condition, InstructionBuilder *ifTrue, InstructionBuilder *ifFalse)
+void BlockBuilder::CondBr(std::shared_ptr<ValueHandle> condition, InstructionBuilder *ifTrue, InstructionBuilder *ifFalse)
 {
     RemoveTerminator();
 
@@ -78,7 +78,7 @@ void BlockBuilder::CondBr(ValueHandle *condition, InstructionBuilder *ifTrue, In
     if (insertAfter) builder.SetInsertPoint(inst);
 }
 
-SwitchBuilder *BlockBuilder::Switch(ValueHandle *condition, InstructionBuilder *defaultDest)
+SwitchBuilder *BlockBuilder::Switch(std::shared_ptr<ValueHandle> condition, InstructionBuilder *defaultDest)
 {
     RemoveTerminator();
 
@@ -98,7 +98,7 @@ void BlockBuilder::Return()
     if (insertAfter) builder.SetInsertPoint(inst);
 }
 
-void BlockBuilder::Return(ValueHandle *value)
+void BlockBuilder::Return(std::shared_ptr<ValueHandle> value)
 {
     llvm::Value *returnValue = value->getLLVMValue();
 
@@ -109,45 +109,45 @@ void BlockBuilder::Return(ValueHandle *value)
     if (insertAfter) builder.SetInsertPoint(inst);
 }
 
-ValueHandle *BlockBuilder::Alloca(std::shared_ptr<const TypeHandle> t)
+std::shared_ptr<ValueHandle> BlockBuilder::Alloca(std::shared_ptr<const TypeHandle> t)
 {
     llvm::AllocaInst *alloca = builder.CreateAlloca(t->getLLVMType(context));
     if (insertAfter) builder.SetInsertPoint(alloca);
-    return new PlainValueHandle(std::make_shared<PointerTypeHandle>(std::move(t)), alloca);
+    return std::make_shared<PlainValueHandle>(std::make_shared<PointerTypeHandle>(std::move(t)), alloca);
 }
 
-ValueHandle *BlockBuilder::Alloca(std::shared_ptr<const TypeHandle> t, ValueHandle *size)
+std::shared_ptr<ValueHandle> BlockBuilder::Alloca(std::shared_ptr<const TypeHandle> t, std::shared_ptr<ValueHandle> size)
 {
     llvm::AllocaInst *alloca = builder.CreateAlloca(t->getLLVMType(context), size->getLLVMValue());
     if (insertAfter) builder.SetInsertPoint(alloca);
-    return new PlainValueHandle(std::make_shared<PointerTypeHandle>(std::move(t)), alloca);
+    return std::make_shared<PlainValueHandle>(std::make_shared<PointerTypeHandle>(std::move(t)), alloca);
 }
 
-ValueHandle *BlockBuilder::Load(ValueHandle *ptr)
+std::shared_ptr<ValueHandle> BlockBuilder::Load(std::shared_ptr<ValueHandle> ptr)
 {
     const PointerTypeHandle *pt = static_cast<const PointerTypeHandle *>(ptr->Type.get());
 
     llvm::LoadInst *load = builder.CreateLoad(ptr->getLLVMValue());
     if (insertAfter) builder.SetInsertPoint(load);
-    return new PlainValueHandle(pt->pointee, load);
+    return std::make_shared<PlainValueHandle>(pt->pointee, load);
 }
 
-void BlockBuilder::Store(ValueHandle *value, ValueHandle *ptr)
+void BlockBuilder::Store(std::shared_ptr<ValueHandle> value, std::shared_ptr<ValueHandle> ptr)
 {
     llvm::StoreInst *store = builder.CreateStore(value->getLLVMValue(), ptr->getLLVMValue());
     if (insertAfter) builder.SetInsertPoint(store);
 }
 
 #define BINARY_BUILDER(name, factory) \
-ValueHandle *BlockBuilder::name(ValueHandle *lhs, ValueHandle *rhs) \
+std::shared_ptr<ValueHandle> BlockBuilder::name(std::shared_ptr<ValueHandle> lhs, std::shared_ptr<ValueHandle> rhs) \
 { \
     std::shared_ptr<const TypeHandle> t = lhs->Type; /* TODO: something better */ \
     llvm::Value *val = builder.factory(lhs->getLLVMValue(), rhs->getLLVMValue()); \
-    return new PlainValueHandle(std::move(t), val); \
+    return std::make_shared<PlainValueHandle>(std::move(t), val); \
 }
 
 #define BINARY_BUILDER2(name, intfactory, floatfactory) \
-ValueHandle *BlockBuilder::name(ValueHandle *lhs, ValueHandle *rhs) \
+std::shared_ptr<ValueHandle> BlockBuilder::name(std::shared_ptr<ValueHandle> lhs, std::shared_ptr<ValueHandle> rhs) \
 { \
     std::shared_ptr<const TypeHandle> t = lhs->Type; \
     const TypeHandle *rt = rhs->Type.get(); \
@@ -174,7 +174,7 @@ ValueHandle *BlockBuilder::name(ValueHandle *lhs, ValueHandle *rhs) \
     { \
         return 0; \
     } \
-    return new PlainValueHandle(std::move(t), val); \
+    return std::make_shared<PlainValueHandle>(std::move(t), val); \
 }
 
 BINARY_BUILDER2(Add, CreateAdd, CreateFAdd)
@@ -194,10 +194,10 @@ BINARY_BUILDER(LShr, CreateLShr)
 BINARY_BUILDER(AShr, CreateAShr)
 
 #define BINARY_PREDICATE(name, factory) \
-ValueHandle *BlockBuilder::name(ValueHandle *lhs, ValueHandle *rhs) \
+std::shared_ptr<ValueHandle> BlockBuilder::name(std::shared_ptr<ValueHandle> lhs, std::shared_ptr<ValueHandle> rhs) \
 { \
     llvm::Value *val = builder.factory(lhs->getLLVMValue(), rhs->getLLVMValue()); \
-    return new PlainValueHandle(std::make_shared<IntTypeHandle>(1), val); \
+    return std::make_shared<PlainValueHandle>(std::make_shared<IntTypeHandle>(1), val); \
 }
 
 BINARY_PREDICATE(Equal, CreateICmpEQ)
@@ -224,10 +224,10 @@ BINARY_PREDICATE(FUAtLeast, CreateFCmpUGE)
 BINARY_PREDICATE(FULessThan, CreateFCmpULT)
 BINARY_PREDICATE(FUAtMost, CreateFCmpULE)
 
-#define CAST_BUILDER(name, factory) ValueHandle *BlockBuilder::name(ValueHandle *value, std::shared_ptr<const TypeHandle> type) \
+#define CAST_BUILDER(name, factory) std::shared_ptr<ValueHandle> BlockBuilder::name(std::shared_ptr<ValueHandle> value, std::shared_ptr<const TypeHandle> type) \
 { \
     llvm::Value *val = builder.factory(value->getLLVMValue(), type->getLLVMType(context)); \
-    return new PlainValueHandle(std::move(type), val); \
+    return std::make_shared<PlainValueHandle>(std::move(type), val); \
 }
 
 CAST_BUILDER(Trunc, CreateTrunc)
@@ -243,7 +243,7 @@ CAST_BUILDER(PtrToInt, CreatePtrToInt)
 CAST_BUILDER(IntToPtr, CreateIntToPtr)
 CAST_BUILDER(Bitcast, CreateBitCast)
 
-ValueHandle *BlockBuilder::Select(ValueHandle *cond, ValueHandle *ifTrue, ValueHandle *ifFalse)
+std::shared_ptr<ValueHandle> BlockBuilder::Select(std::shared_ptr<ValueHandle> cond, std::shared_ptr<ValueHandle> ifTrue, std::shared_ptr<ValueHandle> ifFalse)
 {
     std::shared_ptr<const TypeHandle> t = ifTrue->Type; // TODO: unify types
 
@@ -253,15 +253,15 @@ ValueHandle *BlockBuilder::Select(ValueHandle *cond, ValueHandle *ifTrue, ValueH
         ifFalse->getLLVMValue()
     );
 
-    return new PlainValueHandle(std::move(t), val);
+    return std::make_shared<PlainValueHandle>(std::move(t), val);
 }
 
-ValueHandle *BlockBuilder::Parameter(size_t index)
+std::shared_ptr<ValueHandle> BlockBuilder::Parameter(size_t index)
 {
     return parent->Parameter(index);
 }
 
-ValueHandle *BlockBuilder::LoadConstant(ValueHandle *value)
+std::shared_ptr<ValueHandle> BlockBuilder::LoadConstant(std::shared_ptr<ValueHandle> value)
 {
     if (!value->Type->isPointerType())
     {
@@ -271,29 +271,29 @@ ValueHandle *BlockBuilder::LoadConstant(ValueHandle *value)
     const PointerTypeHandle *ptrty = static_cast<const PointerTypeHandle *>(value->Type.get());
 
     std::shared_ptr<const IntTypeHandle> thirtyTwo = std::make_shared<IntTypeHandle>(32);
-    std::vector<ValueHandle *> idxs;
+    std::vector<std::shared_ptr<ValueHandle>> idxs;
     idxs.push_back(MakeValue(thirtyTwo, 0));
     std::shared_ptr<const TypeHandle> elty = getElementType(ptrty->pointee.get(), idxs);
 
     llvm::Value *expression = builder.CreateConstGEP2_32(value->getLLVMValue(), 0, 0);
 
-    return new PlainValueHandle(std::make_shared<PointerTypeHandle>(elty), expression);
+    return std::make_shared<PlainValueHandle>(std::make_shared<PointerTypeHandle>(elty), expression);
 }
 
-std::vector<ValueHandle *> getRest(std::vector<ValueHandle *> vec)
+std::vector<std::shared_ptr<ValueHandle>> getRest(std::vector<std::shared_ptr<ValueHandle>> vec)
 {
-    std::vector<ValueHandle *> rest;
+    std::vector<std::shared_ptr<ValueHandle>> rest;
     rest.reserve(vec.size() - 1);
 
     for (unsigned i = 1, e = vec.size(); i < e; i += 1)
     {
-        rest.push_back(vec[i]);
+        rest.push_back(std::move(vec[i]));
     }
 
     return rest;
 }
 
-ValueHandle *BlockBuilder::GetElementPointer(ValueHandle *ptr, std::vector<ValueHandle *> idxs)
+std::shared_ptr<ValueHandle> BlockBuilder::GetElementPointer(std::shared_ptr<ValueHandle> ptr, std::vector<std::shared_ptr<ValueHandle>> idxs)
 {
     unsigned count = idxs.size();
 
@@ -335,7 +335,7 @@ ValueHandle *BlockBuilder::GetElementPointer(ValueHandle *ptr, std::vector<Value
     std::vector<llvm::Value *> idxlist;
     idxlist.reserve(count);
 
-    for (ValueHandle *idx : idxs)
+    for (std::shared_ptr<ValueHandle> idx : idxs)
     {
         llvm::Value *idxValue = idx->getLLVMValue();
 
@@ -363,10 +363,10 @@ ValueHandle *BlockBuilder::GetElementPointer(ValueHandle *ptr, std::vector<Value
 
     llvm::Value *elPtr = builder.CreateGEP(ptrVal, idxlist);
 
-    return new PlainValueHandle(std::move(newty), elPtr);
+    return std::make_shared<PlainValueHandle>(std::move(newty), elPtr);
 }
 
-std::shared_ptr<const TypeHandle> BlockBuilder::getElementType(const TypeHandle *ty, std::vector<ValueHandle *> idxs)
+std::shared_ptr<const TypeHandle> BlockBuilder::getElementType(const TypeHandle *ty, std::vector<std::shared_ptr<ValueHandle>> idxs)
 {
     if (idxs.size() == 0)
     {
@@ -375,8 +375,8 @@ std::shared_ptr<const TypeHandle> BlockBuilder::getElementType(const TypeHandle 
 
     const bool recurse = idxs.size() > 1;
 
-    ValueHandle *first = idxs[0];
-    std::vector<ValueHandle *> rest = getRest(idxs);
+    std::shared_ptr<ValueHandle> first = idxs[0];
+    std::vector<std::shared_ptr<ValueHandle>> rest = getRest(idxs);
 
     if (ty->isPointerType())
     {
@@ -412,7 +412,7 @@ std::shared_ptr<const TypeHandle> BlockBuilder::getElementType(const TypeHandle 
     return 0;
 }
 
-ValueHandle *BlockBuilder::ExtractElement(ValueHandle *vec, ValueHandle *idx)
+std::shared_ptr<ValueHandle> BlockBuilder::ExtractElement(std::shared_ptr<ValueHandle> vec, std::shared_ptr<ValueHandle> idx)
 {
     if (!idx->Type->isIntType() || !vec->Type->isVectorType())
     {
@@ -424,10 +424,10 @@ ValueHandle *BlockBuilder::ExtractElement(ValueHandle *vec, ValueHandle *idx)
     llvm::Value *res = builder.CreateExtractElement(vec->getLLVMValue(), idx->getLLVMValue());
     if (!res) return 0;
 
-    return new PlainValueHandle(vecTy->element, res);
+    return std::make_shared<PlainValueHandle>(vecTy->element, res);
 }
 
-ValueHandle *BlockBuilder::InsertElement(ValueHandle *vec, ValueHandle *val, ValueHandle *idx)
+std::shared_ptr<ValueHandle> BlockBuilder::InsertElement(std::shared_ptr<ValueHandle> vec, std::shared_ptr<ValueHandle> val, std::shared_ptr<ValueHandle> idx)
 {
     if (!idx->Type->isIntType() || !vec->Type->isVectorType())
     {
@@ -444,10 +444,10 @@ ValueHandle *BlockBuilder::InsertElement(ValueHandle *vec, ValueHandle *val, Val
     llvm::Value *res = builder.CreateInsertElement(vec->getLLVMValue(), val->getLLVMValue(), idx->getLLVMValue());
     if (!res) return 0;
 
-    return new PlainValueHandle(vec->Type, res);
+    return std::make_shared<PlainValueHandle>(vec->Type, res);
 }
 
-ValueHandle *BlockBuilder::callFunction(const FunctionTypeHandle *fnTy, llvm::Value *fn, std::vector<ValueHandle *> args)
+std::shared_ptr<ValueHandle> BlockBuilder::callFunction(const FunctionTypeHandle *fnTy, llvm::Value *fn, std::vector<std::shared_ptr<ValueHandle>> args)
 {
     std::vector<llvm::Value *> argVals;
     for (unsigned i = 0, e = args.size(); i < e; i++)
@@ -457,16 +457,16 @@ ValueHandle *BlockBuilder::callFunction(const FunctionTypeHandle *fnTy, llvm::Va
 
     llvm::Value *call = builder.CreateCall(fn, argVals);
 
-    return new PlainValueHandle(fnTy->returns, call);
+    return std::make_shared<PlainValueHandle>(fnTy->returns, call);
 }
 
-ValueHandle *BlockBuilder::CallFunction(ValueHandle *fn, std::vector<ValueHandle *> args)
+std::shared_ptr<ValueHandle> BlockBuilder::CallFunction(std::shared_ptr<ValueHandle> fn, std::vector<std::shared_ptr<ValueHandle>> args)
 {
     const FunctionTypeHandle *fnTy = static_cast<const FunctionTypeHandle *>(fn->Type.get());
     return callFunction(fnTy, fn->getLLVMValue(), args);
 }
 
-ValueHandle *BlockBuilder::CallFunction(FunctionBuilder *fn, std::vector<ValueHandle *> args)
+std::shared_ptr<ValueHandle> BlockBuilder::CallFunction(FunctionBuilder *fn, std::vector<std::shared_ptr<ValueHandle>> args)
 {
     const FunctionTypeHandle *fnTy = static_cast<const FunctionTypeHandle *>(fn->Type.get());
     return callFunction(fnTy, fn->F, args);

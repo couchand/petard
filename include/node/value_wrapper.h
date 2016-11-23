@@ -12,16 +12,18 @@ using namespace v8;
 
 class ValueWrapper : public Nan::ObjectWrap
 {
-    ValueWrapper(ValueHandle *v)
+    ValueWrapper(std::shared_ptr<ValueHandle> v)
     : Val(v) {}
 
     static NAN_METHOD(New);
     static NAN_GETTER(GetType);
 
-public:
-    static Handle<Value> wrapValue(ValueHandle *value);
+    static std::map<ValueHandle *, std::shared_ptr<ValueHandle>> value_cache;
 
-    ValueHandle *Val;
+public:
+    static Handle<Value> wrapValue(std::shared_ptr<ValueHandle> value);
+
+    std::shared_ptr<ValueHandle> Val;
 
     static Nan::Persistent<FunctionTemplate> prototype;
 

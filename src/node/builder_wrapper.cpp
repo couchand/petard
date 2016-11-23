@@ -34,7 +34,7 @@ NAN_METHOD(BuilderWrapper::Alloca)
     EXPECT_PARAM("Alloca", 0, TypeWrapper, "type")
     TypeWrapper *t = Nan::ObjectWrap::Unwrap<TypeWrapper>(info[0].As<Object>());
 
-    ValueHandle *h = 0;
+    std::shared_ptr<ValueHandle> h = 0;
 
     if (info.Length() == 1)
     {
@@ -45,8 +45,8 @@ NAN_METHOD(BuilderWrapper::Alloca)
         Local<Number> num = info[1].As<Number>();
         double numVal = num->Value();
 
-        ValueHandle *arraySize = wrapper->Builder->MakeValue(std::make_shared<IntTypeHandle>(32), numVal);
-        h = wrapper->Builder->Alloca(t->Type, arraySize);
+        std::shared_ptr<ValueHandle> arraySize = wrapper->Builder->MakeValue(std::make_shared<IntTypeHandle>(32), numVal);
+        h = wrapper->Builder->Alloca(t->Type, std::move(arraySize));
     }
     else if (Nan::New(ValueWrapper::prototype)->HasInstance(info[1]))
     {
@@ -69,7 +69,7 @@ NAN_METHOD(BuilderWrapper::Alloca)
         return Nan::ThrowError("Uncaught error in Alloca!");
     }
 
-    info.GetReturnValue().Set(ValueWrapper::wrapValue(h));
+    info.GetReturnValue().Set(ValueWrapper::wrapValue(std::move(h)));
 }
 
 NAN_METHOD(BuilderWrapper::Load)
@@ -84,14 +84,14 @@ NAN_METHOD(BuilderWrapper::Load)
         return Nan::ThrowError("Load requires pointer type");
     }
 
-    ValueHandle *load = wrapper->Builder->Load(ptr->Val);
+    std::shared_ptr<ValueHandle> load = wrapper->Builder->Load(ptr->Val);
 
     if (!load)
     {
         return Nan::ThrowError("Uncaught error in Load!");
     }
     
-    info.GetReturnValue().Set(ValueWrapper::wrapValue(load));
+    info.GetReturnValue().Set(ValueWrapper::wrapValue(std::move(load)));
 }
 
 NAN_METHOD(BuilderWrapper::Store)
@@ -123,9 +123,9 @@ NAN_METHOD(BuilderWrapper::Store)
         Local<Number> num = info[0].As<Number>();
         double numVal = num->Value();
 
-        ValueHandle *storageVal = wrapper->Builder->MakeValue(pt->pointee, numVal);
+        std::shared_ptr<ValueHandle> storageVal = wrapper->Builder->MakeValue(pt->pointee, numVal);
 
-        wrapper->Builder->Store(storageVal, ptr->Val);
+        wrapper->Builder->Store(std::move(storageVal), ptr->Val);
     }
     else if (Nan::New(ValueWrapper::prototype)->HasInstance(info[0]))
     {
@@ -200,14 +200,14 @@ NAN_METHOD(BuilderWrapper::Store)
     }                                                                                 \
                                                                                       \
                                                                                       \
-    ValueHandle *result = wrapper->Builder->name(lhs->Val, rhs->Val);                 \
+    std::shared_ptr<ValueHandle> result = wrapper->Builder->name(lhs->Val, rhs->Val); \
                                                                                       \
     if (!result)                                                                      \
     {                                                                                 \
         return Nan::ThrowError("Uncaught error in binary");                           \
     }                                                                                 \
                                                                                       \
-    info.GetReturnValue().Set(ValueWrapper::wrapValue(result));                       \
+    info.GetReturnValue().Set(ValueWrapper::wrapValue(std::move(result)));            \
 }
 
 bool isFloat(const TypeHandle *t) { return t->isFloatType(); }
@@ -308,14 +308,14 @@ BINARY_METHOD(FUAtMost, isFloat)
         return Nan::ThrowError("Type error in cast");                                 \
     }                                                                                 \
                                                                                       \
-    ValueHandle *result = wrapper->Builder->name(v->Val, t->Type);                    \
+    std::shared_ptr<ValueHandle> result = wrapper->Builder->name(v->Val, t->Type);    \
                                                                                       \
     if (!result)                                                                      \
     {                                                                                 \
         return Nan::ThrowError("Uncaught error in cast!");                            \
     }                                                                                 \
                                                                                       \
-    info.GetReturnValue().Set(ValueWrapper::wrapValue(result));                       \
+    info.GetReturnValue().Set(ValueWrapper::wrapValue(std::move(result)));            \
 }
 
 CAST_METHOD(Trunc, isInt, isInt)
@@ -375,14 +375,14 @@ NAN_METHOD(BuilderWrapper::Select)
         return Nan::ThrowError("Select values must be the same type");
     }
 
-    ValueHandle *result = wrapper->Builder->Select(cond->Val, ifTrue->Val, ifFalse->Val);
+    std::shared_ptr<ValueHandle> result = wrapper->Builder->Select(cond->Val, ifTrue->Val, ifFalse->Val);
 
     if (!result)
     {
         return Nan::ThrowError("Uncaught error in Select!");
     }
 
-    info.GetReturnValue().Set(ValueWrapper::wrapValue(result));
+    info.GetReturnValue().Set(ValueWrapper::wrapValue(std::move(result)));
 }
 
 NAN_METHOD(BuilderWrapper::Value)
@@ -397,7 +397,7 @@ NAN_METHOD(BuilderWrapper::Value)
         return Nan::ThrowError("Value requires a constant value");
     }
 
-    ValueHandle *result;
+    std::shared_ptr<ValueHandle> result;
 
     if (info[1]->IsNumber())
     {
@@ -416,7 +416,7 @@ NAN_METHOD(BuilderWrapper::Value)
         return Nan::ThrowError("Uncaught error in Value!");
     }
 
-    info.GetReturnValue().Set(ValueWrapper::wrapValue(result));
+    info.GetReturnValue().Set(ValueWrapper::wrapValue(std::move(result)));
 }
 
 NAN_METHOD(BuilderWrapper::Undefined)
@@ -426,14 +426,14 @@ NAN_METHOD(BuilderWrapper::Undefined)
     EXPECT_PARAM("Undefined", 0, TypeWrapper, "type")
     TypeWrapper *type = Nan::ObjectWrap::Unwrap<TypeWrapper>(info[0].As<Object>());
 
-    ValueHandle *result = self->Builder->MakeUndefined(type->Type);
+    std::shared_ptr<ValueHandle> result = self->Builder->MakeUndefined(type->Type);
 
     if (!result)
     {
         return Nan::ThrowError("Uncaught error in Undefined!");
     }
 
-    info.GetReturnValue().Set(ValueWrapper::wrapValue(result));
+    info.GetReturnValue().Set(ValueWrapper::wrapValue(std::move(result)));
 }
 
 NAN_METHOD(BuilderWrapper::Return)
@@ -464,8 +464,8 @@ NAN_METHOD(BuilderWrapper::Return)
         Local<Number> num = info[0].As<Number>();
         double numVal = num->Value();
 
-        ValueHandle *returnVal = wrapper->Builder->MakeValue(returnType, numVal);
-        wrapper->Builder->Return(returnVal);
+        std::shared_ptr<ValueHandle> returnVal = wrapper->Builder->MakeValue(std::move(returnType), numVal);
+        wrapper->Builder->Return(std::move(returnVal));
     }
     else if (Nan::New(ValueWrapper::prototype)->HasInstance(info[0]))
     {
@@ -498,14 +498,14 @@ NAN_METHOD(BuilderWrapper::Parameter)
     Local<Number> num = info[0].As<Number>();
     double numVal = num->Value();
 
-    ValueHandle *val = wrapper->Builder->Parameter((size_t)numVal);
+    std::shared_ptr<ValueHandle> val = wrapper->Builder->Parameter((size_t)numVal);
 
     if (!val)
     {
         return Nan::ThrowError("Parameter index invalid");
     }
 
-    info.GetReturnValue().Set(ValueWrapper::wrapValue(val));
+    info.GetReturnValue().Set(ValueWrapper::wrapValue(std::move(val)));
 }
 
 NAN_METHOD(BuilderWrapper::LoadConstant)
@@ -515,17 +515,17 @@ NAN_METHOD(BuilderWrapper::LoadConstant)
     EXPECT_PARAM("LoadConstant", 0, ValueWrapper, "constant value")
     ValueWrapper *wrapper = Nan::ObjectWrap::Unwrap<ValueWrapper>(info[0]->ToObject());
 
-    ValueHandle *result = self->Builder->LoadConstant(wrapper->Val);
+    std::shared_ptr<ValueHandle> result = self->Builder->LoadConstant(wrapper->Val);
 
     if (!result)
     {
         return Nan::ThrowError("Load constant error");
     }
 
-    info.GetReturnValue().Set(ValueWrapper::wrapValue(result));
+    info.GetReturnValue().Set(ValueWrapper::wrapValue(std::move(result)));
 }
 
-ValueHandle *getValueHandle(InstructionBuilder *builder, Local<v8::Value> thing)
+std::shared_ptr<ValueHandle> getValueHandle(InstructionBuilder *builder, Local<v8::Value> thing)
 {
     if (thing->IsNumber())
     {
@@ -553,11 +553,11 @@ NAN_METHOD(BuilderWrapper::GetElementPointer)
         return Nan::ThrowError("GetElementPointer expects at least one index");
     }
 
-    std::vector<ValueHandle *> idxs;
+    std::vector<std::shared_ptr<ValueHandle>> idxs;
 
     for (unsigned i = 1, e = info.Length(); i < e; i += 1)
     {
-        ValueHandle *next = getValueHandle(self->Builder, info[i]);
+        std::shared_ptr<ValueHandle> next = getValueHandle(self->Builder, info[i]);
 
         if (!next)
         {
@@ -567,14 +567,14 @@ NAN_METHOD(BuilderWrapper::GetElementPointer)
         idxs.push_back(next);
     }
 
-    ValueHandle *result = self->Builder->GetElementPointer(base->Val, idxs);
+    std::shared_ptr<ValueHandle> result = self->Builder->GetElementPointer(base->Val, std::move(idxs));
 
     if (!result)
     {
         return Nan::ThrowError("GetElementPointer index error");
     }
 
-    info.GetReturnValue().Set(ValueWrapper::wrapValue(result));
+    info.GetReturnValue().Set(ValueWrapper::wrapValue(std::move(result)));
 }
 
 NAN_METHOD(BuilderWrapper::ExtractElement)
@@ -594,7 +594,7 @@ NAN_METHOD(BuilderWrapper::ExtractElement)
         return Nan::ThrowError("ExtractElement requires an index");
     }
 
-    ValueHandle *index = getValueHandle(self->Builder, info[1]);
+    std::shared_ptr<ValueHandle> index = getValueHandle(self->Builder, info[1]);
     if (!index)
     {
         return Nan::ThrowError("ExtractElement requires an index");
@@ -605,14 +605,14 @@ NAN_METHOD(BuilderWrapper::ExtractElement)
         return Nan::ThrowError("ExtractElement index must be an integer type");
     }
 
-    ValueHandle *result = self->Builder->ExtractElement(value->Val, index);
+    std::shared_ptr<ValueHandle> result = self->Builder->ExtractElement(value->Val, std::move(index));
 
     if (!result)
     {
         return Nan::ThrowError("Uncaught error in ExtractElement!");
     }
 
-    info.GetReturnValue().Set(ValueWrapper::wrapValue(result));
+    info.GetReturnValue().Set(ValueWrapper::wrapValue(std::move(result)));
 }
 
 NAN_METHOD(BuilderWrapper::InsertElement)
@@ -641,7 +641,7 @@ NAN_METHOD(BuilderWrapper::InsertElement)
         return Nan::ThrowError("InsertElement requires an index");
     }
 
-    ValueHandle *index = getValueHandle(self->Builder, info[2]);
+    std::shared_ptr<ValueHandle> index = getValueHandle(self->Builder, info[2]);
     if (!index)
     {
         return Nan::ThrowError("InsertElement requires an index");
@@ -652,14 +652,14 @@ NAN_METHOD(BuilderWrapper::InsertElement)
         return Nan::ThrowError("InsertElement index must be an integer type");
     }
 
-    ValueHandle *result = self->Builder->InsertElement(vec->Val, value->Val, index);
+    std::shared_ptr<ValueHandle> result = self->Builder->InsertElement(vec->Val, value->Val, std::move(index));
 
     if (!result)
     {
         return Nan::ThrowError("Uncaught error in InsertElement!");
     }
 
-    info.GetReturnValue().Set(ValueWrapper::wrapValue(result));
+    info.GetReturnValue().Set(ValueWrapper::wrapValue(std::move(result)));
 }
 
 NAN_METHOD(BuilderWrapper::CallFunction)
@@ -671,7 +671,7 @@ NAN_METHOD(BuilderWrapper::CallFunction)
         return Nan::ThrowError("Must provide function to call");
     }
 
-    std::vector<ValueHandle *> argVals;
+    std::vector<std::shared_ptr<ValueHandle>> argVals;
     std::vector<std::shared_ptr<const TypeHandle>> argTypes;
 
     for (unsigned i = 1, e = info.Length(); i < e; i += 1)
@@ -684,12 +684,12 @@ NAN_METHOD(BuilderWrapper::CallFunction)
 
     Local<Object> handle = info[0]->ToObject();
 
-    ValueHandle *result;
+    std::shared_ptr<ValueHandle> result;
 
     if (Nan::New(ValueWrapper::prototype)->HasInstance(handle))
     {
         ValueWrapper *wrapper = Nan::ObjectWrap::Unwrap<ValueWrapper>(handle);
-        ValueHandle *callee = wrapper->Val;
+        std::shared_ptr<ValueHandle> callee = wrapper->Val;
 
         if (!callee->Type->isFunctionType())
         {
@@ -711,7 +711,7 @@ NAN_METHOD(BuilderWrapper::CallFunction)
             }
         }
 
-        result = self->Builder->CallFunction(callee, argVals);
+        result = self->Builder->CallFunction(callee, std::move(argVals));
     }
     else if (Nan::New(FunctionBuilderWrapper::prototype)->HasInstance(handle))
     {
@@ -733,7 +733,7 @@ NAN_METHOD(BuilderWrapper::CallFunction)
             }
         }
 
-        result = self->Builder->CallFunction(callee, argVals);
+        result = self->Builder->CallFunction(callee, std::move(argVals));
     }
     else
     {
@@ -745,7 +745,7 @@ NAN_METHOD(BuilderWrapper::CallFunction)
         return Nan::ThrowError("Uncaught error in FunctionCall!");
     }
 
-    info.GetReturnValue().Set(ValueWrapper::wrapValue(result));
+    info.GetReturnValue().Set(ValueWrapper::wrapValue(std::move(result)));
 }
 
 NAN_METHOD(BuilderWrapper::Switch)

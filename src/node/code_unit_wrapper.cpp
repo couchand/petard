@@ -132,14 +132,14 @@ NAN_METHOD(CodeUnitWrapper::DeclareFunction)
 
     EXTRACT_FUNCTION_PARAMS(1)
 
-    FunctionValueHandle *fn = self->Unit->DeclareFunction(*encoded, std::make_shared<FunctionTypeHandle>(returns, takes));
+    std::shared_ptr<FunctionValueHandle> fn = self->Unit->DeclareFunction(*encoded, std::make_shared<FunctionTypeHandle>(returns, takes));
 
     if (!fn)
     {
         return Nan::ThrowError("Unable to create function (is name unique?)");
     }
 
-    info.GetReturnValue().Set(ValueWrapper::wrapValue(fn));
+    info.GetReturnValue().Set(ValueWrapper::wrapValue(std::move(fn)));
 }
 
 NAN_METHOD(CodeUnitWrapper::Constant)
@@ -157,13 +157,13 @@ NAN_METHOD(CodeUnitWrapper::Constant)
         Local<String> str = info[0].As<String>();
         String::Utf8Value encoded(str);
 
-        ConstantValueHandle *handle = self->Unit->ConstantString(*encoded);
+        std::shared_ptr<ConstantValueHandle> handle = self->Unit->ConstantString(*encoded);
 
         if (!handle)
         {
             return Nan::ThrowError("Uncaught error loading constant string!");
         }
-        info.GetReturnValue().Set(ValueWrapper::wrapValue(handle));
+        info.GetReturnValue().Set(ValueWrapper::wrapValue(std::move(handle)));
     }
     else
     {

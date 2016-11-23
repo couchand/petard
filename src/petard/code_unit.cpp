@@ -101,14 +101,14 @@ FunctionBuilder *CodeUnit::MakeFunction(const char *name, std::shared_ptr<const 
     return new FunctionBuilder(name, std::move(type), Context, f);
 }
 
-FunctionValueHandle *CodeUnit::DeclareFunction(const char *name, std::shared_ptr<const FunctionTypeHandle> type)
+std::shared_ptr<FunctionValueHandle> CodeUnit::DeclareFunction(const char *name, std::shared_ptr<const FunctionTypeHandle> type)
 {
     llvm::Function *f = buildFunctionHeader(name, type.get());
 
-    return new FunctionValueHandle(std::move(type), f);
+    return std::make_shared<FunctionValueHandle>(std::move(type), f);
 }
 
-ConstantValueHandle *CodeUnit::ConstantString(const std::string &value)
+std::shared_ptr<ConstantValueHandle> CodeUnit::ConstantString(const std::string &value)
 {
     std::shared_ptr<const TypeHandle> type = std::make_shared<ArrayTypeHandle>(
       value.size() + 1,
@@ -125,5 +125,5 @@ ConstantValueHandle *CodeUnit::ConstantString(const std::string &value)
 
     std::shared_ptr<const TypeHandle> ptrtype = std::make_shared<PointerTypeHandle>(type);
 
-    return new ConstantValueHandle(std::move(ptrtype), gv);
+    return std::make_shared<ConstantValueHandle>(std::move(ptrtype), gv);
 }

@@ -50,8 +50,8 @@ public:
     void InsertAfter() { builder->InsertAfter(); }
     void InsertBefore() { builder->InsertBefore(); }
 
-    ValueHandle *MakeValue(std::shared_ptr<const TypeHandle> t, double i);
-    ValueHandle *MakeUndefined(std::shared_ptr<const TypeHandle> t);
+    std::shared_ptr<ValueHandle> MakeValue(std::shared_ptr<const TypeHandle> t, double i);
+    std::shared_ptr<ValueHandle> MakeUndefined(std::shared_ptr<const TypeHandle> t);
 
     BlockBuilder *ChildBlock(const char *name);
     BlockBuilder *SplitBlock(const char *name);
@@ -59,28 +59,28 @@ public:
     void RemoveTerminator();
 
     void Br(InstructionBuilder *dest);
-    void CondBr(ValueHandle *condition, InstructionBuilder *ifTrue, InstructionBuilder *ifFalse);
-    SwitchBuilder *Switch(ValueHandle *condition, InstructionBuilder *defaultDest);
+    void CondBr(std::shared_ptr<ValueHandle> condition, InstructionBuilder *ifTrue, InstructionBuilder *ifFalse);
+    SwitchBuilder *Switch(std::shared_ptr<ValueHandle> condition, InstructionBuilder *defaultDest);
 
-    ValueHandle *LoadConstant(ValueHandle *value);
-    ValueHandle *GetElementPointer(ValueHandle *ptr, std::vector<ValueHandle *> idxs);
-    ValueHandle *ExtractElement(ValueHandle *vec, ValueHandle *idx);
-    ValueHandle *InsertElement(ValueHandle *vec, ValueHandle *val, ValueHandle *idx);
+    std::shared_ptr<ValueHandle> LoadConstant(std::shared_ptr<ValueHandle> value);
+    std::shared_ptr<ValueHandle> GetElementPointer(std::shared_ptr<ValueHandle> ptr, std::vector<std::shared_ptr<ValueHandle>> idxs);
+    std::shared_ptr<ValueHandle> ExtractElement(std::shared_ptr<ValueHandle> vec, std::shared_ptr<ValueHandle> idx);
+    std::shared_ptr<ValueHandle> InsertElement(std::shared_ptr<ValueHandle> vec, std::shared_ptr<ValueHandle> val, std::shared_ptr<ValueHandle> idx);
 
-    ValueHandle *CallFunction(ValueHandle *fn, std::vector<ValueHandle *> args);
-    ValueHandle *CallFunction(FunctionBuilder *fn, std::vector<ValueHandle *> args);
+    std::shared_ptr<ValueHandle> CallFunction(std::shared_ptr<ValueHandle> fn, std::vector<std::shared_ptr<ValueHandle>> args);
+    std::shared_ptr<ValueHandle> CallFunction(FunctionBuilder *fn, std::vector<std::shared_ptr<ValueHandle>> args);
 
     void Return();
-    void Return(ValueHandle *value);
+    void Return(std::shared_ptr<ValueHandle> value);
 
-    ValueHandle *Alloca(std::shared_ptr<const TypeHandle> type);
-    ValueHandle *Alloca(std::shared_ptr<const TypeHandle> type, ValueHandle *arraySize);
+    std::shared_ptr<ValueHandle> Alloca(std::shared_ptr<const TypeHandle> type);
+    std::shared_ptr<ValueHandle> Alloca(std::shared_ptr<const TypeHandle> type, std::shared_ptr<ValueHandle> arraySize);
 
-    ValueHandle *Load(ValueHandle *ptr);
+    std::shared_ptr<ValueHandle> Load(std::shared_ptr<ValueHandle> ptr);
 
-    void Store(ValueHandle *value, ValueHandle *ptr);
+    void Store(std::shared_ptr<ValueHandle> value, std::shared_ptr<ValueHandle> ptr);
 
-#define BINARY_HEADER(name) ValueHandle *name(ValueHandle *lhs, ValueHandle *rhs);
+#define BINARY_HEADER(name) std::shared_ptr<ValueHandle> name(std::shared_ptr<ValueHandle> lhs, std::shared_ptr<ValueHandle> rhs);
 
     BINARY_HEADER(Add)
     BINARY_HEADER(Sub)
@@ -122,7 +122,7 @@ public:
     BINARY_HEADER(FULessThan)
     BINARY_HEADER(FUAtMost)
 
-#define CAST_HEADER(name) virtual ValueHandle *name(ValueHandle *value, std::shared_ptr<const TypeHandle> type);
+#define CAST_HEADER(name) virtual std::shared_ptr<ValueHandle> name(std::shared_ptr<ValueHandle> value, std::shared_ptr<const TypeHandle> type);
 
     CAST_HEADER(Trunc)
     CAST_HEADER(ZExt)
@@ -137,9 +137,9 @@ public:
     CAST_HEADER(IntToPtr)
     CAST_HEADER(Bitcast)
 
-    ValueHandle *Select(ValueHandle *cond, ValueHandle *ifTrue, ValueHandle *ifFalse);
+    std::shared_ptr<ValueHandle> Select(std::shared_ptr<ValueHandle> cond, std::shared_ptr<ValueHandle> ifTrue, std::shared_ptr<ValueHandle> ifFalse);
 
-    ValueHandle *Parameter(size_t index);
+    std::shared_ptr<ValueHandle> Parameter(size_t index);
 };
 
 #endif

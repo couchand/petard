@@ -6,6 +6,7 @@
   "scripts": {
     "clean": "make clean",
     "build": "make",
+    "preinstall": "make libpetard",
     "test": "make test"
   },
   "repository": {

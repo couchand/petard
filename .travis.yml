@@ -2,9 +2,14 @@ language: node_js
 node_js:
   - "node"
 
-  - "4.2"
-  - "4.1"
-  - "4.0"
+  - "6.1"
+  - "6.0"
+
+  - "5.11"
+  - "5.10"
+
+  - "4.4"
+  - "4.3"
 
 env:
   - CXX=g++-4.8 LLVM_CONFIG=llvm-config-3.6

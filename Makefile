@@ -1,4 +1,4 @@
-CC=g++
+CXX ?= g++
 COPTS=--std=c++11 -g -fPIC -Wall
 
 GEN=gen
@@ -25,7 +25,7 @@ USRC=src/utils
 UFILES=llvm_utils
 UOBJS=$(addprefix $(OBJ)/,$(addsuffix .o,$(UFILES)))
 
-LLVM_CONFIG=llvm-config-3.6
+LLVM_CONFIG ?= llvm-config-3.6
 LLVMINC=`$(LLVM_CONFIG) --includedir`
 LLVMLIBS=`$(LLVM_CONFIG) --libs core native support bitwriter mcjit executionengine` `$(LLVM_CONFIG) --ldflags --system-libs`
 
@@ -40,7 +40,7 @@ test: petard_tests node_tests
 libpetard: dirs $(LIB)/libpetard.a $(LIB)/libpetard.so
 
 $(LIB)/libpetard.so: $(POBJS) $(UOBJS)
-	$(CC) -shared -o $@ $^
+	$(CXX) -shared -o $@ $^
 
 $(LIB)/libpetard.a: $(POBJS) $(UOBJS)
 	ar rs $@ $^
@@ -49,19 +49,19 @@ petard_tests: dirs $(TESTMAIN)
 	LD_LIBRARY_PATH=$(LIB) ./$(TESTMAIN)
 
 $(TESTMAIN): $(OBJ)/$(TESTMAIN).o
-	$(CC) -o $@ $^ -L$(LIB) -lpetard $(LLVMLIBS)
+	$(CXX) -o $@ $^ -L$(LIB) -lpetard $(LLVMLIBS)
 
 $(OBJ)/$(TESTMAIN).o: $(GEN)/$(TESTMAIN).cpp
-	$(CC) -c -o $@ $(COPTS) -I$(CXXDIR) -I$(PINC) -I$(LLVMINC) $<
+	$(CXX) -c -o $@ $(COPTS) -I$(CXXDIR) -I$(PINC) -I$(LLVMINC) $<
 
 $(GEN)/$(TESTMAIN).cpp: test/petard/type/void_test.h test/petard/type/int_test.h test/petard/type/float_test.h
 	$(CXXTESTGEN) $(CXXOPTS) -o $@ $^
 
 $(OBJ)/%.o: $(PSRC)/%.cpp
-	$(CC) -c -o $@ $(COPTS) -I$(PINC) -I$(UINC) -I$(LLVMINC) $<
+	$(CXX) -c -o $@ $(COPTS) -I$(PINC) -I$(UINC) -I$(LLVMINC) $<
 
 $(OBJ)/%.o: $(USRC)/%.cpp
-	$(CC) -c -o $@ $(COPTS) -I$(UINC) -I$(LLVMINC) $<
+	$(CXX) -c -o $@ $(COPTS) -I$(UINC) -I$(LLVMINC) $<
 
 dirs: $(OBJ) $(GEN) $(LIB)
 

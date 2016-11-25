@@ -27,7 +27,7 @@ UOBJS=$(addprefix $(OBJ)/,$(addsuffix .o,$(UFILES)))
 
 LLVM_CONFIG ?= llvm-config-3.6
 LLVMINC=`$(LLVM_CONFIG) --includedir`
-LLVMLIBS=`$(LLVM_CONFIG) --libs core native support bitwriter mcjit executionengine` `$(LLVM_CONFIG) --ldflags --system-libs`
+LLVMLIBS=`$(LLVM_CONFIG) --libs core native support bitwriter mcjit` `$(LLVM_CONFIG) --ldflags --system-libs`
 
 TESTMAIN=runner
 

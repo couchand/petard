@@ -18,9 +18,7 @@ addons:
       - llvm-3.6
       - llvm-3.6-dev
       - g++-4.8
-
-before_script:
-  - llc -version || true
+      - libedit-dev
 
 script:
   - npm run-script clean

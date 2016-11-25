@@ -4,9 +4,9 @@
   "description": "a js llvm library",
   "main": "index.js",
   "scripts": {
-    "clean": "node-gyp clean",
-    "build": "node-gyp configure && node-gyp build",
-    "test": "node_modules/mocha/bin/mocha --reporter spec"
+    "clean": "make clean",
+    "build": "make",
+    "test": "make test"
   },
   "repository": {
     "type": "git",

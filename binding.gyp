@@ -3,13 +3,6 @@
     {
       "target_name": "petard",
       "sources": [
-        "src/utils/llvm_utils.cpp",
-        "src/petard/type.cpp",
-        "src/petard/value.cpp",
-        "src/petard/block_builder.cpp",
-        "src/petard/function_builder.cpp",
-        "src/petard/switch_builder.cpp",
-        "src/petard/code_unit.cpp",
         "src/node/type_wrapper.cpp",
         "src/node/value_wrapper.cpp",
         "src/node/builder_wrapper.cpp",
@@ -30,6 +23,8 @@
         "<!($LLVM_CONFIG --includedir)"
       ],
       "libraries": [
+        "-L../lib",
+        "-lpetard",
         "<!@($LLVM_CONFIG --ldflags)",
         "<!@($LLVM_CONFIG --libs core native support bitwriter mcjit)"
       ]

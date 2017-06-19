@@ -83,7 +83,7 @@ node_build:
 	LLVM_CONFIG=$(LLVM_CONFIG) $(NGYP) configure
 	LLVM_CONFIG=$(LLVM_CONFIG) $(NGYP) build
 node_test:
-	LD_LIBRARY_PATH=$(LIB) $(MOCHA) --reporter spec
+	$(MOCHA) --reporter spec
 
 clean: node_clean petard_clean
 

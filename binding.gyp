@@ -23,8 +23,7 @@
         "<!($LLVM_CONFIG --includedir)"
       ],
       "libraries": [
-        "-L../lib",
-        "-lpetard",
+        "<(module_root_dir)/lib/libpetard.a",
         "<!@($LLVM_CONFIG --ldflags)",
         "<!@($LLVM_CONFIG --libs core native support bitwriter mcjit)"
       ]

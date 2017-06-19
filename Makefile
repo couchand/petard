@@ -54,7 +54,7 @@ $(TESTMAIN): $(OBJ)/$(TESTMAIN).o
 $(OBJ)/$(TESTMAIN).o: $(GEN)/$(TESTMAIN).cpp
 	$(CXX) -c -o $@ $(COPTS) -I$(CXXDIR) -I$(PINC) -I$(LLVMINC) $<
 
-$(GEN)/$(TESTMAIN).cpp: test/petard/type/void_test.h test/petard/type/int_test.h test/petard/type/float_test.h test/petard/type/pointer_test.h test/petard/type/array_test.h
+$(GEN)/$(TESTMAIN).cpp: test/petard/type/void_test.h test/petard/type/int_test.h test/petard/type/float_test.h test/petard/type/pointer_test.h test/petard/type/array_test.h test/petard/type/vector_test.h
 	$(CXXTESTGEN) $(CXXOPTS) -o $@ $^
 
 $(OBJ)/%.o: $(PSRC)/%.cpp

@@ -76,8 +76,14 @@ public:
         IntTypeHandle intType(32);
         VoidTypeHandle voidType;
         FloatTypeHandle floatType(64);
+        PointerTypeHandle pointerType(std::make_shared<IntTypeHandle>(32));
+        ArrayTypeHandle arrayType(1, std::make_shared<IntTypeHandle>(32));
+        VectorTypeHandle vectorType(1, std::make_shared<IntTypeHandle>(32));
         TS_ASSERT(!intType.isCompatibleWith(&voidType));
         TS_ASSERT(!intType.isCompatibleWith(&floatType));
+        TS_ASSERT(!intType.isCompatibleWith(&pointerType));
+        TS_ASSERT(!intType.isCompatibleWith(&arrayType));
+        TS_ASSERT(!intType.isCompatibleWith(&vectorType));
     }
 
     void testIntGetLLVMType(void)

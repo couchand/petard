@@ -29,6 +29,9 @@ LLVM_CONFIG ?= llvm-config-3.9
 LLVMINC=`$(LLVM_CONFIG) --includedir`
 LLVMLIBS=`$(LLVM_CONFIG) --libs core native support bitwriter mcjit` `$(LLVM_CONFIG) --ldflags --system-libs`
 
+PTESTS=type/void_test type/int_test type/float_test type/pointer_test type/array_test type/vector_test
+PTESTFILES=$(addprefix test/petard/,$(addsuffix .h,$(PTESTS)))
+
 TESTMAIN=runner
 
 default: all
@@ -54,7 +57,7 @@ $(TESTMAIN): $(OBJ)/$(TESTMAIN).o
 $(OBJ)/$(TESTMAIN).o: $(GEN)/$(TESTMAIN).cpp
 	$(CXX) -c -o $@ $(COPTS) -I$(CXXDIR) -I$(PINC) -I$(LLVMINC) $<
 
-$(GEN)/$(TESTMAIN).cpp: test/petard/type/void_test.h test/petard/type/int_test.h test/petard/type/float_test.h test/petard/type/pointer_test.h test/petard/type/array_test.h test/petard/type/vector_test.h
+$(GEN)/$(TESTMAIN).cpp: $(PTESTFILES)
 	$(CXXTESTGEN) $(CXXOPTS) -o $@ $^
 
 $(OBJ)/%.o: $(PSRC)/%.cpp

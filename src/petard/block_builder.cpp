@@ -42,6 +42,12 @@ BlockBuilder *BlockBuilder::ChildBlock(const char *name)
 
 BlockBuilder *BlockBuilder::SplitBlock(const char *name)
 {
+    // this is a hack to make the block well-formed before splitting it
+    InsertAfter();
+    Return();
+    InsertBefore();
+    // end hack
+
     llvm::BasicBlock *child = block->splitBasicBlock(builder.GetInsertPoint(), name);
     llvm_utils::RemoveTerminator(block, false); // don't prune away new child
     builder.SetInsertPoint(block);
@@ -275,7 +281,7 @@ std::shared_ptr<ValueHandle> BlockBuilder::LoadConstant(std::shared_ptr<ValueHan
     idxs.push_back(MakeValue(thirtyTwo, 0));
     std::shared_ptr<const TypeHandle> elty = getElementType(ptrty->pointee.get(), idxs);
 
-    llvm::Value *expression = builder.CreateConstGEP2_32(value->getLLVMValue(), 0, 0);
+    llvm::Value *expression = builder.CreateConstGEP2_32(ptrty->pointee->getLLVMType(context), value->getLLVMValue(), 0, 0);
 
     return std::make_shared<PlainValueHandle>(std::make_shared<PointerTypeHandle>(elty), expression);
 }

@@ -25,7 +25,7 @@ USRC=src/utils
 UFILES=llvm_utils
 UOBJS=$(addprefix $(OBJ)/,$(addsuffix .o,$(UFILES)))
 
-LLVM_CONFIG ?= llvm-config-3.6
+LLVM_CONFIG ?= llvm-config-3.9
 LLVMINC=`$(LLVM_CONFIG) --includedir`
 LLVMLIBS=`$(LLVM_CONFIG) --libs core native support bitwriter mcjit` `$(LLVM_CONFIG) --ldflags --system-libs`
 

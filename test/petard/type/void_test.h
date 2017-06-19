@@ -76,8 +76,8 @@ public:
 
     void testVoidGetLLVMType(void)
     {
-        auto &globalContext = llvm::getGlobalContext();
+        llvm::LLVMContext context;
         VoidTypeHandle voidType;
-        TS_ASSERT(voidType.getLLVMType(globalContext)->isVoidTy());
+        TS_ASSERT(voidType.getLLVMType(context)->isVoidTy());
     }
 };

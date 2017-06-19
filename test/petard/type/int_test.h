@@ -82,9 +82,9 @@ public:
 
     void testIntGetLLVMType(void)
     {
-        auto &globalContext = llvm::getGlobalContext();
+        llvm::LLVMContext context;
         IntTypeHandle int32Type(32), int64Type(64);
-        TS_ASSERT(int32Type.getLLVMType(globalContext)->isIntegerTy(32));
-        TS_ASSERT(int64Type.getLLVMType(globalContext)->isIntegerTy(64));
+        TS_ASSERT(int32Type.getLLVMType(context)->isIntegerTy(32));
+        TS_ASSERT(int64Type.getLLVMType(context)->isIntegerTy(64));
     }
 };

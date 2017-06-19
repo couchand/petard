@@ -9,8 +9,10 @@
 #include "value.h"
 #include "function_builder.h"
 
-#include "llvm/PassManager.h"
+#include "llvm/IR/LegacyPassManager.h"
 #include "llvm/ExecutionEngine/ExecutionEngine.h"
+#include "llvm/Analysis/BasicAliasAnalysis.h"
+#include "llvm/Transforms/Scalar/GVN.h"
 
 class CodeUnit
 {
@@ -33,9 +35,9 @@ public:
 
     std::shared_ptr<ConstantValueHandle> ConstantString(const std::string &value);
 
-    llvm::LLVMContext &Context;
+    llvm::LLVMContext Context;
     llvm::Module *TheModule;
-    llvm::FunctionPassManager *TheManager;
+    llvm::legacy::FunctionPassManager *TheManager;
     llvm::ExecutionEngine *TheEngine;
 };
 

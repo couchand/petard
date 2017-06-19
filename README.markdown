@@ -51,23 +51,23 @@ dependencies
 
   * a recent version of node
   * nan version 2.1
-  * llvm version 3.6
+  * llvm version 3.9
 
 getting started
 ---------------
 
-First you need to install LLVM version 3.6 on your system, including the dev libs.
+First you need to install LLVM version 3.9 on your system, including the dev libs.
 Look to the Travis build config for details.
 
 when you're building **petard** you will need to set the environment variable
 `LLVM_CONFIG` to be the llvm-config you've installed.  For example, if you're on
-Ubuntu where it's isntalled as `llvm-config-3.6`, you'll enter:
+Ubuntu where it's isntalled as `llvm-config-3.9`, you'll enter:
 
-    > LLVM_CONFIG=llvm-config-3.6 npm run build
+    > LLVM_CONFIG=llvm-config-3.9 npm run build
 
 or
 
-    > LLVM_CONFIG=llvm-config-3.6 npm install petard
+    > LLVM_CONFIG=llvm-config-3.9 npm install petard
 
 Once you've got it built successfully, try this:
 

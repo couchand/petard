@@ -37,7 +37,8 @@ public:
             ;AI != AE
             ;++AI)
         {
-            parameters.push_back(AI);
+            llvm::Argument *arg = static_cast<llvm::Argument *>(AI);
+            parameters.push_back(arg);
         }
     }
 

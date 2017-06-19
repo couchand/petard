@@ -16,7 +16,7 @@
 #include "llvm/Analysis/Passes.h"
 #include "llvm/Transforms/Scalar.h"
 
-CodeUnit::CodeUnit(const char *filename) : Context(llvm::getGlobalContext())
+CodeUnit::CodeUnit(const char *filename)
 {
     llvm::InitializeNativeTarget();
     llvm::InitializeNativeTargetAsmPrinter();
@@ -40,9 +40,8 @@ CodeUnit::CodeUnit(const char *filename) : Context(llvm::getGlobalContext())
 
     TheModule->setDataLayout(TheEngine->getDataLayout());
 
-    TheManager = new llvm::FunctionPassManager(TheModule);
-    TheManager->add(new llvm::DataLayoutPass());
-    TheManager->add(llvm::createBasicAliasAnalysisPass());
+    TheManager = new llvm::legacy::FunctionPassManager(TheModule);
+    TheManager->add(llvm::createBasicAAWrapperPass());
     TheManager->add(llvm::createInstructionCombiningPass());
     TheManager->add(llvm::createReassociatePass());
     TheManager->add(llvm::createGVNPass());
@@ -83,7 +82,6 @@ bool CodeUnit::WriteToFile(const char *name)
         std::cout << ec.value() << ": " << ec.message() << " [" << ec.category().name() << "]" << std::endl;
         return false;
     }
-    output.SetUseAtomicWrites(true);
 
     llvm::WriteBitcodeToFile(TheModule, output);
 

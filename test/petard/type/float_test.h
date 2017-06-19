@@ -85,9 +85,9 @@ public:
 
     void testFloatGetLLVMType(void)
     {
-        auto &globalContext = llvm::getGlobalContext();
+        llvm::LLVMContext context;
         FloatTypeHandle floatType(32), doubleType(64);
-        TS_ASSERT(floatType.getLLVMType(globalContext)->isFloatTy());
-        TS_ASSERT(doubleType.getLLVMType(globalContext)->isDoubleTy());
+        TS_ASSERT(floatType.getLLVMType(context)->isFloatTy());
+        TS_ASSERT(doubleType.getLLVMType(context)->isDoubleTy());
     }
 };

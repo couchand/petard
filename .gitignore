@@ -3,10 +3,12 @@ build/
 node_modules/
 .*.swp
 npm-debug.log
+*.s
 *.bc
 *.ll
 /obj/
 /gen/
 /lib/
 /runner
+/a.out
 /vendor/**/*.pyc
